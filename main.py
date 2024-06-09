@@ -24,7 +24,7 @@ class AppGui(ActiveObject):
 
     def init_window(self):
         self.root = tkinter.Tk()
-        self.root.geometry(f'{self.root.winfo_screenwidth()}x{self.root.winfo_screenheight()}')
+        # self.root.geometry(f'{self.root.winfo_screenwidth()}x{self.root.winfo_screenheight()}')
 
         self.root.columnconfigure(1, weight=75)
         self.root.columnconfigure(2, weight=20)
@@ -38,7 +38,8 @@ class AppGui(ActiveObject):
                                               command=lambda: self.post_fifo(Event(signal=signals.NEW_PROJECT)))
         self.load_project_btn = tkinter.Button(self.command_palette, text='Load Project',
                                               command=lambda: self.post_fifo(Event(signal=signals.LOAD_PROJECT, payload=self.ask_for_load_project_path())))
-        self.save_project_btn = tkinter.Button(self.command_palette, text='Save Project')
+        self.save_project_btn = tkinter.Button(self.command_palette, text='Save Project',
+                                               command=lambda: self.post_fifo(Event(signal=signals.SAVE_PROJECT, payload=self.ask_for_save_project_path())))
 
         self.add_file_btn = tkinter.Button(self.command_palette, text='Add File')
         self.remove_file_btn = tkinter.Button(self.command_palette, text='Remove File')
@@ -94,6 +95,10 @@ class AppGui(ActiveObject):
 
     def ask_for_load_project_path(self) -> str:
         path_to_project = filedialog.askopenfilename(filetypes=[('Booba Label Project', '.blp')])
+        return path_to_project
+
+    def ask_for_save_project_path(self) -> str:
+        path_to_project = filedialog.asksaveasfilename(filetypes=[('Booba Label Project', '.blp')])
         print(f'path -> {path_to_project}')
         return path_to_project
 
@@ -103,6 +108,16 @@ class AppGui(ActiveObject):
             result = json.loads(f.read())
         return result
 
+    def save_project_data(self, path_to_project: str) -> None:
+        with open(path_to_project, 'w+') as f:
+            f.write(json.dumps(self._app_data))
+
+    def enable_save_project(self):
+        self.save_project_btn['state'] = 'normal'
+
+    def disable_save_project(self):
+        self.save_project_btn['state'] = 'disabled'
+
 
 @spy_on
 def empty(chart: AppGui, e: Event) -> return_status:
@@ -110,6 +125,7 @@ def empty(chart: AppGui, e: Event) -> return_status:
 
     if e.signal == signals.ENTRY_SIGNAL:
         status = return_status.HANDLED
+        chart.disable_save_project()
     elif e.signal == signals.NEW_PROJECT:
         chart.load_data([])
         status = chart.trans(not_empty)
@@ -127,7 +143,16 @@ def empty(chart: AppGui, e: Event) -> return_status:
 def not_empty(chart: AppGui, e: Event) -> return_status:
     status = return_status.UNHANDLED
 
-    if e.signal == signals.INIT_SIGNAL:
+    if e.signal == signals.ENTRY_SIGNAL:
+        status = return_status.HANDLED
+        chart.enable_save_project()
+    elif e.signal == signals.EXIT_SIGNAL:
+        status = return_status.HANDLED
+        chart.disable_save_project()
+    elif e.signal == signals.INIT_SIGNAL:
+        status = return_status.HANDLED
+    elif e.signal == signals.SAVE_PROJECT:
+        chart.save_project_data(e.payload)
         status = return_status.HANDLED
     else:
         status = return_status.SUPER
