@@ -1,5 +1,7 @@
-import tkinter
+import json
 import typing
+import tkinter
+from tkinter import filedialog
 from tkinter import ttk
 from miros import ActiveObject
 from miros import Event
@@ -11,6 +13,7 @@ class AppGui(ActiveObject):
     def __init__(self, name: str, debug: bool = False):
         super().__init__(name=name)
         self.debug = debug
+        self._app_data = None
 
     def create_gui(self):
         self.init_window()
@@ -33,7 +36,8 @@ class AppGui(ActiveObject):
 
         self.new_project_btn = tkinter.Button(self.command_palette, text='New Project',
                                               command=lambda: self.post_fifo(Event(signal=signals.NEW_PROJECT)))
-        self.load_project_btn = tkinter.Button(self.command_palette, text='Load Project')
+        self.load_project_btn = tkinter.Button(self.command_palette, text='Load Project',
+                                              command=lambda: self.post_fifo(Event(signal=signals.LOAD_PROJECT, payload=self.ask_for_load_project_path())))
         self.save_project_btn = tkinter.Button(self.command_palette, text='Save Project')
 
         self.add_file_btn = tkinter.Button(self.command_palette, text='Add File')
@@ -86,7 +90,18 @@ class AppGui(ActiveObject):
             self.root.mainloop()
 
     def load_data(self, data: typing.List) -> None:
-        self.data = data
+        self._app_data = data
+
+    def ask_for_load_project_path(self) -> str:
+        path_to_project = filedialog.askopenfilename(filetypes=[('Booba Label Project', '.blp')])
+        print(f'path -> {path_to_project}')
+        return path_to_project
+
+    def load_project_data(self, path_to_project: str) -> typing.List:
+        result = []
+        with open(path_to_project, 'r') as f:
+            result = json.loads(f.read())
+        return result
 
 
 @spy_on
@@ -97,6 +112,9 @@ def empty(chart: AppGui, e: Event) -> return_status:
         status = return_status.HANDLED
     elif e.signal == signals.NEW_PROJECT:
         chart.load_data([])
+        status = chart.trans(not_empty)
+    elif e.signal == signals.LOAD_PROJECT:
+        chart.load_data(chart.load_project_data(e.payload))
         status = chart.trans(not_empty)
     else:
         status = return_status.SUPER
@@ -121,6 +139,7 @@ def not_empty(chart: AppGui, e: Event) -> return_status:
 if __name__ == '__main__':
     app = AppGui('app')
 
-    app.live_trace = True
+    # app.live_trace = True
+    # app.live_spy = True
 
     app.run()

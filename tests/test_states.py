@@ -1,3 +1,7 @@
+import json
+import pathlib
+import time
+import typing
 import unittest
 from main import AppGui
 from miros import stripped
@@ -25,6 +29,7 @@ class TestStates(unittest.TestCase):
 
     def test_new_project_signal(self):
         self.gui.post_fifo(Event(signal=signals.NEW_PROJECT))
+        time.sleep(0.1)
         actual_trace = self.gui.trace()
         expected_trace = '''
         [2024-06-09 16:34:01.096098] [app] e->start_at() top->empty
@@ -32,7 +37,20 @@ class TestStates(unittest.TestCase):
         '''
 
         self._assert_trace_check(actual_trace, expected_trace)
-        self.assertIsNotNone(self.gui.data)
+        self.assertIsNotNone(self.gui._app_data)
+
+    def test_load_project_signal(self):
+        abs_path_to_project = pathlib.Path('.', 'empty.blp').absolute()
+        self.gui.post_fifo(Event(signal=signals.LOAD_PROJECT, payload=abs_path_to_project))
+        time.sleep(0.1)
+        actual_trace = self.gui.trace()
+        expected_trace = '''
+        [2024-06-09 17:20:53.633744] [app] e->start_at() top->empty
+        [2024-06-09 17:20:57.730133] [app] e->LOAD_PROJECT() empty->not_empty
+        '''
+
+        self._assert_trace_check(actual_trace, expected_trace)
+        self.assertIsNotNone(self.gui._app_data)
 
 
 if __name__ == '__main__':
