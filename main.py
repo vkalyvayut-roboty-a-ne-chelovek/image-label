@@ -1,10 +1,16 @@
 import tkinter
+import typing
 from tkinter import ttk
 from miros import ActiveObject
+from miros import Event
+from miros import return_status
+from miros import signals
+from miros import spy_on
 
 class AppGui(ActiveObject):
-    def __init__(self, name: str):
+    def __init__(self, name: str, debug: bool = False):
         super().__init__(name=name)
+        self.debug = debug
 
     def create_gui(self):
         self.init_window()
@@ -24,9 +30,15 @@ class AppGui(ActiveObject):
 
     def init_command_palette(self):
         self.command_palette = tkinter.Frame(self.root, background='red')
-        self.new_project_btn = tkinter.Button(self.command_palette, text='New Project')
+
+        self.new_project_btn = tkinter.Button(self.command_palette, text='New Project',
+                                              command=lambda: self.post_fifo(Event(signal=signals.NEW_PROJECT)))
         self.load_project_btn = tkinter.Button(self.command_palette, text='Load Project')
         self.save_project_btn = tkinter.Button(self.command_palette, text='Save Project')
+
+        self.add_file_btn = tkinter.Button(self.command_palette, text='Add File')
+        self.remove_file_btn = tkinter.Button(self.command_palette, text='Remove File')
+
         self.draw_rectangle_btn = tkinter.Button(self.command_palette, text='Draw Rectangle')
         self.draw_polygon_btn = tkinter.Button(self.command_palette, text='Draw Polygon')
 
@@ -34,8 +46,12 @@ class AppGui(ActiveObject):
         self.new_project_btn.grid(column=0, row=0)
         self.load_project_btn.grid(column=0, row=1)
         self.save_project_btn.grid(column=0, row=2)
-        self.draw_rectangle_btn.grid(column=0, row=3)
-        self.draw_polygon_btn.grid(column=0, row=4)
+
+        self.add_file_btn.grid(column=0, row=3)
+        self.remove_file_btn.grid(column=0, row=4)
+
+        self.draw_rectangle_btn.grid(column=0, row=5)
+        self.draw_polygon_btn.grid(column=0, row=6)
 
     def init_drawing_frame(self):
         self.drawing_frame = tkinter.Frame(self.root, background='green')
@@ -63,9 +79,48 @@ class AppGui(ActiveObject):
 
     def run(self):
         self.create_gui()
-        self.root.mainloop()
+
+        self.start_at(empty)
+
+        if not self.debug:
+            self.root.mainloop()
+
+    def load_data(self, data: typing.List) -> None:
+        self.data = data
+
+
+@spy_on
+def empty(chart: AppGui, e: Event) -> return_status:
+    status = return_status.UNHANDLED
+
+    if e.signal == signals.ENTRY_SIGNAL:
+        status = return_status.HANDLED
+    elif e.signal == signals.NEW_PROJECT:
+        chart.load_data([])
+        status = chart.trans(not_empty)
+    else:
+        status = return_status.SUPER
+        chart.temp.fun = chart.top
+
+    return status
+
+
+@spy_on
+def not_empty(chart: AppGui, e: Event) -> return_status:
+    status = return_status.UNHANDLED
+
+    if e.signal == signals.INIT_SIGNAL:
+        status = return_status.HANDLED
+    else:
+        status = return_status.SUPER
+        chart.temp.fun = empty
+
+    return status
 
 
 if __name__ == '__main__':
     app = AppGui('app')
+
+    app.live_trace = True
+
     app.run()
