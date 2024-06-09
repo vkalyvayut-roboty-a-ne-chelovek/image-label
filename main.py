@@ -70,7 +70,13 @@ class Gui:
 
     def init_files_frame(self):
         self.files_frame = tkinter.Frame(self.root, background='blue')
-        self.files_treeview = ttk.Treeview(self.files_frame)
+        self.files_treeview = ttk.Treeview(self.files_frame, columns=['filename'])
+        self.files_treeview['show'] = 'headings'
+        self.files_treeview.heading('filename', text='Filename')
+
+        # item_idx = self.files_treeview.insert('', 'end', text='Filename', values=(321, 'XXX'), color="red")
+        # print(item_idx)
+        # self.files_treeview.bind('<ButtonRelease-3>', lambda e: print(e, self.files_treeview.item(self.files_treeview.selection()[0])))
 
         self.files_frame.grid(column=2, row=0, sticky='nesw')
         self.files_frame.columnconfigure(0, weight=1)
@@ -101,6 +107,15 @@ class Gui:
 
     def set_app_data(self, data: typing.List):
         self._app_data = data
+
+        for idx, filedata in enumerate(self._app_data):
+            self.add_file(idx, filedata['filename'])
+
+    def add_file(self, idx, filename):
+        self.files_treeview.insert('', 'end', iid=idx, text=filename, values=(filename,))
+
+    def remove_file(self, idx):
+        self.files_treeview.delete(idx)
 
     def ask_for_load_project_path(self) -> str:
         return filedialog.askopenfilename(filetypes=[('Booba Label Project', '.blp')])

@@ -51,6 +51,22 @@ class TestGUIStructure(unittest.TestCase):
 
         assert files_frame_has_treeview, 'Files frame has no Treeview'
 
+    def test_files_treeview_contains_items_after_insertion(self):
+        self.gui.add_file(1, '1')
+        self.gui.add_file(2, '2')
+        self.gui.add_file(3, '3')
+
+        assert 3 == len(self.gui.files_treeview.get_children())
+
+    def test_files_treeview_remove_items(self):
+        self.gui.add_file(1, '1')
+        self.gui.add_file(2, '2')
+        self.gui.add_file(3, '3')
+
+        self.gui.remove_file(2)
+
+        assert 2 == len(self.gui.files_treeview.get_children())
+
     def test_gui_has_figures_frame(self):
         self.assertIsNotNone(self.gui.figures_frame, 'GUI has not Figures frame')
 
@@ -61,7 +77,6 @@ class TestGUIStructure(unittest.TestCase):
                 figures_frame_has_treeview = True
 
         assert figures_frame_has_treeview, 'Figures frame has no Treeview'
-
 
 
 if __name__ == '__main__':
