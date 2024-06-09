@@ -52,6 +52,22 @@ class TestStates(unittest.TestCase):
         self._assert_trace_check(actual_trace, expected_trace)
         self.assertIsNotNone(self.gui._app_data)
 
+    def test_load_non_empty_project_signal(self):
+        abs_path_to_project = pathlib.Path('.', 'non-empty.blp').absolute()
+        self.gui.post_fifo(Event(signal=signals.LOAD_PROJECT, payload=abs_path_to_project))
+        time.sleep(0.1)
+        actual_trace = self.gui.trace()
+        expected_trace = '''
+        [2024-06-09 17:20:53.633744] [app] e->start_at() top->empty
+        [2024-06-09 17:20:57.730133] [app] e->LOAD_PROJECT() empty->not_empty
+        '''
+
+        self._assert_trace_check(actual_trace, expected_trace)
+        self.assertIsNotNone(self.gui._app_data)
+        with open(abs_path_to_project, 'r') as f:
+            data = json.loads(f.read())
+            assert data == self.gui._app_data
+
 
 if __name__ == '__main__':
     unittest.main()
