@@ -12,6 +12,7 @@ import helpers
 
 class Gui:
     def __init__(self):
+        self._app_data = dict()
         self.statechart = None
 
     def set_statechart(self, statechart: ActiveObject):
@@ -24,7 +25,7 @@ class Gui:
         self.init_files_frame()
         self.init_figures_frame()
 
-        self.disable_save_button()
+        self.disable_buttons_when_there_is_no_active_project()
 
     def init_window(self):
         self.root = tkinter.Tk()
@@ -45,7 +46,7 @@ class Gui:
         self.save_project_btn = tkinter.Button(self.command_palette, text='Save Project',
                                                command=lambda: self.statechart.post_fifo(Event(signal=signals.SAVE_PROJECT, payload=self.ask_for_save_project_path())))
 
-        self.add_file_btn = tkinter.Button(self.command_palette, text='Add File')
+        self.add_file_btn = tkinter.Button(self.command_palette, text='Add File', command=lambda: self.statechart.post_fifo(Event(signal=signals.ADD_FILE, payload=self.ask_for_add_file_paths())))
         self.remove_file_btn = tkinter.Button(self.command_palette, text='Remove File')
 
         self.draw_rectangle_btn = tkinter.Button(self.command_palette, text='Draw Rectangle')
@@ -105,17 +106,57 @@ class Gui:
     def disable_save_button(self):
         self.save_project_btn['state'] = 'disabled'
 
-    def set_app_data(self, data: typing.List):
-        self._app_data = data
+    def enable_add_file_button(self):
+        self.add_file_btn['state'] = 'normal'
 
-        for idx, filedata in enumerate(self._app_data):
+    def disable_add_file_button(self):
+        self.add_file_btn['state'] = 'disabled'
+
+    def enable_remove_file_button(self):
+        self.remove_file_btn['state'] = 'normal'
+
+    def disable_remove_file_button(self):
+        self.remove_file_btn['state'] = 'disabled'
+
+    def enable_draw_rectangle_button(self):
+        self.draw_rectangle_btn['state'] = 'normal'
+
+    def disable_draw_rectangle_button(self):
+        self.draw_rectangle_btn['state'] = 'disabled'
+
+    def enable_draw_polygon_button(self):
+        self.draw_polygon_btn['state'] = 'normal'
+
+    def disable_draw_polygon_button(self):
+        self.draw_polygon_btn['state'] = 'disabled'
+
+    def disable_buttons_when_there_is_no_active_project(self):
+        self.disable_save_button()
+        self.disable_add_file_button()
+        self.disable_remove_file_button()
+        self.disable_draw_rectangle_button()
+        self.disable_draw_polygon_button()
+
+    def enable_buttons_when_there_is_an_active_project(self):
+        self.enable_save_button()
+        self.enable_add_file_button()
+        self.enable_remove_file_button()
+        self.enable_draw_rectangle_button()
+        self.enable_draw_polygon_button()
+
+    def set_app_data(self, data: typing.List):
+        self._app_data = dict()
+
+        for idx, filedata in data.items():
             self.add_file(idx, filedata['filename'])
 
     def add_file(self, idx, filename):
+        self._app_data[idx] = filename
         self.files_treeview.insert('', 'end', iid=idx, text=filename, values=(filename,))
 
     def remove_file(self, idx):
         self.files_treeview.delete(idx)
+        del self._app_data[idx]
 
     def ask_for_load_project_path(self) -> str:
         return filedialog.askopenfilename(filetypes=[('Booba Label Project', '.blp')])
@@ -123,17 +164,24 @@ class Gui:
     def ask_for_save_project_path(self) -> str:
         return filedialog.asksaveasfilename(filetypes=[('Booba Label Project', '.blp')])
 
+    def ask_for_add_file_paths(self) -> typing.List[str]:
+        return filedialog.askopenfilenames(filetypes=[('JPEG', '.jpg'),
+                                                      ('PNG', '.png'),
+                                                      ('BMP', '.bmp') ], multiple=True)
 
 
 class GuiForTest(Gui):
     def run(self):
         self.statechart.start_at(empty)
 
-    def enable_save_button(self):
+    def disable_buttons_when_there_is_no_active_project(self):
         pass
 
-    def disable_save_button(self):
+    def enable_buttons_when_there_is_an_active_project(self):
         pass
+
+    def add_file(self, idx, filename):
+        self._app_data[idx] = filename
 
 
 class Statechart(ActiveObject):
@@ -143,12 +191,17 @@ class Statechart(ActiveObject):
         self.gui.set_statechart(self)
         self._app_data = None
 
-    def set_app_data(self, data: typing.List):
+    def set_app_data(self, data: typing.Dict):
         self._app_data = data
         self.gui.set_app_data(data)
 
-    def get_app_data(self) -> typing.List:
+    def get_app_data(self) -> typing.Dict:
         return self._app_data
+
+    def add_file(self, path_to_image):
+        idx = len(self._app_data) + 1
+        self._app_data[idx] = path_to_image
+        self.gui.add_file(idx, path_to_image)
 
 
 @spy_on
@@ -156,9 +209,10 @@ def empty(chart: Statechart, e: Event) -> return_status:
     status = return_status.UNHANDLED
 
     if e.signal == signals.INIT_SIGNAL:
+        chart.gui.disable_buttons_when_there_is_no_active_project()
         status = return_status.HANDLED
     elif e.signal == signals.NEW_PROJECT:
-        chart.set_app_data([])
+        chart.set_app_data(dict())
         status = chart.trans(not_empty)
     elif e.signal == signals.LOAD_PROJECT:
         chart.set_app_data(helpers.read_project_file_from_path(e.payload))
@@ -178,8 +232,12 @@ def not_empty(chart: Statechart, e: Event) -> return_status:
     status = return_status.UNHANDLED
 
     if e.signal == signals.INIT_SIGNAL:
-        chart.gui.enable_save_button()
+        chart.gui.enable_buttons_when_there_is_an_active_project()
         status = return_status.HANDLED
+    if e.signal == signals.ADD_FILE:
+        status = signals.HANDLED
+        for path_to_image in e.payload:
+            chart.add_file(path_to_image)
     else:
         status = return_status.SUPER
         chart.temp.fun = empty

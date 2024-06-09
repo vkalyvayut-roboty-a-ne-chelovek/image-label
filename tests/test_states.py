@@ -49,14 +49,14 @@ class TestStates(unittest.TestCase):
 
         time.sleep(0.1)
 
-        assert statechart._app_data == []
+        assert statechart._app_data == dict()
 
     def test_load_project_signal_states(self):
         gui = GuiForTest()
         statechart = Statechart('statechart', gui=gui)
         gui.run()
 
-        abs_path_to_empty_project_file = pathlib.Path('.', 'empty.blp').absolute()
+        abs_path_to_empty_project_file = pathlib.Path('.', 'assets', 'empty.blp').absolute()
         statechart.post_fifo(Event(signal=signals.LOAD_PROJECT, payload=abs_path_to_empty_project_file))
 
         time.sleep(0.1)
@@ -75,7 +75,7 @@ class TestStates(unittest.TestCase):
         statechart = Statechart('statechart', gui=gui)
         gui.run()
 
-        abs_path_to_project_file = pathlib.Path('.', 'empty.blp').absolute()
+        abs_path_to_project_file = pathlib.Path('.', 'assets', 'empty.blp').absolute()
         statechart.post_fifo(Event(signal=signals.LOAD_PROJECT, payload=abs_path_to_project_file))
 
         time.sleep(0.1)
@@ -87,7 +87,7 @@ class TestStates(unittest.TestCase):
         statechart = Statechart('statechart', gui=gui)
         gui.run()
 
-        abs_path_to_project_file = pathlib.Path('.', 'non-empty.blp').absolute()
+        abs_path_to_project_file = pathlib.Path('.', 'assets', 'non-empty.blp').absolute()
         statechart.post_fifo(Event(signal=signals.LOAD_PROJECT, payload=abs_path_to_project_file))
 
         time.sleep(0.1)
@@ -99,7 +99,7 @@ class TestStates(unittest.TestCase):
         statechart = Statechart('statechart', gui=gui)
         gui.run()
 
-        abs_path_to_project_file_to_load = pathlib.Path('.', 'empty.blp').absolute()
+        abs_path_to_project_file_to_load = pathlib.Path('.', 'assets', 'empty.blp').absolute()
         abs_path_to_project_file_to_save = tempfile.mktemp()
 
         statechart.post_fifo(Event(signal=signals.LOAD_PROJECT, payload=abs_path_to_project_file_to_load))
@@ -122,7 +122,7 @@ class TestStates(unittest.TestCase):
         statechart = Statechart('statechart', gui=gui)
         gui.run()
 
-        abs_path_to_project_file_to_load = pathlib.Path('.', 'non-empty.blp').absolute()
+        abs_path_to_project_file_to_load = pathlib.Path('.', 'assets', 'non-empty.blp').absolute()
         abs_path_to_project_file_to_save = tempfile.mktemp()
 
         statechart.post_fifo(Event(signal=signals.LOAD_PROJECT, payload=abs_path_to_project_file_to_load))
@@ -131,6 +131,50 @@ class TestStates(unittest.TestCase):
         time.sleep(0.1)
 
         assert helpers.read_project_file_from_path(abs_path_to_project_file_to_load) == helpers.read_project_file_from_path(abs_path_to_project_file_to_save)
+
+    def test_add_file_signal_states(self):
+        gui = GuiForTest()
+        statechart = Statechart('statechart', gui=gui)
+        gui.run()
+
+        abs_path_to_image_files_to_load = [
+            pathlib.Path('.', 'assets', 'domik.jpg').absolute(),
+            pathlib.Path('.', 'assets', 'domik.bmp').absolute(),
+            pathlib.Path('.', 'assets', 'domik.png').absolute(),
+        ]
+
+        statechart.post_fifo(Event(signal=signals.NEW_PROJECT))
+        statechart.post_fifo(Event(signal=signals.ADD_FILE, payload=abs_path_to_image_files_to_load))
+
+        time.sleep(0.1)
+
+        expected_trace = '''
+        [2024-06-09 23:46:33.113116] [statechart] e->start_at() top->empty
+        [2024-06-09 23:46:35.068902] [statechart] e->NEW_PROJECT() empty->not_empty
+        [2024-06-09 23:46:38.350389] [statechart] e->ADD_FILE() not_empty->not_empty
+        '''
+
+        actual_trace = statechart.trace()
+
+        self._assert_trace_check(actual_trace, expected_trace)
+
+    def test_add_file_total_files_count(self):
+        gui = GuiForTest()
+        statechart = Statechart('statechart', gui=gui)
+        gui.run()
+
+        abs_path_to_image_files_to_load = [
+            pathlib.Path('.', 'assets', 'domik.jpg').absolute(),
+            pathlib.Path('.', 'assets', 'domik.bmp').absolute(),
+            pathlib.Path('.', 'assets', 'domik.png').absolute(),
+        ]
+
+        statechart.post_fifo(Event(signal=signals.NEW_PROJECT))
+        statechart.post_fifo(Event(signal=signals.ADD_FILE, payload=abs_path_to_image_files_to_load))
+
+        time.sleep(0.1)
+
+        assert 3 == len(statechart.get_app_data())
 
 
 if __name__ == '__main__':
