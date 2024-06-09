@@ -1,4 +1,5 @@
 import tkinter
+from tkinter import ttk
 from miros import ActiveObject
 
 class AppGui(ActiveObject):
@@ -44,11 +45,21 @@ class AppGui(ActiveObject):
 
     def init_files_frame(self):
         self.files_frame = tkinter.Frame(self.root, background='blue')
+        self.files_treeview = ttk.Treeview(self.files_frame)
+
         self.files_frame.grid(column=2, row=0, sticky='nesw')
+        self.files_frame.columnconfigure(0, weight=1)
+        self.files_frame.rowconfigure(0, weight=1)
+        self.files_treeview.grid(column=0, row=0, sticky='nesw')
 
     def init_figures_frame(self):
         self.figures_frame = tkinter.Frame(self.root, background='cyan')
+        self.figures_treeview = ttk.Treeview(self.figures_frame)
+
         self.figures_frame.grid(column=2, row=1, sticky='nesw')
+        self.figures_frame.columnconfigure(0, weight=1)
+        self.figures_frame.rowconfigure(0, weight=1)
+        self.figures_treeview.grid(column=0, row=0, sticky='nesw')
 
     def run(self):
         self.create_gui()

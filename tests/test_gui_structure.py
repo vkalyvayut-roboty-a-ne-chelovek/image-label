@@ -1,4 +1,5 @@
 import tkinter
+from tkinter import ttk
 import unittest
 from main import AppGui
 
@@ -38,8 +39,24 @@ class TestGUIStructure(unittest.TestCase):
     def test_gui_has_files_frame(self):
         self.assertIsNotNone(self.gui.files_frame, 'GUI has no Files frame')
 
+    def test_files_frame_has_treeview(self):
+        files_frame_has_treeview = False
+        for child in self.gui.files_frame.winfo_children():
+            if isinstance(child, ttk.Treeview):
+                files_frame_has_treeview = True
+
+        assert files_frame_has_treeview == True, 'Files frame has no Treeview'
+
     def test_gui_has_figures_frame(self):
         self.assertIsNotNone(self.gui.figures_frame, 'GUI has not Figures frame')
+
+    def test_figures_frame_has_treeview(self):
+        figures_frame_has_treeview = False
+        for child in self.gui.figures_frame.winfo_children():
+            if isinstance(child, ttk.Treeview):
+                figures_frame_has_treeview = True
+
+        assert figures_frame_has_treeview == True, 'Figures frame has no Treeview'
 
 
 
