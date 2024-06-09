@@ -8,12 +8,14 @@ from miros import Event
 from miros import return_status
 from miros import signals
 from miros import spy_on
+import helpers
 
-class AppGui(ActiveObject):
-    def __init__(self, name: str, debug: bool = False):
-        super().__init__(name=name)
-        self.debug = debug
-        self._app_data = None
+class Gui:
+    def __init__(self):
+        self.statechart = None
+
+    def set_statechart(self, statechart: ActiveObject):
+        self.statechart = statechart
 
     def create_gui(self):
         self.init_window()
@@ -22,9 +24,11 @@ class AppGui(ActiveObject):
         self.init_files_frame()
         self.init_figures_frame()
 
+        self.disable_save_button()
+
     def init_window(self):
         self.root = tkinter.Tk()
-        # self.root.geometry(f'{self.root.winfo_screenwidth()}x{self.root.winfo_screenheight()}')
+        self.root.geometry(f'{self.root.winfo_screenwidth()}x{self.root.winfo_screenheight()}')
 
         self.root.columnconfigure(1, weight=75)
         self.root.columnconfigure(2, weight=20)
@@ -35,11 +39,10 @@ class AppGui(ActiveObject):
         self.command_palette = tkinter.Frame(self.root, background='red')
 
         self.new_project_btn = tkinter.Button(self.command_palette, text='New Project',
-                                              command=lambda: self.post_fifo(Event(signal=signals.NEW_PROJECT)))
+                                              command=lambda: self.statechart.post_fifo(Event(signal=signals.NEW_PROJECT)))
         self.load_project_btn = tkinter.Button(self.command_palette, text='Load Project',
-                                              command=lambda: self.post_fifo(Event(signal=signals.LOAD_PROJECT, payload=self.ask_for_load_project_path())))
-        self.save_project_btn = tkinter.Button(self.command_palette, text='Save Project',
-                                               command=lambda: self.post_fifo(Event(signal=signals.SAVE_PROJECT, payload=self.ask_for_save_project_path())))
+                                               command=lambda: self.statechart.post_fifo(Event(signal=signals.LOAD_PROJECT, payload=self.ask_for_load_project_path())))
+        self.save_project_btn = tkinter.Button(self.command_palette, text='Save Project')
 
         self.add_file_btn = tkinter.Button(self.command_palette, text='Add File')
         self.remove_file_btn = tkinter.Button(self.command_palette, text='Remove File')
@@ -85,52 +88,58 @@ class AppGui(ActiveObject):
     def run(self):
         self.create_gui()
 
-        self.start_at(empty)
+        self.statechart.start_at(empty)
 
-        if not self.debug:
-            self.root.mainloop()
+        self.root.mainloop()
 
-    def load_data(self, data: typing.List) -> None:
+    def enable_save_button(self):
+        self.save_project_btn['state'] = 'normal'
+
+    def disable_save_button(self):
+        self.save_project_btn['state'] = 'disabled'
+
+    def set_app_data(self, data: typing.List):
         self._app_data = data
 
     def ask_for_load_project_path(self) -> str:
-        path_to_project = filedialog.askopenfilename(filetypes=[('Booba Label Project', '.blp')])
-        return path_to_project
+        return filedialog.askopenfilename(filetypes=[('Booba Label Project', '.blp')])
 
-    def ask_for_save_project_path(self) -> str:
-        path_to_project = filedialog.asksaveasfilename(filetypes=[('Booba Label Project', '.blp')])
-        print(f'path -> {path_to_project}')
-        return path_to_project
 
-    def load_project_data(self, path_to_project: str) -> typing.List:
-        result = []
-        with open(path_to_project, 'r') as f:
-            result = json.loads(f.read())
-        return result
 
-    def save_project_data(self, path_to_project: str) -> None:
-        with open(path_to_project, 'w+') as f:
-            f.write(json.dumps(self._app_data))
+class GuiForTest(Gui):
+    def run(self):
+        self.statechart.start_at(empty)
 
-    def enable_save_project(self):
-        self.save_project_btn['state'] = 'normal'
+    def enable_save_button(self):
+        pass
 
-    def disable_save_project(self):
-        self.save_project_btn['state'] = 'disabled'
+    def disable_save_button(self):
+        pass
+
+
+class Statechart(ActiveObject):
+    def __init__(self, name: str, gui: Gui):
+        super().__init__(name=name)
+        self.gui = gui
+        self.gui.set_statechart(self)
+        self._app_data = None
+
+    def set_app_data(self, data: typing.List):
+        self._app_data = data
+        self.gui.set_app_data(data)
 
 
 @spy_on
-def empty(chart: AppGui, e: Event) -> return_status:
+def empty(chart: Statechart, e: Event) -> return_status:
     status = return_status.UNHANDLED
 
-    if e.signal == signals.ENTRY_SIGNAL:
+    if e.signal == signals.INIT_SIGNAL:
         status = return_status.HANDLED
-        chart.disable_save_project()
     elif e.signal == signals.NEW_PROJECT:
-        chart.load_data([])
+        chart.set_app_data([])
         status = chart.trans(not_empty)
     elif e.signal == signals.LOAD_PROJECT:
-        chart.load_data(chart.load_project_data(e.payload))
+        chart.set_app_data(helpers.read_project_file_from_path(e.payload))
         status = chart.trans(not_empty)
     else:
         status = return_status.SUPER
@@ -140,19 +149,11 @@ def empty(chart: AppGui, e: Event) -> return_status:
 
 
 @spy_on
-def not_empty(chart: AppGui, e: Event) -> return_status:
+def not_empty(chart: Statechart, e: Event) -> return_status:
     status = return_status.UNHANDLED
 
-    if e.signal == signals.ENTRY_SIGNAL:
-        status = return_status.HANDLED
-        chart.enable_save_project()
-    elif e.signal == signals.EXIT_SIGNAL:
-        status = return_status.HANDLED
-        chart.disable_save_project()
-    elif e.signal == signals.INIT_SIGNAL:
-        status = return_status.HANDLED
-    elif e.signal == signals.SAVE_PROJECT:
-        chart.save_project_data(e.payload)
+    if e.signal == signals.INIT_SIGNAL:
+        chart.gui.enable_save_button()
         status = return_status.HANDLED
     else:
         status = return_status.SUPER
@@ -162,9 +163,11 @@ def not_empty(chart: AppGui, e: Event) -> return_status:
 
 
 if __name__ == '__main__':
-    app = AppGui('app')
+    gui = Gui()
 
-    # app.live_trace = True
-    # app.live_spy = True
+    statechart = Statechart('statechart', gui=gui)
 
-    app.run()
+    statechart.live_trace = True
+    statechart.live_spy = True
+
+    gui.run()

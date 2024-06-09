@@ -1,12 +1,16 @@
 import tkinter
 from tkinter import ttk
 import unittest
-from main import AppGui
+
+import miros
+
+from main import Gui
+from main import Statechart
 
 class TestGUIStructure(unittest.TestCase):
     def setUp(self):
-        self.gui = AppGui('app', debug=True)
-        self.gui.run()
+        self.gui = Gui()
+        self.gui.create_gui()
 
     def test_gui_has_main_window(self):
         self.assertIsNotNone(self.gui.root)
@@ -34,7 +38,7 @@ class TestGUIStructure(unittest.TestCase):
                 drawing_frame_has_canvas_child = True
                 break
 
-        assert drawing_frame_has_canvas_child == True, 'Drawing frame has no canvas child'
+        assert drawing_frame_has_canvas_child, 'Drawing frame has no canvas child'
 
     def test_gui_has_files_frame(self):
         self.assertIsNotNone(self.gui.files_frame, 'GUI has no Files frame')
@@ -45,7 +49,7 @@ class TestGUIStructure(unittest.TestCase):
             if isinstance(child, ttk.Treeview):
                 files_frame_has_treeview = True
 
-        assert files_frame_has_treeview == True, 'Files frame has no Treeview'
+        assert files_frame_has_treeview, 'Files frame has no Treeview'
 
     def test_gui_has_figures_frame(self):
         self.assertIsNotNone(self.gui.figures_frame, 'GUI has not Figures frame')
@@ -56,7 +60,7 @@ class TestGUIStructure(unittest.TestCase):
             if isinstance(child, ttk.Treeview):
                 figures_frame_has_treeview = True
 
-        assert figures_frame_has_treeview == True, 'Figures frame has no Treeview'
+        assert figures_frame_has_treeview, 'Figures frame has no Treeview'
 
 
 
