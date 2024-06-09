@@ -7,6 +7,7 @@ import unittest
 from main import GuiForTest
 from main import Statechart
 from main import empty
+import helpers
 from miros import stripped
 from miros import Event
 from miros import signals
@@ -20,7 +21,6 @@ class TestStates(unittest.TestCase):
                 _actual_trace), f'Not enough events: expected ({len(_expected_trace)}) != actual({len(_actual_trace)})'
             for expected, actual in zip(_expected_trace, _actual_trace):
                 assert expected == actual, f'{expected} != {actual}'
-
 
     def test_new_project_signal_states(self):
         gui = GuiForTest()
@@ -39,7 +39,6 @@ class TestStates(unittest.TestCase):
         actual_trace = statechart.trace()
 
         self._assert_trace_check(actual_trace, expected_trace)
-
 
     def test_new_project_signal_app_data(self):
         gui = GuiForTest()
@@ -74,34 +73,64 @@ class TestStates(unittest.TestCase):
     def test_load_project_signal_empty_project_content(self):
         gui = GuiForTest()
         statechart = Statechart('statechart', gui=gui)
-        statechart.live_trace = True
-        statechart.live_spy = True
         gui.run()
 
-        abs_path_to_empty_project_file = pathlib.Path('.', 'empty.blp').absolute()
-        statechart.post_fifo(Event(signal=signals.LOAD_PROJECT, payload=abs_path_to_empty_project_file))
+        abs_path_to_project_file = pathlib.Path('.', 'empty.blp').absolute()
+        statechart.post_fifo(Event(signal=signals.LOAD_PROJECT, payload=abs_path_to_project_file))
 
         time.sleep(0.1)
 
-        with open(abs_path_to_empty_project_file, 'r') as f:
-            assert json.loads(f.read()) == statechart._app_data
+        assert helpers.read_project_file_from_path(abs_path_to_project_file) == statechart.get_app_data()
 
     def test_load_project_signal_non_empty_project_content(self):
         gui = GuiForTest()
         statechart = Statechart('statechart', gui=gui)
-        statechart.live_trace = True
-        statechart.live_spy = True
         gui.run()
 
-        abs_path_to_empty_project_file = pathlib.Path('.', 'non-empty.blp').absolute()
-        statechart.post_fifo(Event(signal=signals.LOAD_PROJECT, payload=abs_path_to_empty_project_file))
+        abs_path_to_project_file = pathlib.Path('.', 'non-empty.blp').absolute()
+        statechart.post_fifo(Event(signal=signals.LOAD_PROJECT, payload=abs_path_to_project_file))
 
         time.sleep(0.1)
 
-        with open(abs_path_to_empty_project_file, 'r') as f:
-            assert json.loads(f.read()) == statechart._app_data
+        assert helpers.read_project_file_from_path(abs_path_to_project_file) == statechart.get_app_data()
 
+    def test_save_project_signal_states(self):
+        gui = GuiForTest()
+        statechart = Statechart('statechart', gui=gui)
+        gui.run()
 
+        abs_path_to_project_file_to_load = pathlib.Path('.', 'empty.blp').absolute()
+        abs_path_to_project_file_to_save = tempfile.mktemp()
+
+        statechart.post_fifo(Event(signal=signals.LOAD_PROJECT, payload=abs_path_to_project_file_to_load))
+        statechart.post_fifo(Event(signal=signals.SAVE_PROJECT, payload=abs_path_to_project_file_to_save))
+
+        time.sleep(0.1)
+
+        expected_trace = '''
+        [2024-06-09 21:00:58.933378] [statechart] e->start_at() top->empty
+        [2024-06-09 21:01:04.755613] [statechart] e->LOAD_PROJECT() empty->not_empty
+        [2024-06-09 21:01:08.394898] [statechart] e->SAVE_PROJECT() not_empty->not_empty
+        '''
+
+        actual_trace = statechart.trace()
+
+        self._assert_trace_check(actual_trace, expected_trace)
+
+    def test_save_project_project_content(self):
+        gui = GuiForTest()
+        statechart = Statechart('statechart', gui=gui)
+        gui.run()
+
+        abs_path_to_project_file_to_load = pathlib.Path('.', 'non-empty.blp').absolute()
+        abs_path_to_project_file_to_save = tempfile.mktemp()
+
+        statechart.post_fifo(Event(signal=signals.LOAD_PROJECT, payload=abs_path_to_project_file_to_load))
+        statechart.post_fifo(Event(signal=signals.SAVE_PROJECT, payload=abs_path_to_project_file_to_save))
+
+        time.sleep(0.1)
+
+        assert helpers.read_project_file_from_path(abs_path_to_project_file_to_load) == helpers.read_project_file_from_path(abs_path_to_project_file_to_save)
 
 
 if __name__ == '__main__':

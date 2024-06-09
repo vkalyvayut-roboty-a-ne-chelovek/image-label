@@ -42,7 +42,8 @@ class Gui:
                                               command=lambda: self.statechart.post_fifo(Event(signal=signals.NEW_PROJECT)))
         self.load_project_btn = tkinter.Button(self.command_palette, text='Load Project',
                                                command=lambda: self.statechart.post_fifo(Event(signal=signals.LOAD_PROJECT, payload=self.ask_for_load_project_path())))
-        self.save_project_btn = tkinter.Button(self.command_palette, text='Save Project')
+        self.save_project_btn = tkinter.Button(self.command_palette, text='Save Project',
+                                               command=lambda: self.statechart.post_fifo(Event(signal=signals.SAVE_PROJECT, payload=self.ask_for_save_project_path())))
 
         self.add_file_btn = tkinter.Button(self.command_palette, text='Add File')
         self.remove_file_btn = tkinter.Button(self.command_palette, text='Remove File')
@@ -104,6 +105,9 @@ class Gui:
     def ask_for_load_project_path(self) -> str:
         return filedialog.askopenfilename(filetypes=[('Booba Label Project', '.blp')])
 
+    def ask_for_save_project_path(self) -> str:
+        return filedialog.asksaveasfilename(filetypes=[('Booba Label Project', '.blp')])
+
 
 
 class GuiForTest(Gui):
@@ -128,6 +132,9 @@ class Statechart(ActiveObject):
         self._app_data = data
         self.gui.set_app_data(data)
 
+    def get_app_data(self) -> typing.List:
+        return self._app_data
+
 
 @spy_on
 def empty(chart: Statechart, e: Event) -> return_status:
@@ -140,6 +147,9 @@ def empty(chart: Statechart, e: Event) -> return_status:
         status = chart.trans(not_empty)
     elif e.signal == signals.LOAD_PROJECT:
         chart.set_app_data(helpers.read_project_file_from_path(e.payload))
+        status = chart.trans(not_empty)
+    elif e.signal == signals.SAVE_PROJECT:
+        helpers.save_project_file_to_path(e.payload, chart.get_app_data())
         status = chart.trans(not_empty)
     else:
         status = return_status.SUPER
