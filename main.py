@@ -1,6 +1,7 @@
 import json
 import typing
 import tkinter
+import uuid
 from tkinter import filedialog
 from tkinter import ttk
 from miros import ActiveObject
@@ -40,14 +41,25 @@ class Gui:
         self.command_palette = tkinter.Frame(self.root, background='red')
 
         self.new_project_btn = tkinter.Button(self.command_palette, text='New Project',
-                                              command=lambda: self.statechart.post_fifo(Event(signal=signals.NEW_PROJECT)))
+                                              command=lambda: self.statechart.post_fifo(
+                                                  Event(signal=signals.NEW_PROJECT)))
         self.load_project_btn = tkinter.Button(self.command_palette, text='Load Project',
-                                               command=lambda: self.statechart.post_fifo(Event(signal=signals.LOAD_PROJECT, payload=self.ask_for_load_project_path())))
+                                               command=lambda: self.statechart.post_fifo(
+                                                   Event(signal=signals.LOAD_PROJECT,
+                                                         payload=self.ask_for_load_project_path())))
         self.save_project_btn = tkinter.Button(self.command_palette, text='Save Project',
-                                               command=lambda: self.statechart.post_fifo(Event(signal=signals.SAVE_PROJECT, payload=self.ask_for_save_project_path())))
+                                               command=lambda: self.statechart.post_fifo(
+                                                   Event(signal=signals.SAVE_PROJECT,
+                                                         payload=self.ask_for_save_project_path())))
 
-        self.add_file_btn = tkinter.Button(self.command_palette, text='Add File', command=lambda: self.statechart.post_fifo(Event(signal=signals.ADD_FILE, payload=self.ask_for_add_file_paths())))
-        self.remove_file_btn = tkinter.Button(self.command_palette, text='Remove File')
+        self.add_file_btn = tkinter.Button(self.command_palette, text='Add File',
+                                           command=lambda: self.statechart.post_fifo(
+                                               Event(signal=signals.ADD_FILE,
+                                                     payload=self.ask_for_add_file_paths())))
+        self.remove_file_btn = tkinter.Button(self.command_palette, text='Remove File',
+                                              command=lambda: self.statechart.post_fifo(
+                                                  Event(signal=signals.REMOVE_FILE,
+                                                        payload=self.files_treeview.selection())))
 
         self.draw_rectangle_btn = tkinter.Button(self.command_palette, text='Draw Rectangle')
         self.draw_polygon_btn = tkinter.Button(self.command_palette, text='Draw Polygon')
@@ -183,6 +195,9 @@ class GuiForTest(Gui):
     def add_file(self, idx, filename):
         self._app_data[idx] = filename
 
+    def remove_file(self, idx):
+        del self._app_data[idx]
+
 
 class Statechart(ActiveObject):
     def __init__(self, name: str, gui: Gui):
@@ -198,10 +213,15 @@ class Statechart(ActiveObject):
     def get_app_data(self) -> typing.Dict:
         return self._app_data
 
-    def add_file(self, path_to_image):
-        idx = len(self._app_data) + 1
+    def add_file(self, path_to_image: str):
+        idx = str(uuid.uuid4())
         self._app_data[idx] = path_to_image
         self.gui.add_file(idx, path_to_image)
+
+    def remove_file(self, idx):
+        del self._app_data[idx]
+        self.gui.remove_file(idx)
+
 
 
 @spy_on
@@ -234,10 +254,14 @@ def not_empty(chart: Statechart, e: Event) -> return_status:
     if e.signal == signals.INIT_SIGNAL:
         chart.gui.enable_buttons_when_there_is_an_active_project()
         status = return_status.HANDLED
-    if e.signal == signals.ADD_FILE:
-        status = signals.HANDLED
+    elif e.signal == signals.ADD_FILE:
+        status = return_status.HANDLED
         for path_to_image in e.payload:
             chart.add_file(path_to_image)
+    elif e.signal == signals.REMOVE_FILE:
+        status = return_status.HANDLED
+        for image_idx in e.payload:
+            chart.remove_file(image_idx)
     else:
         status = return_status.SUPER
         chart.temp.fun = empty

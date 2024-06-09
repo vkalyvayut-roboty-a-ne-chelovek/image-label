@@ -151,7 +151,6 @@ class TestStates(unittest.TestCase):
         expected_trace = '''
         [2024-06-09 23:46:33.113116] [statechart] e->start_at() top->empty
         [2024-06-09 23:46:35.068902] [statechart] e->NEW_PROJECT() empty->not_empty
-        [2024-06-09 23:46:38.350389] [statechart] e->ADD_FILE() not_empty->not_empty
         '''
 
         actual_trace = statechart.trace()
@@ -175,6 +174,59 @@ class TestStates(unittest.TestCase):
         time.sleep(0.1)
 
         assert 3 == len(statechart.get_app_data())
+
+    def test_remove_file_signal_states(self):
+        gui = GuiForTest()
+        statechart = Statechart('statechart', gui=gui)
+        gui.run()
+
+        abs_path_to_image_files_to_load = [
+            pathlib.Path('.', 'assets', 'domik.jpg').absolute(),
+            pathlib.Path('.', 'assets', 'domik.bmp').absolute(),
+            pathlib.Path('.', 'assets', 'domik.png').absolute(),
+        ]
+
+        statechart.post_fifo(Event(signal=signals.NEW_PROJECT))
+        statechart.post_fifo(Event(signal=signals.ADD_FILE, payload=abs_path_to_image_files_to_load))
+
+        time.sleep(0.1)
+
+        idx = list(statechart.get_app_data().keys())[1]
+        statechart.post_fifo(Event(signal=signals.REMOVE_FILE, payload=[idx]))
+
+        time.sleep(0.1)
+
+        expected_trace = '''
+        [2024-06-10 00:28:39.055237] [statechart] e->start_at() top->empty
+        [2024-06-10 00:28:41.059027] [statechart] e->NEW_PROJECT() empty->not_empty
+        '''
+
+        actual_trace = statechart.trace()
+
+        self._assert_trace_check(actual_trace, expected_trace)
+
+    def test_remove_file_total_files_count(self):
+        gui = GuiForTest()
+        statechart = Statechart('statechart', gui=gui)
+        gui.run()
+
+        abs_path_to_image_files_to_load = [
+            pathlib.Path('.', 'assets', 'domik.jpg').absolute(),
+            pathlib.Path('.', 'assets', 'domik.bmp').absolute(),
+            pathlib.Path('.', 'assets', 'domik.png').absolute(),
+        ]
+
+        statechart.post_fifo(Event(signal=signals.NEW_PROJECT))
+        statechart.post_fifo(Event(signal=signals.ADD_FILE, payload=abs_path_to_image_files_to_load))
+
+        time.sleep(0.1)
+
+        idx = list(statechart.get_app_data().keys())[1]
+        statechart.post_fifo(Event(signal=signals.REMOVE_FILE, payload=[idx]))
+
+        time.sleep(0.1)
+
+        assert 2 == len(statechart.get_app_data())
 
 
 if __name__ == '__main__':
