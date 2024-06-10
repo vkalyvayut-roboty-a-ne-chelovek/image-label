@@ -16,8 +16,6 @@ import helpers
 class Gui:
     def __init__(self):
         self.statechart = None
-        self._app_data = dict()
-        self.selected_image_data = None
 
     def set_statechart(self, statechart: ActiveObject):
         self.statechart = statechart
@@ -47,16 +45,16 @@ class Gui:
         self.load_project_btn = tkinter.Button(self.command_palette, text='Load Project',
                                                command=lambda: self.statechart.post_fifo(
                                                    Event(signal=signals.LOAD_PROJECT,
-                                                         payload=self.ask_for_load_project_path())))
+                                                         payload=helpers.ask_for_load_project_path())))
         self.save_project_btn = tkinter.Button(self.command_palette, text='Save Project',
                                                command=lambda: self.statechart.post_fifo(
                                                    Event(signal=signals.SAVE_PROJECT,
-                                                         payload=self.ask_for_save_project_path())))
+                                                         payload=helpers.ask_for_save_project_path())))
 
         self.add_file_btn = tkinter.Button(self.command_palette, text='Add File',
                                            command=lambda: self.statechart.post_fifo(
                                                Event(signal=signals.ADD_FILE,
-                                                     payload=self.ask_for_add_file_paths())))
+                                                     payload=helpers.ask_for_add_file_paths())))
         self.remove_file_btn = tkinter.Button(self.command_palette, text='Remove File',
                                               command=lambda: self.statechart.post_fifo(
                                                   Event(signal=signals.REMOVE_FILE,
@@ -122,48 +120,61 @@ class Gui:
 
         self.root.mainloop()
 
-    def set_app_data(self, data: typing.List):
-        self._app_data = dict()
+    def refresh_files(self, files: typing.Dict):
+        for idx in self.files_treeview.get_children(''):
+            self.files_treeview.delete(idx)
+        
+        for idx, f in files.items():
+            self.files_treeview.insert('', 'end', iid=idx, text=f['filename'], values=(f['filename'],))
 
-        for idx, filedata in data.items():
-            self.add_file(idx, filedata)
-
-    def add_file(self, idx, data):
-        self._app_data[idx] = data
-        self.files_treeview.insert('', 'end', iid=idx, text=data['filename'], values=(data['filename'],))
-
-    def remove_file(self, idx):
-        self.files_treeview.delete(idx)
-        del self._app_data[idx]
-
-    def ask_for_load_project_path(self) -> str:
-        return filedialog.askopenfilename(filetypes=[('Booba Label Project', '.blp')])
-
-    def ask_for_save_project_path(self) -> str:
-        return filedialog.asksaveasfilename(filetypes=[('Booba Label Project', '.blp')])
-
-    def ask_for_add_file_paths(self) -> typing.List[str]:
-        return filedialog.askopenfilenames(filetypes=['PNG .png', 'JPEG .jpg', 'BMP .bmp'], multiple=True)
-
-    def select_image(self, idx):
-        self.drawing_canvas.update()
-        self.selected_image_data = {
-            'idx': idx,
-            'data': self._app_data[idx],
-            'img': None
-        }
-
-        self.update_canvas_image()
-
-    def update_canvas_image(self):
-        try:
-            self.selected_image_data['img'] = tkinter.PhotoImage(file=self.selected_image_data['data']['abs_path_to_file'])
-            self.drawing_canvas.create_image(self.drawing_canvas.winfo_width() // 2,
-                                             self.drawing_canvas.winfo_height() // 2,
-                                             image=self.selected_image_data['img'], anchor='c')
-        except (tkinter.TclError, ) as e:
-            messagebox.showerror(title='Error while loading image',
-                                 message=f"Error while loading image {self.selected_image_data['data']['abs_path_to_file']},\n{e}")
+    # def select_image(self, image_data: typing.Dict):
+    #     self.drawing_canvas.update()
+    #     self.selected_image_data = image_data
+    #
+    #     self.update_canvas_image()
+    #
+    # def update_canvas_image(self):
+    #     try:
+    #         self.selected_image_data['img'] = ImageTk.PhotoImage(file=self.selected_image_data['data']['abs_path_to_file'])
+    #         self.drawing_canvas.create_image(self.drawing_canvas.winfo_width() // 2,
+    #                                          self.drawing_canvas.winfo_height() // 2,
+    #                                          image=self.selected_image_data['img'], anchor='c')
+    #     except (tkinter.TclError, ) as e:
+    #         messagebox.showerror(title='Error while loading image',
+    #                              message=f"Error while loading image {self.selected_image_data['data']['abs_path_to_file']}")
+    #
+    # def setup_rect_drawing_temp_data(self):
+    #     self.rect_drawing_temp_data = {
+    #         'points': [],
+    #         'figures': [],
+    #     }
+    #
+    # def clear_rect_drawing_temp_data(self):
+    #     for fig in self.rect_drawing_temp_data['figures']:
+    #         self.drawing_canvas.delete(fig)
+    #
+    #     del self.rect_drawing_temp_data
+    #
+    # def setup_rectangle_drawing_canvas_click_listener(self):
+    #     self.drawing_canvas.bind('<Button-1>',
+    #                              lambda _e: self.statechart.post_fifo(Event(signal=signals.CLICK, payload=(_e.x, _e.y))))
+    #
+    # def setup_rectangle_drawing_canvas_movement_listener(self):
+    #     self.drawing_canvas.bind('<Motion>',
+    #                              lambda _e: self.draw_temp_rect((_e.x, _e.y)))
+    #
+    # def clear_rectangle_drawing_listeners(self):
+    #     self.drawing_canvas.unbind('<Button-1>')
+    #     self.drawing_canvas.unbind('<Motion>')
+    #
+    # def draw_temp_rect(self, p2) -> None:
+    #     for fig in self.rect_drawing_temp_data['figures']:
+    #         self.drawing_canvas.delete(fig)
+    #
+    #     (x1, y1) = self.rect_drawing_temp_data['points'][0]
+    #     (x2, y2) = p2
+    #     fig = self.drawing_canvas.create_rectangle(x1, y1, x2, y2, fill='red')
+    #     self.rect_drawing_temp_data['figures'].append(fig)
 
 
 class GuiForTest(Gui):
@@ -191,10 +202,12 @@ class Statechart(ActiveObject):
         self.gui.set_statechart(self)
         self._app_data = None
         self.selected_image_data = None
+        self.temp_figure_drawing_data = None
 
     def set_app_data(self, data: typing.Dict):
         self._app_data = data
-        self.gui.set_app_data(data)
+
+        self.gui.refresh_files(self._app_data)
 
     def get_app_data(self) -> typing.Dict:
         return self._app_data
@@ -206,19 +219,20 @@ class Statechart(ActiveObject):
             "filename": path_to_image,
             "figures": []
         }
-        self.gui.add_file(idx, self._app_data[idx])
+
+        self.gui.refresh_files(self._app_data)
 
     def remove_file(self, idx):
         del self._app_data[idx]
-        self.gui.remove_file(idx)
 
-    def select_image(self, idx):
-        self.selected_image_data = {
-            'idx': idx,
-            'data': self._app_data[idx],
-        }
-        self.gui.select_image(idx)
+        self.gui.refresh_files(self._app_data)
 
+    # def select_image(self, idx):
+    #     self.selected_image_data = {
+    #         'idx': idx,
+    #         'data': self._app_data[idx],
+    #     }
+    #     self.gui.select_image(idx)
 
 
 @spy_on
@@ -253,9 +267,9 @@ def not_empty(chart: Statechart, e: Event) -> return_status:
         status = return_status.HANDLED
         for image_idx in e.payload:
             chart.remove_file(image_idx)
-    elif e.signal == signals.SELECT_IMAGE:
-        chart.select_image(e.payload)
-        status = chart.trans(image_selected)
+    # elif e.signal == signals.SELECT_IMAGE:
+    #     chart.select_image(e.payload)
+    #     status = chart.trans(image_selected)
     else:
         status = return_status.SUPER
         chart.temp.fun = empty
@@ -265,21 +279,55 @@ def not_empty(chart: Statechart, e: Event) -> return_status:
 
 @spy_on
 def image_selected(chart: Statechart, e: Event) -> return_status:
-    status = return_status.UNHANDLED
-
-    # if e.signal == signals.DRAW_POLY:
-    #     status = chart.trans()
-    # else:
-    #     status = return_status.SUPER
-    #     chart.temp.fun = not_empty
-
     status = return_status.SUPER
     chart.temp.fun = not_empty
-
     return status
 
+# @spy_on
+# def image_selected(chart: Statechart, e: Event) -> return_status:
+#     status = return_status.UNHANDLED
+#
+#     # if e.signal == signals.DRAW_RECT:
+#     #     chart.gui.setup_rect_drawing_temp_data()
+#     #     chart.gui.setup_rectangle_drawing_canvas_click_listener()
+#     #     status = chart.trans(drawing_rectangle_first_point)
+#     # else:
+#     #     status = return_status.SUPER
+#     #     chart.temp.fun = not_empty
+#
+#     status = return_status.SUPER
+#     chart.temp.fun = not_empty
+#
+#     return status
 
 
+# @spy_on
+# def drawing_rectangle_first_point(chart: Statechart, e: Event) -> return_status:
+#     status = return_status.UNHANDLED
+#
+#     if e.signal == signals.CLICK:
+#         chart.setup_rectangle_drawing_canvas_movement_listener()
+#         status = chart.trans(drawing_rectangle_second_point)
+#     else:
+#         status = return_status.SUPER
+#         chart.temp.fun = image_selected
+#
+#     return status
+#
+#
+# @spy_on
+# def drawing_rectangle_second_point(chart: Statechart, e: Event) -> return_status:
+#     status = return_status.UNHANDLED
+#
+#     if e.signal == signals.CLICK:
+#         chart.gui.clear_rectangle_drawing_listeners()
+#         chart.gui.clear_rect_drawing_temp_data()
+#         status = chart.trans(image_selected)
+#     else:
+#         status = return_status.SUPER
+#         chart.temp.fun = image_selected
+#
+#     return status
 
 
 if __name__ == '__main__':
