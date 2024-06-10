@@ -16,6 +16,7 @@ import helpers
 class Gui:
     def __init__(self):
         self.statechart = None
+        self.selected_img = None
 
     def set_statechart(self, statechart: ActiveObject):
         self.statechart = statechart
@@ -127,21 +128,14 @@ class Gui:
         for idx, f in files.items():
             self.files_treeview.insert('', 'end', iid=idx, text=f['filename'], values=(f['filename'],))
 
-    # def select_image(self, image_data: typing.Dict):
-    #     self.drawing_canvas.update()
-    #     self.selected_image_data = image_data
-    #
-    #     self.update_canvas_image()
-    #
-    # def update_canvas_image(self):
-    #     try:
-    #         self.selected_image_data['img'] = ImageTk.PhotoImage(file=self.selected_image_data['data']['abs_path_to_file'])
-    #         self.drawing_canvas.create_image(self.drawing_canvas.winfo_width() // 2,
-    #                                          self.drawing_canvas.winfo_height() // 2,
-    #                                          image=self.selected_image_data['img'], anchor='c')
-    #     except (tkinter.TclError, ) as e:
-    #         messagebox.showerror(title='Error while loading image',
-    #                              message=f"Error while loading image {self.selected_image_data['data']['abs_path_to_file']}")
+    def select_image(self, image_data: typing.Dict):
+        try:
+            self.selected_img = ImageTk.PhotoImage(file=image_data['abs_path_to_file'])
+            x = self.drawing_canvas.winfo_width() // 2
+            y = self.drawing_canvas.winfo_height() // 2
+            self.drawing_canvas.create_image(x, y, image=self.selected_img, anchor='c')
+        except (tkinter.TclError,) as e:
+            messagebox.showerror(title='Error while loading image', message=f"Error while loading image {image_data['abs_path_to_file']}")
     #
     # def setup_rect_drawing_temp_data(self):
     #     self.rect_drawing_temp_data = {
@@ -181,6 +175,9 @@ class GuiForTest(Gui):
     def run(self):
         self.statechart.start_at(empty)
 
+    def select_image(self, image_data: typing.Dict):
+        pass
+
     def refresh_files(self, files: typing.Dict):
         pass
 
@@ -217,12 +214,8 @@ class Statechart(ActiveObject):
 
         self.gui.refresh_files(self._app_data)
 
-    # def select_image(self, idx):
-    #     self.selected_image_data = {
-    #         'idx': idx,
-    #         'data': self._app_data[idx],
-    #     }
-    #     self.gui.select_image(idx)
+    def select_image(self, idx):
+        self.gui.select_image(self._app_data[idx])
 
 
 @spy_on
@@ -257,9 +250,9 @@ def not_empty(chart: Statechart, e: Event) -> return_status:
         status = return_status.HANDLED
         for image_idx in e.payload:
             chart.remove_file(image_idx)
-    # elif e.signal == signals.SELECT_IMAGE:
-    #     chart.select_image(e.payload)
-    #     status = chart.trans(image_selected)
+    elif e.signal == signals.SELECT_IMAGE:
+        chart.select_image(e.payload)
+        status = chart.trans(image_selected)
     else:
         status = return_status.SUPER
         chart.temp.fun = empty

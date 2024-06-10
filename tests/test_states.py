@@ -233,7 +233,7 @@ class TestStates(unittest.TestCase):
         statechart = Statechart('statechart', gui=gui)
         gui.run()
 
-        abs_path_to_load_project = pathlib.Path('.', 'assets', 'non-empty.blp').absolute()
+        abs_path_to_load_project = pathlib.Path('.', 'assets', 'domik.blp').absolute()
 
         statechart.post_fifo(Event(signal=signals.LOAD_PROJECT, payload=abs_path_to_load_project))
 
