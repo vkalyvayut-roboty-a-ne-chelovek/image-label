@@ -17,6 +17,7 @@ class Gui:
     def __init__(self):
         self.statechart = None
         self.selected_img = None
+        self.rect_drawing_temp_data = None
 
     def set_statechart(self, statechart: ActiveObject):
         self.statechart = statechart
@@ -136,39 +137,24 @@ class Gui:
             self.drawing_canvas.create_image(x, y, image=self.selected_img, anchor='c')
         except (tkinter.TclError,) as e:
             messagebox.showerror(title='Error while loading image', message=f"Error while loading image {image_data['abs_path_to_file']}")
-    #
-    # def setup_rect_drawing_temp_data(self):
-    #     self.rect_drawing_temp_data = {
-    #         'points': [],
-    #         'figures': [],
-    #     }
-    #
-    # def clear_rect_drawing_temp_data(self):
-    #     for fig in self.rect_drawing_temp_data['figures']:
-    #         self.drawing_canvas.delete(fig)
-    #
-    #     del self.rect_drawing_temp_data
-    #
-    # def setup_rectangle_drawing_canvas_click_listener(self):
-    #     self.drawing_canvas.bind('<Button-1>',
-    #                              lambda _e: self.statechart.post_fifo(Event(signal=signals.CLICK, payload=(_e.x, _e.y))))
-    #
-    # def setup_rectangle_drawing_canvas_movement_listener(self):
-    #     self.drawing_canvas.bind('<Motion>',
-    #                              lambda _e: self.draw_temp_rect((_e.x, _e.y)))
-    #
-    # def clear_rectangle_drawing_listeners(self):
-    #     self.drawing_canvas.unbind('<Button-1>')
-    #     self.drawing_canvas.unbind('<Motion>')
-    #
-    # def draw_temp_rect(self, p2) -> None:
-    #     for fig in self.rect_drawing_temp_data['figures']:
-    #         self.drawing_canvas.delete(fig)
-    #
-    #     (x1, y1) = self.rect_drawing_temp_data['points'][0]
-    #     (x2, y2) = p2
-    #     fig = self.drawing_canvas.create_rectangle(x1, y1, x2, y2, fill='red')
-    #     self.rect_drawing_temp_data['figures'].append(fig)
+
+    def setup_rectangle_drawing_canvas_click_listener(self):
+        self.drawing_canvas.bind('<Button-1>',
+                                 lambda _e: self.statechart.post_fifo(Event(signal=signals.CLICK, payload=(_e.x, _e.y))))
+
+    def setup_rectangle_drawing_canvas_movement_listener(self):
+        self.drawing_canvas.bind('<Motion>',
+                                 lambda _e: self.statechart.post_fifo(Event(signal=signals.UPDATE_POSITION, payload=(_e.x, _e.y))))
+
+    def draw_temp_rect_drawing_figure(self, p1, p2, prev_fig = None):
+        if prev_fig:
+            self.drawing_canvas.delete(prev_fig)
+        fig = self.drawing_canvas.create_rectangle(p1[0], p1[1], p2[0], p2[1], fill='red')
+        return fig
+
+    def clear_rectangle_drawing_listeners(self):
+        self.drawing_canvas.unbind('<Button-1>')
+        self.drawing_canvas.unbind('<Motion>')
 
 
 class GuiForTest(Gui):
@@ -189,7 +175,7 @@ class Statechart(ActiveObject):
         self.gui.set_statechart(self)
         self._app_data = None
         self.selected_image_data = None
-        self.temp_figure_drawing_data = None
+        self.rect_drawing_temp_data = None
 
     def set_app_data(self, data: typing.Dict):
         self._app_data = data
@@ -216,6 +202,34 @@ class Statechart(ActiveObject):
 
     def select_image(self, idx):
         self.gui.select_image(self._app_data[idx])
+
+    def setup_rect_drawing_temp_data(self):
+        self.rect_drawing_temp_data = {
+            'point1': None,
+            'point2': None,
+            'figure': None
+        }
+
+    def set_rect_drawing_temp_data_point1(self, point: typing.Tuple):
+        self.rect_drawing_temp_data['point1'] = point
+
+    def set_rect_drawing_temp_data_point2(self, point: typing.Tuple, force: bool = False):
+        if not force:
+            _prev_x = self.rect_drawing_temp_data['point2'][0]
+            _prev_y = self.rect_drawing_temp_data['point2'][1]
+            _curr_x = point[0]
+            _curr_y = point[1]
+            _new_x = _curr_x if abs(_curr_x - _prev_x) >= 10 else _prev_x
+            _new_y = _curr_y if abs(_curr_y - _prev_y) >= 10 else _prev_y
+            self.rect_drawing_temp_data['point2'] = (_new_x, _new_y)
+        else:
+            self.rect_drawing_temp_data['point2'] = point
+
+    def rect_drawing_temp_data_redraw(self):
+        self.rect_drawing_temp_data['figure'] = self.gui.draw_temp_rect_drawing_figure(
+            self.rect_drawing_temp_data['point1'],
+            self.rect_drawing_temp_data['point2'],
+            self.rect_drawing_temp_data['figure'])
 
 
 @spy_on
@@ -262,55 +276,52 @@ def not_empty(chart: Statechart, e: Event) -> return_status:
 
 @spy_on
 def image_selected(chart: Statechart, e: Event) -> return_status:
-    status = return_status.SUPER
-    chart.temp.fun = not_empty
+    status = return_status.UNHANDLED
+
+    if e.signal == signals.DRAW_RECT:
+        chart.setup_rect_drawing_temp_data()
+        chart.gui.setup_rectangle_drawing_canvas_click_listener()
+        status = chart.trans(drawing_rectangle_first_point)
+    else:
+        status = return_status.SUPER
+        chart.temp.fun = not_empty
+
     return status
 
-# @spy_on
-# def image_selected(chart: Statechart, e: Event) -> return_status:
-#     status = return_status.UNHANDLED
-#
-#     # if e.signal == signals.DRAW_RECT:
-#     #     chart.gui.setup_rect_drawing_temp_data()
-#     #     chart.gui.setup_rectangle_drawing_canvas_click_listener()
-#     #     status = chart.trans(drawing_rectangle_first_point)
-#     # else:
-#     #     status = return_status.SUPER
-#     #     chart.temp.fun = not_empty
-#
-#     status = return_status.SUPER
-#     chart.temp.fun = not_empty
-#
-#     return status
+
+@spy_on
+def drawing_rectangle_first_point(chart: Statechart, e: Event) -> return_status:
+    status = return_status.UNHANDLED
+
+    if e.signal == signals.CLICK:
+        chart.set_rect_drawing_temp_data_point1(e.payload)
+        chart.set_rect_drawing_temp_data_point2(e.payload, force=True)
+        chart.gui.setup_rectangle_drawing_canvas_movement_listener()
+        status = chart.trans(drawing_rectangle_second_point)
+    else:
+        status = return_status.SUPER
+        chart.temp.fun = image_selected
+
+    return status
 
 
-# @spy_on
-# def drawing_rectangle_first_point(chart: Statechart, e: Event) -> return_status:
-#     status = return_status.UNHANDLED
-#
-#     if e.signal == signals.CLICK:
-#         chart.setup_rectangle_drawing_canvas_movement_listener()
-#         status = chart.trans(drawing_rectangle_second_point)
-#     else:
-#         status = return_status.SUPER
-#         chart.temp.fun = image_selected
-#
-#     return status
-#
-#
-# @spy_on
-# def drawing_rectangle_second_point(chart: Statechart, e: Event) -> return_status:
-#     status = return_status.UNHANDLED
-#
-#     if e.signal == signals.CLICK:
-#         chart.gui.clear_rectangle_drawing_listeners()
-#         chart.gui.clear_rect_drawing_temp_data()
-#         status = chart.trans(image_selected)
-#     else:
-#         status = return_status.SUPER
-#         chart.temp.fun = image_selected
-#
-#     return status
+@spy_on
+def drawing_rectangle_second_point(chart: Statechart, e: Event) -> return_status:
+    status = return_status.UNHANDLED
+
+    if e.signal == signals.UPDATE_POSITION:
+        chart.set_rect_drawing_temp_data_point2(e.payload)
+        chart.rect_drawing_temp_data_redraw()
+        status = return_status.HANDLED
+    if e.signal == signals.CLICK:
+        chart.set_rect_drawing_temp_data_point2(e.payload, force=True)
+        chart.gui.clear_rectangle_drawing_listeners()
+        status = chart.trans(image_selected)
+    else:
+        status = return_status.SUPER
+        chart.temp.fun = image_selected
+
+    return status
 
 
 if __name__ == '__main__':
