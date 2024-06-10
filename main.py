@@ -181,18 +181,8 @@ class GuiForTest(Gui):
     def run(self):
         self.statechart.start_at(empty)
 
-    def add_file(self, idx, filename):
-        self._app_data[idx] = filename
-
-    def remove_file(self, idx):
-        del self._app_data[idx]
-
-    def select_image(self, idx):
-        self.selected_image_data = {
-            'idx': idx,
-            'data': self._app_data[idx],
-            'img': None
-        }
+    def refresh_files(self, files: typing.Dict):
+        pass
 
 
 class Statechart(ActiveObject):
