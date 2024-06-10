@@ -29,8 +29,6 @@ class Gui:
         self.init_files_frame()
         self.init_figures_frame()
 
-        self.disable_buttons_when_there_is_no_active_project()
-
     def init_window(self):
         self.root = tkinter.Tk()
         self.root.geometry(f'{self.root.winfo_screenwidth()}x{self.root.winfo_screenheight()}')
@@ -64,8 +62,14 @@ class Gui:
                                                   Event(signal=signals.REMOVE_FILE,
                                                         payload=self.files_treeview.selection())))
 
-        self.draw_rectangle_btn = tkinter.Button(self.command_palette, text='Draw Rectangle')
-        self.draw_polygon_btn = tkinter.Button(self.command_palette, text='Draw Polygon')
+        self.draw_rectangle_btn = tkinter.Button(self.command_palette, text='Draw Rectangle',
+                                                 command=lambda: self.statechart.post_fifo(
+                                                     Event(signal=signals.DRAW_RECT)
+                                                 ))
+        self.draw_polygon_btn = tkinter.Button(self.command_palette, text='Draw Polygon',
+                                               command=lambda: self.statechart.post_fifo(
+                                                   Event(signal=signals.DRAW_POLY)
+                                               ))
 
         self.command_palette.grid(column=0, row=0, sticky='nsw', rowspan=2)
         self.new_project_btn.grid(column=0, row=0)
@@ -118,50 +122,6 @@ class Gui:
 
         self.root.mainloop()
 
-    def enable_save_button(self):
-        self.save_project_btn['state'] = 'normal'
-
-    def disable_save_button(self):
-        self.save_project_btn['state'] = 'disabled'
-
-    def enable_add_file_button(self):
-        self.add_file_btn['state'] = 'normal'
-
-    def disable_add_file_button(self):
-        self.add_file_btn['state'] = 'disabled'
-
-    def enable_remove_file_button(self):
-        self.remove_file_btn['state'] = 'normal'
-
-    def disable_remove_file_button(self):
-        self.remove_file_btn['state'] = 'disabled'
-
-    def enable_draw_rectangle_button(self):
-        self.draw_rectangle_btn['state'] = 'normal'
-
-    def disable_draw_rectangle_button(self):
-        self.draw_rectangle_btn['state'] = 'disabled'
-
-    def enable_draw_polygon_button(self):
-        self.draw_polygon_btn['state'] = 'normal'
-
-    def disable_draw_polygon_button(self):
-        self.draw_polygon_btn['state'] = 'disabled'
-
-    def disable_buttons_when_there_is_no_active_project(self):
-        self.disable_save_button()
-        self.disable_add_file_button()
-        self.disable_remove_file_button()
-        self.disable_draw_rectangle_button()
-        self.disable_draw_polygon_button()
-
-    def enable_buttons_when_there_is_an_active_project(self):
-        self.enable_save_button()
-        self.enable_add_file_button()
-        self.enable_remove_file_button()
-        self.enable_draw_rectangle_button()
-        self.enable_draw_polygon_button()
-
     def set_app_data(self, data: typing.List):
         self._app_data = dict()
 
@@ -183,9 +143,7 @@ class Gui:
         return filedialog.asksaveasfilename(filetypes=[('Booba Label Project', '.blp')])
 
     def ask_for_add_file_paths(self) -> typing.List[str]:
-        return filedialog.askopenfilenames(filetypes=[('JPEG', '.jpg'),
-                                                      ('PNG', '.png'),
-                                                      ('BMP', '.bmp') ], multiple=True)
+        return filedialog.askopenfilenames(filetypes=['PNG .png', 'JPEG .jpg', 'BMP .bmp'], multiple=True)
 
     def select_image(self, idx):
         self.drawing_canvas.update()
@@ -212,17 +170,18 @@ class GuiForTest(Gui):
     def run(self):
         self.statechart.start_at(empty)
 
-    def disable_buttons_when_there_is_no_active_project(self):
-        pass
-
-    def enable_buttons_when_there_is_an_active_project(self):
-        pass
-
     def add_file(self, idx, filename):
         self._app_data[idx] = filename
 
     def remove_file(self, idx):
         del self._app_data[idx]
+
+    def select_image(self, idx):
+        self.selected_image_data = {
+            'idx': idx,
+            'data': self._app_data[idx],
+            'img': None
+        }
 
 
 class Statechart(ActiveObject):
@@ -266,10 +225,7 @@ class Statechart(ActiveObject):
 def empty(chart: Statechart, e: Event) -> return_status:
     status = return_status.UNHANDLED
 
-    if e.signal == signals.INIT_SIGNAL:
-        chart.gui.disable_buttons_when_there_is_no_active_project()
-        status = return_status.HANDLED
-    elif e.signal == signals.NEW_PROJECT:
+    if e.signal == signals.NEW_PROJECT:
         chart.set_app_data(dict())
         status = chart.trans(not_empty)
     elif e.signal == signals.LOAD_PROJECT:
@@ -289,10 +245,7 @@ def empty(chart: Statechart, e: Event) -> return_status:
 def not_empty(chart: Statechart, e: Event) -> return_status:
     status = return_status.UNHANDLED
 
-    if e.signal == signals.INIT_SIGNAL:
-        chart.gui.enable_buttons_when_there_is_an_active_project()
-        status = return_status.HANDLED
-    elif e.signal == signals.ADD_FILE:
+    if e.signal == signals.ADD_FILE:
         status = return_status.HANDLED
         for path_to_image in e.payload:
             chart.add_file(path_to_image)
@@ -314,15 +267,19 @@ def not_empty(chart: Statechart, e: Event) -> return_status:
 def image_selected(chart: Statechart, e: Event) -> return_status:
     status = return_status.UNHANDLED
 
-    if e.signal == signals.ENTRY_SIGNAL:
-        status = return_status.HANDLED
-    elif e.signal == signals.INIT_SIGNAL:
-        status = return_status.HANDLED
-    else:
-        status = return_status.SUPER
-        chart.temp.fun = not_empty
+    # if e.signal == signals.DRAW_POLY:
+    #     status = chart.trans()
+    # else:
+    #     status = return_status.SUPER
+    #     chart.temp.fun = not_empty
+
+    status = return_status.SUPER
+    chart.temp.fun = not_empty
 
     return status
+
+
+
 
 
 if __name__ == '__main__':
@@ -330,9 +287,9 @@ if __name__ == '__main__':
 
     statechart = Statechart('statechart', gui=gui)
 
-    # statechart.live_trace = True
-    # statechart.live_spy = True
+    statechart.live_trace = True
+    statechart.live_spy = True
 
     gui.run()
 
-    # print(statechart.trace())
+    print(statechart.trace())
