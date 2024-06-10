@@ -223,7 +223,11 @@ class Statechart(ActiveObject):
 
     def add_file(self, path_to_image: str):
         idx = str(uuid.uuid4())
-        self._app_data[idx] = path_to_image
+        self._app_data[idx] = {
+            'abs_path_to_file': path_to_image,
+            "filename": path_to_image,
+            "figures": []
+        }
         self.gui.add_file(idx, path_to_image)
 
     def remove_file(self, idx):
