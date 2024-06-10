@@ -13,8 +13,9 @@ import helpers
 
 class Gui:
     def __init__(self):
-        self._app_data = dict()
         self.statechart = None
+        self._app_data = dict()
+        self.selected_image_data = None
 
     def set_statechart(self, statechart: ActiveObject):
         self.statechart = statechart
@@ -89,7 +90,7 @@ class Gui:
 
         # item_idx = self.files_treeview.insert('', 'end', text='Filename', values=(321, 'XXX'), color="red")
         # print(item_idx)
-        # self.files_treeview.bind('<ButtonRelease-3>', lambda e: print(e, self.files_treeview.item(self.files_treeview.selection()[0])))
+        self.files_treeview.bind('<Double-Button-1>', lambda e: self.statechart.post_fifo(Event(signal=signals.SELECT_IMAGE, payload=self.files_treeview.selection()[0])))
 
         self.files_frame.grid(column=2, row=0, sticky='nesw')
         self.files_frame.columnconfigure(0, weight=1)
@@ -181,6 +182,12 @@ class Gui:
                                                       ('PNG', '.png'),
                                                       ('BMP', '.bmp') ], multiple=True)
 
+    def select_image(self, idx):
+        self.selected_image_data = {
+            'idx': idx,
+            'data': self._app_data[idx]
+        }
+
 
 class GuiForTest(Gui):
     def run(self):
@@ -205,6 +212,7 @@ class Statechart(ActiveObject):
         self.gui = gui
         self.gui.set_statechart(self)
         self._app_data = None
+        self.selected_image_data = None
 
     def set_app_data(self, data: typing.Dict):
         self._app_data = data
@@ -221,6 +229,13 @@ class Statechart(ActiveObject):
     def remove_file(self, idx):
         del self._app_data[idx]
         self.gui.remove_file(idx)
+
+    def select_image(self, idx):
+        self.selected_image_data = {
+            'idx': idx,
+            'data': self._app_data[idx],
+        }
+        self.gui.select_image(idx)
 
 
 
@@ -262,9 +277,27 @@ def not_empty(chart: Statechart, e: Event) -> return_status:
         status = return_status.HANDLED
         for image_idx in e.payload:
             chart.remove_file(image_idx)
+    elif e.signal == signals.SELECT_IMAGE:
+        chart.select_image(e.payload)
+        status = chart.trans(image_selected)
     else:
         status = return_status.SUPER
         chart.temp.fun = empty
+
+    return status
+
+
+@spy_on
+def image_selected(chart: Statechart, e: Event) -> return_status:
+    status = return_status.UNHANDLED
+
+    if e.signal == signals.ENTRY_SIGNAL:
+        status = return_status.HANDLED
+    elif e.signal == signals.INIT_SIGNAL:
+        status = return_status.HANDLED
+    else:
+        status = return_status.SUPER
+        chart.temp.fun = not_empty
 
     return status
 
@@ -278,3 +311,5 @@ if __name__ == '__main__':
     statechart.live_spy = True
 
     gui.run()
+
+    print(statechart.trace())

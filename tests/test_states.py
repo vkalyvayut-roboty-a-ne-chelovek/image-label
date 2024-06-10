@@ -228,6 +228,32 @@ class TestStates(unittest.TestCase):
 
         assert 2 == len(statechart.get_app_data())
 
+    def test_select_image_signal_state(self):
+        gui = GuiForTest()
+        statechart = Statechart('statechart', gui=gui)
+        gui.run()
+
+        abs_path_to_load_project = pathlib.Path('.', 'assets', 'non-empty.blp').absolute()
+
+        statechart.post_fifo(Event(signal=signals.LOAD_PROJECT, payload=abs_path_to_load_project))
+
+        time.sleep(0.1)
+
+        image_idx = list(statechart.get_app_data().keys())[0]
+        statechart.post_fifo(Event(signal=signals.SELECT_IMAGE, payload=image_idx))
+
+        time.sleep(0.1)
+
+        expected_trace = '''
+        [2024-06-10 09:55:33.619636] [statechart] e->start_at() top->empty
+        [2024-06-10 09:55:39.974101] [statechart] e->LOAD_PROJECT() empty->not_empty
+        [2024-06-10 09:55:41.850258] [statechart] e->SELECT_IMAGE() not_empty->image_selected
+        '''
+
+        actual_trace = statechart.trace()
+
+        self._assert_trace_check(actual_trace, expected_trace)
+
 
 if __name__ == '__main__':
     unittest.main()
