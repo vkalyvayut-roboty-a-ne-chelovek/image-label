@@ -161,11 +161,11 @@ class Gui:
         self._app_data = dict()
 
         for idx, filedata in data.items():
-            self.add_file(idx, filedata['filename'])
+            self.add_file(idx, filedata)
 
-    def add_file(self, idx, filename):
-        self._app_data[idx] = filename
-        self.files_treeview.insert('', 'end', iid=idx, text=filename, values=(filename,))
+    def add_file(self, idx, data):
+        self._app_data[idx] = data
+        self.files_treeview.insert('', 'end', iid=idx, text=data['filename'], values=(data['filename'],))
 
     def remove_file(self, idx):
         self.files_treeview.delete(idx)
@@ -228,7 +228,7 @@ class Statechart(ActiveObject):
             "filename": path_to_image,
             "figures": []
         }
-        self.gui.add_file(idx, path_to_image)
+        self.gui.add_file(idx, self._app_data[idx])
 
     def remove_file(self, idx):
         del self._app_data[idx]
