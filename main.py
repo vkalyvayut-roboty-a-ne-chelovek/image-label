@@ -2,7 +2,9 @@ import json
 import typing
 import tkinter
 import uuid
+from PIL import ImageTk
 from tkinter import filedialog
+from tkinter import messagebox
 from tkinter import ttk
 from miros import ActiveObject
 from miros import Event
@@ -78,9 +80,14 @@ class Gui:
 
     def init_drawing_frame(self):
         self.drawing_frame = tkinter.Frame(self.root, background='green')
-        self.canvas = tkinter.Canvas(self.drawing_frame)
+        self.drawing_canvas = tkinter.Canvas(self.drawing_frame, background='white')
 
         self.drawing_frame.grid(column=1, row=0, sticky='nesw', rowspan=2)
+        self.drawing_frame.columnconfigure(0, weight=1)
+        self.drawing_frame.rowconfigure(0, weight=1)
+        self.drawing_canvas.grid(column=0, row=0, sticky='nesw')
+
+        self.drawing_canvas_image = None
 
     def init_files_frame(self):
         self.files_frame = tkinter.Frame(self.root, background='blue')
@@ -88,8 +95,6 @@ class Gui:
         self.files_treeview['show'] = 'headings'
         self.files_treeview.heading('filename', text='Filename')
 
-        # item_idx = self.files_treeview.insert('', 'end', text='Filename', values=(321, 'XXX'), color="red")
-        # print(item_idx)
         self.files_treeview.bind('<Double-Button-1>', lambda e: self.statechart.post_fifo(Event(signal=signals.SELECT_IMAGE, payload=self.files_treeview.selection()[0])))
 
         self.files_frame.grid(column=2, row=0, sticky='nesw')
@@ -183,10 +188,24 @@ class Gui:
                                                       ('BMP', '.bmp') ], multiple=True)
 
     def select_image(self, idx):
+        self.drawing_canvas.update()
         self.selected_image_data = {
             'idx': idx,
-            'data': self._app_data[idx]
+            'data': self._app_data[idx],
+            'img': None
         }
+
+        self.update_canvas_image()
+
+    def update_canvas_image(self):
+        try:
+            self.selected_image_data['img'] = tkinter.PhotoImage(file=self.selected_image_data['data']['abs_path_to_file'])
+            self.drawing_canvas.create_image(self.drawing_canvas.winfo_width() // 2,
+                                             self.drawing_canvas.winfo_height() // 2,
+                                             image=self.selected_image_data['img'], anchor='c')
+        except (tkinter.TclError, ) as e:
+            messagebox.showerror(title='Error while loading image',
+                                 message=f"Error while loading image {self.selected_image_data['data']['abs_path_to_file']},\n{e}")
 
 
 class GuiForTest(Gui):
@@ -311,9 +330,9 @@ if __name__ == '__main__':
 
     statechart = Statechart('statechart', gui=gui)
 
-    statechart.live_trace = True
-    statechart.live_spy = True
+    # statechart.live_trace = True
+    # statechart.live_spy = True
 
     gui.run()
 
-    print(statechart.trace())
+    # print(statechart.trace())
