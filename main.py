@@ -123,7 +123,7 @@ class Gui:
     def refresh_files(self, files: typing.Dict):
         for idx in self.files_treeview.get_children(''):
             self.files_treeview.delete(idx)
-        
+
         for idx, f in files.items():
             self.files_treeview.insert('', 'end', iid=idx, text=f['filename'], values=(f['filename'],))
 

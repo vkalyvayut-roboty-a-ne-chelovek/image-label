@@ -51,19 +51,23 @@ class TestGUIStructure(unittest.TestCase):
 
         assert files_frame_has_treeview, 'Files frame has no Treeview'
 
-    def test_files_treeview_contains_items_after_insertion(self):
-        self.gui.add_file('1', {'abs_path_to_file': '1', "filename": '1', "figures": []})
-        self.gui.add_file('2', {'abs_path_to_file': '2', "filename": '2', "figures": []})
-        self.gui.add_file('3', {'abs_path_to_file': '3', "filename": '3', "figures": []})
+    def test_files_treeview_contains_items_after_refresh(self):
+        files = {
+            '1': {'abs_path_to_file': '1', "filename": '1', "figures": []},
+            '2': {'abs_path_to_file': '2', "filename": '2', "figures": []},
+            '3': {'abs_path_to_file': '3', "filename": '3', "figures": []}
+        }
+
+        self.gui.refresh_files(files)
 
         assert 3 == len(self.gui.files_treeview.get_children())
 
-    def test_files_treeview_remove_items(self):
-        self.gui.add_file('1', {'abs_path_to_file': '1', "filename": '1', "figures": []})
-        self.gui.add_file('2', {'abs_path_to_file': '2', "filename": '2', "figures": []})
-        self.gui.add_file('3', {'abs_path_to_file': '3', "filename": '3', "figures": []})
+        files = {
+            '1': {'abs_path_to_file': '1', "filename": '1', "figures": []},
+            '3': {'abs_path_to_file': '3', "filename": '3', "figures": []}
+        }
 
-        self.gui.remove_file('2')
+        self.gui.refresh_files(files)
 
         assert 2 == len(self.gui.files_treeview.get_children())
 
