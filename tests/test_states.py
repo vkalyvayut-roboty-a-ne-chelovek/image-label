@@ -254,6 +254,41 @@ class TestStates(unittest.TestCase):
 
         self._assert_trace_check(actual_trace, expected_trace)
 
+    def test_drawing_rect_signal_states(self):
+        gui = GuiForTest()
+        statechart = Statechart('statechart', gui=gui)
+        gui.run()
+
+        abs_path_to_load_project = pathlib.Path('.', 'assets', 'domik.blp').absolute()
+
+        statechart.post_fifo(Event(signal=signals.LOAD_PROJECT, payload=abs_path_to_load_project))
+
+        time.sleep(0.1)
+
+        image_idx = list(statechart.get_app_data().keys())[0]
+        statechart.post_fifo(Event(signal=signals.SELECT_IMAGE, payload=image_idx))
+
+        time.sleep(0.1)
+        statechart.post_fifo(Event(signal=signals.DRAW_RECT))
+        time.sleep(0.1)
+        statechart.post_fifo(Event(signal=signals.CLICK, payload=(0, 0)))
+        statechart.post_fifo(Event(signal=signals.CLICK, payload=(50, 50)))
+        time.sleep(0.1)
+
+
+        expected_trace = '''
+        [2024-06-11 09:44:58.460406] [statechart] e->start_at() top->empty
+        [2024-06-11 09:45:03.740702] [statechart] e->LOAD_PROJECT() empty->not_empty
+        [2024-06-11 09:45:06.747053] [statechart] e->SELECT_IMAGE() not_empty->image_selected
+        [2024-06-11 09:45:08.730957] [statechart] e->DRAW_RECT() image_selected->drawing_rectangle_first_point
+        [2024-06-11 09:45:09.559043] [statechart] e->CLICK() drawing_rectangle_first_point->drawing_rectangle_second_point
+        [2024-06-11 09:45:11.694492] [statechart] e->CLICK() drawing_rectangle_second_point->image_selected
+        '''
+
+        actual_trace = statechart.trace()
+
+        self._assert_trace_check(actual_trace, expected_trace)
+
 
 if __name__ == '__main__':
     unittest.main()

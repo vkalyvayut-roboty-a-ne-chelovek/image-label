@@ -167,6 +167,15 @@ class GuiForTest(Gui):
     def refresh_files(self, files: typing.Dict):
         pass
 
+    def setup_rectangle_drawing_canvas_click_listener(self):
+        pass
+
+    def setup_rectangle_drawing_canvas_movement_listener(self):
+        pass
+
+    def clear_rectangle_drawing_listeners(self):
+        pass
+
 
 class Statechart(ActiveObject):
     def __init__(self, name: str, gui: Gui):
