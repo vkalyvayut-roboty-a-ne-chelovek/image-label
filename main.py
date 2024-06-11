@@ -16,7 +16,7 @@ import helpers
 class Gui:
     def __init__(self):
         self.statechart = None
-        self.selected_img = None
+        self.selected_img_data = None
         self.rect_drawing_temp_data = None
 
     def set_statechart(self, statechart: ActiveObject):
@@ -111,7 +111,9 @@ class Gui:
 
     def init_figures_frame(self):
         self.figures_frame = tkinter.Frame(self.root, background='cyan')
-        self.figures_treeview = ttk.Treeview(self.figures_frame)
+        self.figures_treeview = ttk.Treeview(self.figures_frame, columns=['figure'])
+        self.figures_treeview['show'] = 'headings'
+        self.figures_treeview.heading('figure', text='Figure')
 
         self.figures_frame.grid(column=2, row=1, sticky='nesw')
         self.figures_frame.columnconfigure(0, weight=1)
@@ -133,11 +135,32 @@ class Gui:
             self.files_treeview.insert('', 'end', iid=idx, text=f['filename'], values=(f['filename'],))
 
     def select_image(self, image_data: typing.Dict):
+        if self.selected_img_data:
+            for fig in self.selected_img_data['figures']:
+                self.drawing_canvas.delete(fig)
+
+        for fig_item in self.figures_treeview.get_children(''):
+            self.figures_treeview.delete(fig_item)
+
+        self.selected_img_data = {
+            'image': None,
+            'figures': []
+        }
         try:
-            self.selected_img = ImageTk.PhotoImage(file=image_data['abs_path_to_file'])
+            self.selected_img_data['image'] = ImageTk.PhotoImage(file=image_data['abs_path_to_file'], width=self.drawing_canvas.winfo_width() )
             x = self.drawing_canvas.winfo_width() // 2
             y = self.drawing_canvas.winfo_height() // 2
-            self.drawing_canvas.create_image(x, y, image=self.selected_img, anchor='c')
+            self.drawing_canvas.create_image(x, y, image=self.selected_img_data['image'], anchor='c')
+
+            for fig in image_data['figures']:
+                if fig['type'] == 'rectangle':
+                    tmp_fig = fig = self.drawing_canvas.create_rectangle(
+                        fig['points'][0][0], fig['points'][0][1],
+                        fig['points'][1][0], fig['points'][1][1], fill=helpers.pick_random_color())
+                    self.selected_img_data['figures'].append(tmp_fig)
+
+                    self.figures_treeview.insert('', 'end', iid=fig, text=str(helpers.pick_random_color()), values=(str(helpers.pick_random_color()),))
+
         except (tkinter.TclError,) as e:
             messagebox.showerror(title='Error while loading image', message=f"Error while loading image {image_data['abs_path_to_file']}")
 
@@ -240,9 +263,10 @@ class Statechart(ActiveObject):
     def set_rect_drawing_temp_data_point2(self, point: typing.Tuple):
         self.rect_drawing_temp_data['point2'] = point
 
-    def rect_drawing_save_current_figure(self):
+    def rect_drawing_save_current_figure(self, category: str):
         self._app_data[self.selected_img_idx]['figures'].append({
             'type': 'rectangle',
+            'category': category,
             'points': [self.rect_drawing_temp_data['point1'], self.rect_drawing_temp_data['point2']]
         })
 
@@ -326,9 +350,9 @@ def drawing_rectangle_second_point(chart: Statechart, e: Event) -> return_status
 
     if e.signal == signals.CLICK:
         chart.set_rect_drawing_temp_data_point2(e.payload)
-        chart.rect_drawing_save_current_figure()
+        chart.rect_drawing_save_current_figure(helpers.ask_for_category_name())
         chart.tearoff_rect_drawing()
-
+        chart.select_image(chart.selected_img_idx)
         status = chart.trans(image_selected)
     else:
         status = return_status.SUPER
