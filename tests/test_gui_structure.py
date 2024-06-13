@@ -2,10 +2,8 @@ import tkinter
 from tkinter import ttk
 import unittest
 
-import miros
+from prev.main import Gui
 
-from main import Gui
-from main import Statechart
 
 class TestGUIStructure(unittest.TestCase):
     def setUp(self):
