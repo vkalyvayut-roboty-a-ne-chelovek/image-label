@@ -26,6 +26,20 @@ class Statechart(ActiveObject):
     def run(self):
         self.start_at(no_project)
 
+    def empty_project(self):
+        self.files = {}
+        self.active_file_id = None
+        self.points = []
+
+    def load_project(self, abs_path):
+        self.files = helpers.read_project_file_from_path(abs_path)
+        self.active_file_id = None
+        self.points = []
+
+    def save_project(self, abs_path):
+        helpers.save_project_file_to_path(abs_path, self.files)
+
+
 
 @spy_on
 def no_project(c: Statechart, e: Event) -> return_status:
@@ -38,25 +52,16 @@ def no_project(c: Statechart, e: Event) -> return_status:
         c.bus.gui.disable_add_file_btn()
         c.bus.gui.disable_remove_file_btn()
         c.bus.gui.disable_draw_buttons()
-        
-        helpers.new_project_event(c)
 
     elif e.signal == signals.NEW_PROJECT:
         status = c.trans(in_project)
 
-        c.files = {}
-        c.active_image = None
-        c.points = []
-
-
+        c.empty_project()
 
     elif e.signal == signals.LOAD_PROJECT:
         status = c.trans(in_project)
 
-        c.files = {}
-        c.active_image = None
-        c.points = []
-
+        c.load_project(e.payload)
     else:
         status = return_status.SUPER
         c.temp.fun = c.top
@@ -95,13 +100,7 @@ def in_project(c: Statechart, e: Event) -> return_status:
         c.bus.gui.clear_figures()
         c.bus.gui.clear_canvas()
 
-    elif e.signal == signals.INIT_SIGNAL:
-        status = return_status.HANDLED
-
-        c.post_fifo(Event(signal=signals.ADD_FILE, payload=['/home/user28/projects/python/booba-label/tests/assets/domiki.png']))
-        c.post_fifo(Event(signal=signals.ADD_FILE, payload=['/home/user28/projects/python/booba-label/tests/assets/domik.png']))
-
-    if e.signal == signals.ADD_FILE:
+    elif e.signal == signals.ADD_FILE:
         status = return_status.HANDLED
 
         prev_files_count = len(c.files.keys())
@@ -123,6 +122,8 @@ def in_project(c: Statechart, e: Event) -> return_status:
 
         if prev_files_count == 0:
             helpers.select_image_event(c, list(c.files.keys())[0])
+        else:
+            helpers.select_image_event(c, c.active_file_id)
 
     elif e.signal == signals.REMOVE_FILE:
         status = return_status.HANDLED
@@ -157,11 +158,13 @@ def in_project(c: Statechart, e: Event) -> return_status:
             c.bus.gui.enable_draw_buttons()
 
             c.active_file_id = e.payload
-
-            c.bus.gui.files_frame_treeview.selection_set([e.payload])
+        c.bus.gui.files_frame_treeview.selection_set([e.payload])
 
     elif e.signal == signals.SAVE_PROJECT:
         status = return_status.HANDLED
+
+        c.save_project(e.payload)
+
     elif e.signal == signals.DRAW_RECT:
         status = c.trans(drawing_rect)
     elif e.signal == signals.DRAW_POLY:
