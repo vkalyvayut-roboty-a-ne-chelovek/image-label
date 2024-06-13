@@ -1,6 +1,8 @@
 import tkinter
 from tkinter import ttk
 
+from PIL import ImageTk
+
 import helpers
 from common_bus import CommonBus
 
@@ -8,6 +10,8 @@ class Gui:
     def __init__(self, bus: CommonBus):
         self.bus = bus
         self.bus.register_item('gui', self)
+
+        self.image_on_canvas = None
 
         self.root = tkinter.Tk()
         self.root.geometry(f'{self.root.winfo_screenwidth()}x{self.root.winfo_screenheight()}')
@@ -77,6 +81,72 @@ class Gui:
         self.load_project_btn.configure(command=lambda: helpers.load_project_event(self.bus.statechart))
         self.save_project_btn.configure(command=lambda: helpers.save_project_event(self.bus.statechart))
         self.add_file_btn.configure(command=lambda: helpers.add_file_event(self.bus.statechart))
-        self.remove_file_btn.configure(command=lambda: helpers.remove_file_event(self.bus.statechart, self.files_frame_treeview.selection()))
+        self.remove_file_btn.configure(command=lambda: helpers.remove_file_event(self.bus.statechart, self.files_frame_treeview.selection()[0]))
 
         self.root.mainloop()
+
+    def add_file(self, id_, filedata):
+        self.files_frame_treeview.insert('', 'end', id=id_, values=(filedata['abs_path']), tags=('#files',))
+
+    def clear_files(self):
+        if self.files_frame_treeview.tag_has('#files'):
+            for item in self.files_frame_treeview.get_children(''):
+                self.files_frame_treeview.delete(item)
+
+    def remove_file(self, id_):
+        if self.files_frame_treeview.tag_has('#files'):
+            for item in self.files_frame_treeview.get_children():
+                if item == id_:
+                    self.files_frame_treeview.delete(item)
+
+    def clear_figures(self):
+        if self.figures_frame_treeview.tag_has('#files'):
+            for item in self.figures_frame_treeview.get_children(''):
+                self.figures_frame_treeview.delete(item)
+
+    def clear_canvas(self):
+        if self.drawing_frame_canvas.gettags('#draw_figures'):
+            self.drawing_frame_canvas.delete('#draw_figures')
+
+    def bind_select_image_listener(self):
+        self.files_frame_treeview.bind('<Double-Button-1>', lambda _: helpers.select_image_event(self.bus.statechart, self.files_frame_treeview.selection()[0]))
+
+    def unbind_select_image_listener(self):
+        self.files_frame_treeview.unbind('<Double-Button-1>')
+
+    def load_image_into_canvas(self, abs_path):
+        self.image_on_canvas = ImageTk.PhotoImage(file=abs_path)
+        self.drawing_frame_canvas.create_image(
+            self.drawing_frame_canvas.winfo_width() // 2,
+            self.drawing_frame_canvas.winfo_height() // 2,
+            image=self.image_on_canvas,
+            tags=('#draw_figures')
+        )
+
+    def enable_save_project_btn(self):
+        self.save_project_btn['state'] = 'normal'
+
+    def disable_save_project_btn(self):
+        self.save_project_btn['state'] = 'disabled'
+
+    def enable_add_file_btn(self):
+        self.add_file_btn['state'] = 'normal'
+
+    def disable_add_file_btn(self):
+        self.add_file_btn['state'] = 'disabled'
+
+    def enable_remove_file_btn(self):
+        self.remove_file_btn['state'] = 'normal'
+
+    def disable_remove_file_btn(self):
+        self.remove_file_btn['state'] = 'disabled'
+
+    def enable_draw_buttons(self):
+        self.draw_rectangle_btn['state'] = 'normal'
+        self.draw_polygon_btn['state'] = 'normal'
+
+    def disable_draw_buttons(self):
+        self.draw_rectangle_btn['state'] = 'disabled'
+        self.draw_polygon_btn['state'] = 'disabled'
+
+

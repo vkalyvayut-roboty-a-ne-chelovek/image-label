@@ -64,5 +64,7 @@ def add_file_event(s: ActiveObject) -> None:
 
 
 def remove_file_event(s: ActiveObject, file_ids: typing.Any) -> None:
-    msg = f'Are you sure to remove {len(file_ids)} files?';
-    s.post_fifo(Event(signal=signals.REMOVE_FILE, payload=messagebox.askyesno(title=msg, message=msg)))
+    s.post_fifo(Event(signal=signals.REMOVE_FILE, payload=file_ids))
+    # msg = f'Are you sure to remove {len(file_ids)} files?';
+    # if messagebox.askyesno(title=msg, message=msg):
+    #     s.post_fifo(Event(signal=signals.REMOVE_FILE, payload=file_ids))

@@ -20,7 +20,7 @@ class Statechart(ActiveObject):
         self.bus.register_item('statechart', self)
 
         self.files = {}
-        self.active_image = None
+        self.active_file_id = None
         self.points = []
 
     def run(self):
@@ -34,11 +34,10 @@ def no_project(c: Statechart, e: Event) -> return_status:
     if e.signal == signals.ENTRY_SIGNAL:
         status = return_status.HANDLED
 
-        c.bus.gui.save_project_btn['state'] = 'disabled'
-        c.bus.gui.add_file_btn['state'] = 'disabled'
-        c.bus.gui.remove_file_btn['state'] = 'disabled'
-        c.bus.gui.draw_rectangle_btn['state'] = 'disabled'
-        c.bus.gui.draw_polygon_btn['state'] = 'disabled'
+        c.bus.gui.disable_save_project_btn()
+        c.bus.gui.disable_add_file_btn()
+        c.bus.gui.disable_remove_file_btn()
+        c.bus.gui.disable_draw_buttons()
         
         helpers.new_project_event(c)
 
@@ -48,6 +47,8 @@ def no_project(c: Statechart, e: Event) -> return_status:
         c.files = {}
         c.active_image = None
         c.points = []
+
+
 
     elif e.signal == signals.LOAD_PROJECT:
         status = c.trans(in_project)
@@ -70,68 +71,57 @@ def in_project(c: Statechart, e: Event) -> return_status:
     if e.signal == signals.ENTRY_SIGNAL:
         status = return_status.HANDLED
 
-        c.bus.gui.save_project_btn['state'] = 'normal'
-        c.bus.gui.add_file_btn['state'] = 'normal'
-        if len(c.files) > 0:
-            c.bus.gui.remove_file_btn['state'] = 'normal'
+        c.bus.gui.enable_save_project_btn()
+        c.bus.gui.enable_add_file_btn()
+        if len(c.files.keys()) > 0:
+            c.bus.gui.enable_remove_file_btn()
 
-        if c.bus.gui.files_frame_treeview.tag_has('#files'):
-            c.bus.gui.files_frame_treeview.delete(c.bus.gui.files_frame_treeview.get_children(''))
-        if c.bus.gui.figures_frame_treeview.tag_has('#figures'):
-            c.bus.gui.figures_frame_treeview.delete(c.bus.gui.figures_frame_treeview.get_children())
-        if c.bus.gui.drawing_frame_canvas.gettags('#draw_figures'):
-            c.bus.gui.drawing_frame_canvas.delete('#draw_figures')
+        c.bus.gui.clear_files()
+        c.bus.gui.clear_figures()
+        c.bus.gui.clear_canvas()
 
         for id_, filedata in c.files.items():
-            c.bus.gui.files_frame_treeview.insert('', 'end', id=id_, values=(filedata['abs_path']), tags=('#files',))
+            c.bus.gui.add_file(id_, filedata)
 
         if c.files:
             helpers.select_image_event(c, list(c.files.keys())[0])
+
+        c.bus.gui.bind_select_image_listener()
+    elif e.signal == signals.EXIT_SIGNAL:
+        status = return_status.HANDLED
+
+        c.bus.gui.unbind_select_image_listener()
+        c.bus.gui.clear_files()
+        c.bus.gui.clear_figures()
+        c.bus.gui.clear_canvas()
+
     elif e.signal == signals.INIT_SIGNAL:
         status = return_status.HANDLED
 
-        c.post_fifo(Event(signal=signals.ADD_FILE,
-                          payload=['/home/user28/projects/python/booba-label/prev/tests/assets/domiki.png' for _ in range(50)]))
-
-    elif e.signal == signals.SELECT_IMAGE:
-        status = return_status.HANDLED
-
-        if c.bus.gui.figures_frame_treeview.tag_has('#figures'):
-            c.bus.gui.figures_frame_treeview.delete(c.bus.gui.figures_frame_treeview.get_children())
-        if c.bus.gui.drawing_frame_canvas.gettags('#draw_figures'):
-            c.bus.gui.drawing_frame_canvas.delete('#draw_figures')
-
-        img_data = c.files[e.payload]
-        c.active_image = ImageTk.PhotoImage(file=img_data['abs_path'])
-        c.bus.gui.drawing_frame_canvas.create_image(
-            c.bus.gui.drawing_frame_canvas.winfo_width() // 2,
-            c.bus.gui.drawing_frame_canvas.winfo_height() // 2,
-            image=c.active_image
-        )
-
-        c.bus.gui.draw_rectangle_btn['state'] = 'normal'
-        c.bus.gui.draw_polygon_btn['state'] = 'normal'
+        c.post_fifo(Event(signal=signals.ADD_FILE, payload=['/home/user28/projects/python/booba-label/tests/assets/domiki.png']))
+        c.post_fifo(Event(signal=signals.ADD_FILE, payload=['/home/user28/projects/python/booba-label/tests/assets/domik.png']))
 
     if e.signal == signals.ADD_FILE:
         status = return_status.HANDLED
 
+        prev_files_count = len(c.files.keys())
+
         for filename in e.payload:
-            c.files[uuid.uuid4()] = {
+            c.files[str(uuid.uuid4())] = {
                 'abs_path': filename,
                 'figures': []
             }
 
-        if c.bus.gui.files_frame_treeview.tag_has('#files'):
-            c.bus.gui.files_frame_treeview.delete(c.bus.gui.files_frame_treeview.get_children(''))
+        c.bus.gui.clear_files()
         for id_, filedata in c.files.items():
-            c.bus.gui.files_frame_treeview.insert('', 'end', id=id_, values=(filedata['abs_path']), tags=('#files',))
+            c.bus.gui.add_file(id_, filedata)
 
-        if len(c.files) > 0:
-            c.bus.gui.remove_file_btn['state'] = 'normal'
+        if len(c.files.keys()) > 0:
+            c.bus.gui.enable_remove_file_btn()
         else:
-            c.bus.gui.remove_file_btn['state'] = 'disabled'
+            c.bus.gui.disable_remove_file_btn()
 
-        if len(c.files) > 0:
+        if prev_files_count == 0:
             helpers.select_image_event(c, list(c.files.keys())[0])
 
     elif e.signal == signals.REMOVE_FILE:
@@ -139,21 +129,36 @@ def in_project(c: Statechart, e: Event) -> return_status:
 
         del c.files[e.payload]
 
-        if c.bus.gui.files_frame_treeview.tag_has('#files'):
-            c.bus.gui.files_frame_treeview.delete(c.bus.gui.files_frame_treeview.get_children(''))
-        for id_, filedata in c.files.items():
-            c.bus.gui.files_frame_treeview.insert('', 'end', id=id_, values=(filedata['abs_path']), tags=('#files',))
+        c.bus.gui.remove_file(e.payload)
+        if e.payload == c.active_file_id:
+            c.bus.gui.clear_figures()
+            c.bus.gui.clear_canvas()
 
-        if len(c.files) > 0:
-            c.bus.gui.remove_file_btn['state'] = 'normal'
+        if len(c.files.keys()) > 0:
+            c.bus.gui.enable_remove_file_btn()
         else:
-            c.bus.gui.remove_file_btn['state'] = 'disabled'
+            c.bus.gui.disable_remove_file_btn()
 
-        c.bus.gui.draw_rectangle_btn['state'] = 'disabled'
-        c.bus.gui.draw_polygon_btn['state'] = 'disabled'
+        c.bus.gui.disable_draw_buttons()
 
-        if len(c.files) > 0:
-            helpers.select_image_event(c, list(c.files.keys())[0])
+        if e.payload == c.active_file_id:
+            if len(c.files.keys()) > 0:
+                helpers.select_image_event(c, list(c.files.keys())[0])
+
+    elif e.signal == signals.SELECT_IMAGE:
+        status = return_status.HANDLED
+
+        if c.active_file_id != e.payload:
+            c.bus.gui.clear_figures()
+            c.bus.gui.clear_canvas()
+
+            c.bus.gui.load_image_into_canvas(c.files[e.payload]['abs_path'])
+
+            c.bus.gui.enable_draw_buttons()
+
+            c.active_file_id = e.payload
+
+            c.bus.gui.files_frame_treeview.selection_set([e.payload])
 
     elif e.signal == signals.SAVE_PROJECT:
         status = return_status.HANDLED
