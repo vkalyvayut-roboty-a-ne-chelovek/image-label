@@ -1,3 +1,4 @@
+import copy
 import tkinter
 import typing
 from tkinter import ttk
@@ -16,6 +17,9 @@ class Gui:
         self.mouse_position_marker = None
         self.drawing_rect_point_1 = None
         self.drawing_rect_figure = None
+
+        self.drawing_poly_points = None
+        self.drawing_poly_figures = None
 
         self.root = tkinter.Tk()
         self.root.geometry(f'{self.root.winfo_screenwidth()}x{self.root.winfo_screenheight()}')
@@ -157,8 +161,8 @@ class Gui:
 
     def bind_canvas_click_event(self):
         self.drawing_frame_canvas.bind('<Button-1>', lambda _e: helpers.click_canvas_event(self.bus.statechart, (_e.x, _e.y)))
-        self.drawing_frame_canvas.bind('<Button-3>', lambda _e: helpers.reset_drawing_event(self.bus.statechart))
-        self.root.bind('<KeyPress-Escape>', lambda _e: helpers.reset_drawing_event(self.bus.statechart))
+        # self.drawing_frame_canvas.bind('<Button-3>', lambda _e: helpers.reset_drawing_event(self.bus.statechart))
+        # self.root.bind('<KeyPress-Escape>', lambda _e: helpers.reset_drawing_event(self.bus.statechart))
 
     def unbind_canvas_click_event(self):
         self.drawing_frame_canvas.unbind('<Button-1>')
@@ -205,5 +209,35 @@ class Gui:
                 self.drawing_frame_canvas.create_rectangle(f['points'][0][0], f['points'][0][1],
                                                            f['points'][1][0], f['points'][1][1],
                                                            fill='red', tags=('#draw_figures', ))
+            elif f['type'] == 'poly':
+                self.drawing_frame_canvas.create_polygon(f['points'], fill='red', tags=('#draw_figures', ))
+
+    def bind_canvas_motion_poly_drawing(self):
+        self.drawing_frame_canvas.bind('<Motion>', lambda _e: self.redraw_drawing_poly_temp_figure(_e.x, _e.y))
+
+    def unbind_canvas_motion_poly_drawing(self):
+        self.drawing_frame_canvas.unbind('<Motion>')
+
+    def clear_drawing_poly_temp_figure(self):
+        if self.drawing_poly_figures:
+            for f in self.drawing_poly_figures:
+                self.drawing_frame_canvas.delete(f)
+        self.drawing_poly_figures = []
+
+    def redraw_drawing_poly_temp_figure(self, x, y):
+        self.clear_drawing_poly_temp_figure()
+
+        self.redraw_drawing_position_marker(x, y)
+
+        temp_points = copy.copy(self.drawing_poly_points)
+        if len(temp_points) >= 1:
+            f = self.drawing_frame_canvas.create_oval(temp_points[0][0] - 5, temp_points[0][1] - 5,
+                                                      temp_points[0][0] + 5, temp_points[0][1] + 5,
+                                                      outline='pink', width=5, tags=('#draw_figures',))
+            self.drawing_poly_figures.append(f)
+        if len(temp_points) > 1:
+            temp_points.append((x, y))
+            f = self.drawing_frame_canvas.create_polygon(temp_points, fill='green', outline='yellow', tags=('#draw_figures',))
+            self.drawing_poly_figures.append(f)
 
 

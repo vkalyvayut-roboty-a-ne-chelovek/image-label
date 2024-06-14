@@ -136,6 +136,8 @@ def no_project(c: Statechart, e: Event) -> return_status:
 
         c.empty_project()
 
+        c.post_fifo(Event(signal=signals.LOAD_PROJECT, payload='/home/user28/projects/python/booba-label/tests/assets/domik.blp'))
+
     elif e.signal == signals.LOAD_PROJECT:
         status = c.trans(in_project)
 
@@ -171,6 +173,8 @@ def in_project(c: Statechart, e: Event) -> return_status:
         c.on_save_project_in_project_state(e)
     elif e.signal == signals.DRAW_RECT:
         status = c.trans(drawing_rect)
+    elif e.signal == signals.DRAW_POLY:
+        status = c.trans(drawing_poly)
     else:
         status = return_status.SUPER
         c.temp.fun = no_project
@@ -239,6 +243,56 @@ def drawing_rect_waiting_for_2_point(c: Statechart, e: Event) -> return_status:
         status = c.trans(in_project)
 
         helpers.select_image_event(c, c.active_file_id)
+    else:
+        status = return_status.SUPER
+        c.temp.fun = in_project
+
+    return status
+
+
+@spy_on
+def drawing_poly(c: Statechart, e: Event) -> return_status:
+    status = return_status.UNHANDLED
+
+    if e.signal == signals.ENTRY_SIGNAL:
+        status = return_status.HANDLED
+        c.bus.gui.bind_canvas_click_event()
+        c.bus.gui.bind_canvas_motion_poly_drawing()
+    elif e.signal == signals.INIT_SIGNAL:
+        status = return_status.HANDLED
+
+        c.points = []
+
+        c.bus.gui.drawing_poly_points = []
+    elif e.signal == signals.EXIT_SIGNAL:
+        status = return_status.HANDLED
+        c.bus.gui.unbind_canvas_click_event()
+        c.bus.gui.unbind_canvas_motion_poly_drawing()
+    elif e.signal == signals.RESET_DRAWING:
+        status = c.trans(in_project)
+        c.points = []
+
+    elif e.signal == signals.CLICK:
+        status = return_status.HANDLED
+
+        c.points.append(e.payload)
+
+        c.bus.gui.drawing_poly_points.append(e.payload)
+
+        if len(c.points) >= 3:
+            point_start = c.points[0]
+            point_finish = c.points[-1]
+
+            if abs(point_finish[0] - point_start[0]) <= 5 and abs(point_finish[1] - point_start[1]) <= 5:
+                c.files[c.active_file_id]['figures'].append({
+                    'type': 'poly',
+                    'points': c.points
+                })
+                c.points = []
+                helpers.select_image_event(c, c.active_file_id)
+
+                status = c.trans(in_project)
+
     else:
         status = return_status.SUPER
         c.temp.fun = in_project
