@@ -237,6 +237,8 @@ def drawing_rect_waiting_for_2_point(c: Statechart, e: Event) -> return_status:
         helpers.select_image_event(c, c.active_file_id)
     elif e.signal == signals.RESET_DRAWING:
         status = c.trans(in_project)
+
+        helpers.select_image_event(c, c.active_file_id)
     else:
         status = return_status.SUPER
         c.temp.fun = in_project

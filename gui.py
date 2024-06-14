@@ -157,9 +157,13 @@ class Gui:
 
     def bind_canvas_click_event(self):
         self.drawing_frame_canvas.bind('<Button-1>', lambda _e: helpers.click_canvas_event(self.bus.statechart, (_e.x, _e.y)))
+        self.drawing_frame_canvas.bind('<Button-3>', lambda _e: helpers.reset_drawing_event(self.bus.statechart))
+        self.root.bind('<KeyPress-Escape>', lambda _e: helpers.reset_drawing_event(self.bus.statechart))
 
     def unbind_canvas_click_event(self):
         self.drawing_frame_canvas.unbind('<Button-1>')
+        self.drawing_frame_canvas.unbind('<Button-3>')
+        self.root.unbind('<KeyPress-Escape>')
 
     def bind_canvas_motion_rect_drawing_stage_1(self):
         self.drawing_frame_canvas.bind('<Motion>', lambda _e: self.redraw_drawing_position_marker(_e.x, _e.y))
