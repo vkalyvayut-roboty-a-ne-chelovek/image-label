@@ -284,6 +284,7 @@ def drawing_poly(c: Statechart, e: Event) -> return_status:
             point_finish = c.points[-1]
 
             if abs(point_finish[0] - point_start[0]) <= 5 and abs(point_finish[1] - point_start[1]) <= 5:
+                c.points.pop()
                 c.files[c.active_file_id]['figures'].append({
                     'type': 'poly',
                     'points': c.points
