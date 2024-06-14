@@ -1,4 +1,5 @@
 import tkinter
+import typing
 from tkinter import ttk
 
 from PIL import ImageTk
@@ -13,6 +14,8 @@ class Gui:
 
         self.image_on_canvas = None
         self.mouse_position_marker = None
+        self.drawing_rect_point_1 = None
+        self.drawing_rect_figure = None
 
         self.root = tkinter.Tk()
         self.root.geometry(f'{self.root.winfo_screenwidth()}x{self.root.winfo_screenheight()}')
@@ -152,24 +155,51 @@ class Gui:
         self.draw_rectangle_btn['state'] = 'disabled'
         self.draw_polygon_btn['state'] = 'disabled'
 
-    def bind_canvas_click_events(self):
+    def bind_canvas_click_event(self):
         self.drawing_frame_canvas.bind('<Button-1>', lambda _e: helpers.click_canvas_event(self.bus.statechart, (_e.x, _e.y)))
 
-    def unbind_canvas_click_events(self):
+    def unbind_canvas_click_event(self):
         self.drawing_frame_canvas.unbind('<Button-1>')
 
-    def bind_canvas_motion_event(self):
-        self.drawing_frame_canvas.bind('<Motion>', lambda _e: self.redraw_mouse_position_marker(_e.x, _e.y))
+    def bind_canvas_motion_rect_drawing_stage_1(self):
+        self.drawing_frame_canvas.bind('<Motion>', lambda _e: self.redraw_drawing_position_marker(_e.x, _e.y))
 
-    def unbind_canvas_motion_event(self):
+    def unbind_canvas_motion_rect_drawing_stage_1(self):
         self.drawing_frame_canvas.unbind('<Motion>')
+
+    def bind_canvas_motion_rect_drawing_stage_2(self):
+        self.drawing_frame_canvas.bind('<Motion>', lambda _e: self.redraw_drawing_rect_temp_figure(_e.x, _e.y))
+
+    def unbind_canvas_motion_rect_drawing_stage_2(self):
+        self.drawing_frame_canvas.unbind('<Motion>')
+
+    def redraw_drawing_position_marker(self, x, y):
+        self.clear_mouse_position_marker()
+        self.mouse_position_marker = self.drawing_frame_canvas.create_oval(x - 5, y - 5, x + 5, y + 5, outline='red', tags=('#draw_figures',))
 
     def clear_mouse_position_marker(self):
         if self.mouse_position_marker:
             self.drawing_frame_canvas.delete(self.mouse_position_marker)
 
-    def redraw_mouse_position_marker(self, x, y):
-        self.clear_mouse_position_marker()
-        self.mouse_position_marker = self.drawing_frame_canvas.create_oval(x - 5, y - 5, x + 5, y + 5, outline='red', tags=('#figures',))
+    def redraw_drawing_rect_temp_figure(self, x, y):
+        self.clear_drawing_rect_temp_figure()
+
+        self.redraw_drawing_position_marker(x, y)
+        self.drawing_rect_figure = self.drawing_frame_canvas.create_rectangle(
+            self.drawing_rect_point_1[0], self.drawing_rect_point_1[1],
+            x, y,
+            outline='red', width=2,
+            tags=('#draw_figures',))
+
+    def clear_drawing_rect_temp_figure(self):
+        if self.drawing_rect_figure:
+            self.drawing_frame_canvas.delete(self.drawing_rect_figure)
+
+    def redraw_figures(self, figures: typing.List) -> None:
+        for f in figures:
+            if f['type'] == 'rect':
+                self.drawing_frame_canvas.create_rectangle(f['points'][0][0], f['points'][0][1],
+                                                           f['points'][1][0], f['points'][1][1],
+                                                           fill='red', tags=('#draw_figures', ))
 
 

@@ -71,7 +71,7 @@ def add_file_event(s: ActiveObject) -> None:
 
 
 def remove_file_event(s: ActiveObject, file_ids: typing.Any) -> None:
-    msg = f'Are you sure to remove {len(file_ids)} files?';
+    msg = f'Are you sure to remove selected file?'
     if messagebox.askyesno(title=msg, message=msg):
         s.post_fifo(Event(signal=signals.REMOVE_FILE, payload=file_ids))
 
@@ -85,7 +85,7 @@ def draw_poly_event(s: ActiveObject) -> None:
 
 
 def click_canvas_event(s: ActiveObject, coords: typing.Tuple[int, int]) -> None:
-    s.post_fifo(Event(signal=signals.CLICK))
+    s.post_fifo(Event(signal=signals.CLICK, payload=coords))
 
 
 def reset_drawing_event(s: ActiveObject) -> None:
