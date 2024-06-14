@@ -157,6 +157,7 @@ def in_project(c: Statechart, e: Event) -> return_status:
 
             c.active_file_id = e.payload
         c.bus.gui.files_frame_treeview.selection_set([e.payload])
+        helpers.reset_drawing_event(c)
 
     elif e.signal == signals.SAVE_PROJECT:
         status = return_status.HANDLED
@@ -187,6 +188,8 @@ def drawing_rect(c: Statechart, e: Event) -> return_status:
         c.bus.gui.unbind_canvas_click_events()
         c.bus.gui.unbind_canvas_motion_event()
         c.bus.gui.clear_mouse_position_marker()
+    elif e.signal == signals.RESET_DRAWING:
+        status = c.trans(in_project)
     elif e.signal == signals.CLICK:
         status = return_status.HANDLED
     else:
@@ -206,6 +209,8 @@ def drawing_poly(c: Statechart, e: Event) -> return_status:
     elif e.signal == signals.EXIT_SIGNAL:
         status = return_status.HANDLED
         c.bus.gui.unbind_canvas_click_events()
+    elif e.signal == signals.RESET_DRAWING:
+        status = c.trans(in_project)
     elif e.signal == signals.CLICK:
         status = return_status.HANDLED
     else:
