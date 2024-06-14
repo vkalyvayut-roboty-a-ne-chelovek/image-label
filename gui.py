@@ -12,6 +12,7 @@ class Gui:
         self.bus.register_item('gui', self)
 
         self.image_on_canvas = None
+        self.mouse_position_marker = None
 
         self.root = tkinter.Tk()
         self.root.geometry(f'{self.root.winfo_screenwidth()}x{self.root.winfo_screenheight()}')
@@ -82,6 +83,8 @@ class Gui:
         self.save_project_btn.configure(command=lambda: helpers.save_project_event(self.bus.statechart))
         self.add_file_btn.configure(command=lambda: helpers.add_file_event(self.bus.statechart))
         self.remove_file_btn.configure(command=lambda: helpers.remove_file_event(self.bus.statechart, self.files_frame_treeview.selection()[0]))
+        self.draw_rectangle_btn.configure(command=lambda: helpers.draw_rect_event(self.bus.statechart))
+        self.draw_polygon_btn.configure(command=lambda: helpers.draw_poly_event(self.bus.statechart))
 
         self.root.mainloop()
 
@@ -148,5 +151,25 @@ class Gui:
     def disable_draw_buttons(self):
         self.draw_rectangle_btn['state'] = 'disabled'
         self.draw_polygon_btn['state'] = 'disabled'
+
+    def bind_canvas_click_events(self):
+        self.drawing_frame_canvas.bind('<Button-1>', lambda _e: helpers.click_canvas_event(self.bus.statechart, (_e.x, _e.y)))
+
+    def unbind_canvas_click_events(self):
+        self.drawing_frame_canvas.unbind('<Button-1>')
+
+    def bind_canvas_motion_event(self):
+        self.drawing_frame_canvas.bind('<Motion>', lambda _e: self.redraw_mouse_position_marker(_e.x, _e.y))
+
+    def unbind_canvas_motion_event(self):
+        self.drawing_frame_canvas.unbind('<Motion>')
+
+    def clear_mouse_position_marker(self):
+        if self.mouse_position_marker:
+            self.drawing_frame_canvas.delete(self.mouse_position_marker)
+
+    def redraw_mouse_position_marker(self, x, y):
+        self.clear_mouse_position_marker()
+        self.mouse_position_marker = self.drawing_frame_canvas.create_oval(x - 5, y - 5, x + 5, y + 5, outline='red', tags=('#figures',))
 
 

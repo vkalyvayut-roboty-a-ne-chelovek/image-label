@@ -48,23 +48,41 @@ def new_project_event(s: ActiveObject) -> None:
 
 
 def load_project_event(s: ActiveObject) -> None:
-    s.post_fifo(Event(signal=signals.LOAD_PROJECT, payload=ask_for_load_project_path()))
+    file_path = ask_for_load_project_path()
+    if file_path:
+        s.post_fifo(Event(signal=signals.LOAD_PROJECT, payload=file_path))
 
 
 def save_project_event(s: ActiveObject) -> None:
-    s.post_fifo(Event(signal=signals.SAVE_PROJECT, payload=ask_for_save_project_path()))
+    file_path = ask_for_save_project_path()
+    if file_path:
+        s.post_fifo(Event(signal=signals.SAVE_PROJECT, payload=file_path))
 
 
 def select_image_event(s: ActiveObject, file_id: typing.Any) -> None:
-    s.post_fifo(Event(signal=signals.SELECT_IMAGE, payload=file_id))
+    if file_id:
+        s.post_fifo(Event(signal=signals.SELECT_IMAGE, payload=file_id))
 
 
 def add_file_event(s: ActiveObject) -> None:
-    s.post_fifo(Event(signal=signals.ADD_FILE, payload=ask_for_add_file_paths()))
+    file_path = ask_for_add_file_paths()
+    if file_path:
+        s.post_fifo(Event(signal=signals.ADD_FILE, payload=file_path))
 
 
 def remove_file_event(s: ActiveObject, file_ids: typing.Any) -> None:
-    s.post_fifo(Event(signal=signals.REMOVE_FILE, payload=file_ids))
-    # msg = f'Are you sure to remove {len(file_ids)} files?';
-    # if messagebox.askyesno(title=msg, message=msg):
-    #     s.post_fifo(Event(signal=signals.REMOVE_FILE, payload=file_ids))
+    msg = f'Are you sure to remove {len(file_ids)} files?';
+    if messagebox.askyesno(title=msg, message=msg):
+        s.post_fifo(Event(signal=signals.REMOVE_FILE, payload=file_ids))
+
+
+def draw_rect_event(s: ActiveObject) -> None:
+    s.post_fifo(Event(signal=signals.DRAW_RECT))
+
+
+def draw_poly_event(s: ActiveObject) -> None:
+    s.post_fifo(Event(signal=signals.DRAW_POLY))
+
+
+def click_canvas_event(s: ActiveObject, coords: typing.Tuple[int, int]) -> None:
+    s.post_fifo(Event(signal=signals.CLICK))

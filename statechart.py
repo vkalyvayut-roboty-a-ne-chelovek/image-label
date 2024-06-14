@@ -147,8 +147,6 @@ def in_project(c: Statechart, e: Event) -> return_status:
                 helpers.select_image_event(c, list(c.files.keys())[0])
 
     elif e.signal == signals.SELECT_IMAGE:
-        status = return_status.HANDLED
-
         if c.active_file_id != e.payload:
             c.bus.gui.clear_figures()
             c.bus.gui.clear_canvas()
@@ -180,7 +178,16 @@ def in_project(c: Statechart, e: Event) -> return_status:
 def drawing_rect(c: Statechart, e: Event) -> return_status:
     status = return_status.UNHANDLED
 
-    if e.signal == signals.CLICK:
+    if e.signal == signals.ENTRY_SIGNAL:
+        status = return_status.HANDLED
+        c.bus.gui.bind_canvas_click_events()
+        c.bus.gui.bind_canvas_motion_event()
+    elif e.signal == signals.EXIT_SIGNAL:
+        status = return_status.HANDLED
+        c.bus.gui.unbind_canvas_click_events()
+        c.bus.gui.unbind_canvas_motion_event()
+        c.bus.gui.clear_mouse_position_marker()
+    elif e.signal == signals.CLICK:
         status = return_status.HANDLED
     else:
         status = return_status.SUPER
@@ -193,7 +200,13 @@ def drawing_rect(c: Statechart, e: Event) -> return_status:
 def drawing_poly(c: Statechart, e: Event) -> return_status:
     status = return_status.UNHANDLED
 
-    if e.signal == signals.CLICK:
+    if e.signal == signals.ENTRY_SIGNAL:
+        status = return_status.HANDLED
+        c.bus.gui.bind_canvas_click_events()
+    elif e.signal == signals.EXIT_SIGNAL:
+        status = return_status.HANDLED
+        c.bus.gui.unbind_canvas_click_events()
+    elif e.signal == signals.CLICK:
         status = return_status.HANDLED
     else:
         status = return_status.SUPER
