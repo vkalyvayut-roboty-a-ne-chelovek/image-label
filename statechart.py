@@ -119,6 +119,7 @@ class Statechart(ActiveObject):
         self.bus.gui.files_frame_treeview.selection_set([e.payload])
         helpers.reset_drawing_event(self)
 
+
 @spy_on
 def no_project(c: Statechart, e: Event) -> return_status:
     status = return_status.UNHANDLED
@@ -136,7 +137,7 @@ def no_project(c: Statechart, e: Event) -> return_status:
 
         c.empty_project()
 
-        c.post_fifo(Event(signal=signals.LOAD_PROJECT, payload='/home/user28/projects/python/booba-label/tests/assets/domik.blp'))
+        # c.post_fifo(Event(signal=signals.LOAD_PROJECT, payload='/home/user28/projects/python/booba-label/tests/assets/domik.blp'))
 
     elif e.signal == signals.LOAD_PROJECT:
         status = c.trans(in_project)
@@ -235,7 +236,7 @@ def drawing_rect_waiting_for_2_point(c: Statechart, e: Event) -> return_status:
         c.points.append(e.payload)
         c.files[c.active_file_id]['figures'].append({
             'type': 'rect',
-            'points': c.points
+            'points': [c.bus.gui.from_canvas_to_image_coords(*point) for point in c.points]
         })
         c.points = []
         helpers.select_image_event(c, c.active_file_id)
@@ -287,7 +288,7 @@ def drawing_poly(c: Statechart, e: Event) -> return_status:
                 c.points.pop()
                 c.files[c.active_file_id]['figures'].append({
                     'type': 'poly',
-                    'points': c.points
+                    'points': [c.bus.gui.from_canvas_to_image_coords(*point) for point in c.points]
                 })
                 c.points = []
                 helpers.select_image_event(c, c.active_file_id)

@@ -209,11 +209,13 @@ class Gui:
     def redraw_figures(self, figures: typing.List) -> None:
         for f in figures:
             if f['type'] == 'rect':
-                self.drawing_frame_canvas.create_rectangle(f['points'][0][0], f['points'][0][1],
-                                                           f['points'][1][0], f['points'][1][1],
+                points = [self.from_image_to_canvas_coords(*point) for point in f['points']]
+                self.drawing_frame_canvas.create_rectangle(points[0][0], points[0][1],
+                                                           points[1][0], points[1][1],
                                                            fill='red', tags=('#draw_figures', ))
             elif f['type'] == 'poly':
-                self.drawing_frame_canvas.create_polygon(f['points'], fill='red', tags=('#draw_figures', ))
+                points = [self.from_image_to_canvas_coords(*point) for point in f['points']]
+                self.drawing_frame_canvas.create_polygon(points, fill='red', tags=('#draw_figures', ))
 
     def bind_canvas_motion_poly_drawing(self):
         self.drawing_frame_canvas.bind('<Motion>', lambda _e: self.redraw_drawing_poly_temp_figure(_e.x, _e.y))
