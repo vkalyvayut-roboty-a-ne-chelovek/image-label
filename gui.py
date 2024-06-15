@@ -218,10 +218,18 @@ class Gui:
                 points = [self.from_image_to_canvas_coords(*point) for point in f['points']]
                 self.drawing_frame_canvas.create_rectangle(points[0][0], points[0][1],
                                                            points[1][0], points[1][1],
-                                                           fill='red', tags=('#draw_figures', ))
+                                                           fill='red', tags=('#draw_figures', ),
+                                                           width=3,
+                                                           activefill='white',
+                                                           activeoutline='red', activedash=5)
             elif f['type'] == 'poly':
                 points = [self.from_image_to_canvas_coords(*point) for point in f['points']]
-                self.drawing_frame_canvas.create_polygon(points, fill='red', tags=('#draw_figures', ))
+                self.drawing_frame_canvas.create_polygon(points,
+                                                         fill='red', tags=('#draw_figures',),
+                                                         width=3,
+                                                         activefill='white',
+                                                         activeoutline='red', activedash=5
+                                                         )
 
     def bind_canvas_motion_poly_drawing(self):
         self.drawing_frame_canvas.bind('<Motion>', lambda _e: self.redraw_drawing_poly_temp_figure(_e.x, _e.y))
