@@ -245,7 +245,7 @@ class Gui:
 
     def clamp_coords_in_image_area(self, x, y) -> (int, int):
         i_w, i_h = self.image_on_canvas.width(), self.image_on_canvas.height()
-        c_w, c_h = self.drawing_frame_canvas.winfo_screenwidth(), self.drawing_frame_canvas.winfo_screenheight()
+        c_w, c_h = self.drawing_frame_canvas.winfo_width(), self.drawing_frame_canvas.winfo_height()
         center_x, center_y = self.drawing_frame_canvas.winfo_width() / 2.0, self.drawing_frame_canvas.winfo_height() / 2.0
         min_x = center_x - self.image_on_canvas.width() / 2
         max_x = center_x + self.image_on_canvas.width() / 2
@@ -257,4 +257,28 @@ class Gui:
 
         return clamped_x, clamped_y
 
+    def from_canvas_to_image_coords(self, x, y):
+        clamped_x, clamped_y = self.clamp_coords_in_image_area(x, y)
+        i_w, i_h = self.image_on_canvas.width(), self.image_on_canvas.height()
+        center_x, center_y = self.drawing_frame_canvas.winfo_width() / 2.0, self.drawing_frame_canvas.winfo_height() / 2.0
+
+        max_x = center_x + i_w / 2
+        max_y = center_y + i_h / 2
+
+        rel_x = 1.0 - (max_x - clamped_x) / i_w
+        rel_y = 1.0 - (max_y - clamped_y) / i_h
+
+        return rel_x, rel_y
+
+    def from_image_to_canvas_coords(self, x, y):
+        i_w, i_h = self.image_on_canvas.width(), self.image_on_canvas.height()
+        center_x, center_y = self.drawing_frame_canvas.winfo_width() / 2.0, self.drawing_frame_canvas.winfo_height() / 2.0
+
+        min_x = center_x - i_w / 2
+        min_y = center_y - i_h / 2
+
+        abs_x = min_x + (x * i_w)
+        abs_y = min_y + (y * i_h)
+
+        return abs_x, abs_y
 
