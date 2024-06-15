@@ -160,7 +160,7 @@ class Gui:
         self.draw_polygon_btn['state'] = 'disabled'
 
     def bind_canvas_click_event(self):
-        self.drawing_frame_canvas.bind('<Button-1>', lambda _e: helpers.click_canvas_event(self.bus.statechart, (_e.x, _e.y)))
+        self.drawing_frame_canvas.bind('<Button-1>', lambda _e: helpers.click_canvas_event(self.bus.statechart, self.clamp_coords_in_image_area(_e.x, _e.y)))
         self.drawing_frame_canvas.bind('<Button-3>', lambda _e: helpers.reset_drawing_event(self.bus.statechart))
         self.root.bind('<KeyPress-Escape>', lambda _e: helpers.reset_drawing_event(self.bus.statechart))
 
@@ -170,32 +170,22 @@ class Gui:
         self.root.unbind('<KeyPress-Escape>')
 
     def bind_canvas_motion_rect_drawing_stage_1(self):
-        self.drawing_frame_canvas.bind('<Motion>', lambda _e: self.redraw_drawing_position_marker(_e.x, _e.y))
+        self.drawing_frame_canvas.bind('<Motion>', lambda _e: self.redraw_drawing_position_marker(*self.clamp_coords_in_image_area(_e.x, _e.y)))
 
     def unbind_canvas_motion_rect_drawing_stage_1(self):
         self.drawing_frame_canvas.unbind('<Motion>')
 
     def bind_canvas_motion_rect_drawing_stage_2(self):
-        self.drawing_frame_canvas.bind('<Motion>', lambda _e: self.redraw_drawing_rect_temp_figure(_e.x, _e.y))
+        self.drawing_frame_canvas.bind('<Motion>', lambda _e: self.redraw_drawing_rect_temp_figure(*self.clamp_coords_in_image_area(_e.x, _e.y)))
 
     def unbind_canvas_motion_rect_drawing_stage_2(self):
         self.drawing_frame_canvas.unbind('<Motion>')
 
     def redraw_drawing_position_marker(self, x, y):
-        i_w, i_h = self.image_on_canvas.width(), self.image_on_canvas.height()
-        c_w, c_h = self.drawing_frame_canvas.winfo_screenwidth(), self.drawing_frame_canvas.winfo_screenheight()
-        center_x, center_y = self.drawing_frame_canvas.winfo_width() / 2.0, self.drawing_frame_canvas.winfo_height() / 2.0
-        min_x = center_x - self.image_on_canvas.width() / 2
-        max_x = center_x + self.image_on_canvas.width() / 2
-        min_y = center_y - self.image_on_canvas.height() / 2
-        max_y = center_y + self.image_on_canvas.height() / 2
-
-        clamped_x = helpers.clamp(min_x, max_x, x)
-        clamped_y = helpers.clamp(min_y, max_y, y)
         self.clear_mouse_position_marker()
         self.mouse_position_marker = self.drawing_frame_canvas.create_oval(
-            clamped_x - 5, clamped_y - 5,
-            clamped_x + 5, clamped_y + 5,
+            x - 5, y - 5,
+            x + 5, y + 5,
             outline='yellow', tags=('#draw_figures',))
 
     def clear_mouse_position_marker(self):
@@ -252,5 +242,19 @@ class Gui:
             temp_points.append((x, y))
             f = self.drawing_frame_canvas.create_polygon(temp_points, fill='green', outline='yellow', tags=('#draw_figures',))
             self.drawing_poly_figures.append(f)
+
+    def clamp_coords_in_image_area(self, x, y) -> (int, int):
+        i_w, i_h = self.image_on_canvas.width(), self.image_on_canvas.height()
+        c_w, c_h = self.drawing_frame_canvas.winfo_screenwidth(), self.drawing_frame_canvas.winfo_screenheight()
+        center_x, center_y = self.drawing_frame_canvas.winfo_width() / 2.0, self.drawing_frame_canvas.winfo_height() / 2.0
+        min_x = center_x - self.image_on_canvas.width() / 2
+        max_x = center_x + self.image_on_canvas.width() / 2
+        min_y = center_y - self.image_on_canvas.height() / 2
+        max_y = center_y + self.image_on_canvas.height() / 2
+
+        clamped_x = helpers.clamp(min_x, max_x, x)
+        clamped_y = helpers.clamp(min_y, max_y, y)
+
+        return clamped_x, clamped_y
 
 
