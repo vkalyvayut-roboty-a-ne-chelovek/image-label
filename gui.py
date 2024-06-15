@@ -13,7 +13,7 @@ class Gui:
         self.bus = bus
         self.bus.register_item('gui', self)
 
-        self.image_on_canvas = None
+        self.image_on_canvas: ImageTk = None
         self.mouse_position_marker = None
         self.drawing_rect_point_1 = None
         self.drawing_rect_figure = None
@@ -161,8 +161,8 @@ class Gui:
 
     def bind_canvas_click_event(self):
         self.drawing_frame_canvas.bind('<Button-1>', lambda _e: helpers.click_canvas_event(self.bus.statechart, (_e.x, _e.y)))
-        # self.drawing_frame_canvas.bind('<Button-3>', lambda _e: helpers.reset_drawing_event(self.bus.statechart))
-        # self.root.bind('<KeyPress-Escape>', lambda _e: helpers.reset_drawing_event(self.bus.statechart))
+        self.drawing_frame_canvas.bind('<Button-3>', lambda _e: helpers.reset_drawing_event(self.bus.statechart))
+        self.root.bind('<KeyPress-Escape>', lambda _e: helpers.reset_drawing_event(self.bus.statechart))
 
     def unbind_canvas_click_event(self):
         self.drawing_frame_canvas.unbind('<Button-1>')
@@ -182,8 +182,21 @@ class Gui:
         self.drawing_frame_canvas.unbind('<Motion>')
 
     def redraw_drawing_position_marker(self, x, y):
+        i_w, i_h = self.image_on_canvas.width(), self.image_on_canvas.height()
+        c_w, c_h = self.drawing_frame_canvas.winfo_screenwidth(), self.drawing_frame_canvas.winfo_screenheight()
+        center_x, center_y = self.drawing_frame_canvas.winfo_width() / 2.0, self.drawing_frame_canvas.winfo_height() / 2.0
+        min_x = center_x - self.image_on_canvas.width() / 2
+        max_x = center_x + self.image_on_canvas.width() / 2
+        min_y = center_y - self.image_on_canvas.height() / 2
+        max_y = center_y + self.image_on_canvas.height() / 2
+
+        clamped_x = helpers.clamp(min_x, max_x, x)
+        clamped_y = helpers.clamp(min_y, max_y, y)
         self.clear_mouse_position_marker()
-        self.mouse_position_marker = self.drawing_frame_canvas.create_oval(x - 5, y - 5, x + 5, y + 5, outline='red', tags=('#draw_figures',))
+        self.mouse_position_marker = self.drawing_frame_canvas.create_oval(
+            clamped_x - 5, clamped_y - 5,
+            clamped_x + 5, clamped_y + 5,
+            outline='yellow', tags=('#draw_figures',))
 
     def clear_mouse_position_marker(self):
         if self.mouse_position_marker:

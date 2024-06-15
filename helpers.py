@@ -90,3 +90,7 @@ def click_canvas_event(s: ActiveObject, coords: typing.Tuple[int, int]) -> None:
 
 def reset_drawing_event(s: ActiveObject) -> None:
     s.post_fifo(Event(signal=signals.RESET_DRAWING))
+
+
+def clamp(_min, _max, cur):
+    return min(_max, max(_min, cur))
