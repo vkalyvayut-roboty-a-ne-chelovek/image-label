@@ -38,6 +38,8 @@ class Gui:
         self.remove_file_btn = tkinter.Button(self.command_palette, text='Remove File')
         self.draw_rectangle_btn = tkinter.Button(self.command_palette, text='Draw Rectangle')
         self.draw_polygon_btn = tkinter.Button(self.command_palette, text='Draw Polygon')
+        self.remove_figure_btn = tkinter.Button(self.command_palette, text='Remove Polygon')
+        self.move_point_btn = tkinter.Button(self.command_palette, text='Move Point')
 
         self.command_palette.grid(column=0, row=0, sticky='nsw', rowspan=2)
         self.new_project_btn.grid(column=0, row=0)
@@ -49,6 +51,8 @@ class Gui:
 
         self.draw_rectangle_btn.grid(column=0, row=5)
         self.draw_polygon_btn.grid(column=0, row=6)
+        self.remove_figure_btn.grid(column=0, row=7)
+        self.move_point_btn.grid(column=0, row=8)
 
         self.drawing_frame = tkinter.Frame(self.root, background='green')
         self.drawing_frame_canvas = tkinter.Canvas(self.drawing_frame)
@@ -92,6 +96,8 @@ class Gui:
         self.remove_file_btn.configure(command=lambda: helpers.remove_file_event(self.bus.statechart, self.files_frame_treeview.selection()[0]))
         self.draw_rectangle_btn.configure(command=lambda: helpers.draw_rect_event(self.bus.statechart))
         self.draw_polygon_btn.configure(command=lambda: helpers.draw_poly_event(self.bus.statechart))
+        self.remove_figure_btn.configure(command=lambda: helpers.remove_figure_event(self.bus.statechart))
+        self.move_point_btn.configure(command=lambda: helpers.move_point_event(self.bus.statechart))
 
         self.root.mainloop()
 

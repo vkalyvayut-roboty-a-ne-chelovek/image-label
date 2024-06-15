@@ -84,6 +84,14 @@ def draw_poly_event(s: ActiveObject) -> None:
     s.post_fifo(Event(signal=signals.DRAW_POLY))
 
 
+def remove_figure_event(s: ActiveObject) -> None:
+    s.post_fifo(Event(signal=signals.REMOVE_FIGURE))
+
+
+def move_point_event(s: ActiveObject) -> None:
+    s.post_fifo(Event(signal=signals.MOVE_POINT))
+
+
 def click_canvas_event(s: ActiveObject, coords: typing.Tuple[int, int]) -> None:
     s.post_fifo(Event(signal=signals.CLICK, payload=coords))
 

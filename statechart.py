@@ -137,7 +137,7 @@ def no_project(c: Statechart, e: Event) -> return_status:
 
         c.empty_project()
 
-        # c.post_fifo(Event(signal=signals.LOAD_PROJECT, payload='/home/user28/projects/python/booba-label/tests/assets/domik.blp'))
+        c.post_fifo(Event(signal=signals.LOAD_PROJECT, payload='/home/user28/projects/python/booba-label/tests/assets/domik.blp'))
 
     elif e.signal == signals.LOAD_PROJECT:
         status = c.trans(in_project)
@@ -176,6 +176,8 @@ def in_project(c: Statechart, e: Event) -> return_status:
         status = c.trans(drawing_rect)
     elif e.signal == signals.DRAW_POLY:
         status = c.trans(drawing_poly)
+    elif e.signal == signals.REMOVE_FIGURE:
+        status = c.trans(removing_figure)
     else:
         status = return_status.SUPER
         c.temp.fun = no_project
@@ -298,5 +300,31 @@ def drawing_poly(c: Statechart, e: Event) -> return_status:
     else:
         status = return_status.SUPER
         c.temp.fun = in_project
+
+    return status
+
+
+@spy_on
+def removing_figure(c: Statechart, e: Event) -> return_status:
+    status = return_status.UNHANDLED
+
+    if e.signal == signals.CLICK:
+        status = return_status.HANDLED
+    else:
+        status = return_status.SUPER
+        c.temp.fun = c.top
+
+    return status
+
+
+@spy_on
+def moving_point(c: Statechart, e: Event) -> return_status:
+    status = return_status.UNHANDLED
+
+    if e.signal == signals.CLICK:
+        status = return_status.HANDLED
+    else:
+        status = return_status.SUPER
+        c.temp.fun = c.top
 
     return status
