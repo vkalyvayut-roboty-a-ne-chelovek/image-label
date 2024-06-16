@@ -78,7 +78,7 @@ class Gui:
         self.files_frame_treeview_scrollbar.config(command=self.files_frame_treeview.yview)
 
         self.figures_frame = tkinter.Frame(self.root, background='cyan')
-        self.figures_frame_treeview = ttk.Treeview(self.figures_frame, columns=['figure'], selectmode='browse', show='headings')
+        self.figures_frame_treeview = ttk.Treeview(self.figures_frame, columns=['figure', 'id'], selectmode='browse', show='headings', displaycolumns=('figure',))
         self.figures_frame_treeview.heading('figure', text='Figure')
 
         self.figures_frame.grid(column=2, row=1, sticky='nesw')
@@ -119,7 +119,7 @@ class Gui:
                     self.files_frame_treeview.delete(item)
 
     def clear_figures(self):
-        if self.figures_frame_treeview.tag_has('#files'):
+        if self.figures_frame_treeview.tag_has('#figures'):
             for item in self.figures_frame_treeview.get_children(''):
                 self.figures_frame_treeview.delete(item)
 
@@ -139,7 +139,7 @@ class Gui:
             self.drawing_frame_canvas.winfo_width() // 2,
             self.drawing_frame_canvas.winfo_height() // 2,
             image=self.image_on_canvas,
-            tags=('#draw_figures')
+            tags=('#draw_figures',)
         )
 
     def enable_save_project_btn(self):
@@ -226,7 +226,7 @@ class Gui:
                                                            activefill='white',
                                                            activeoutline='red', activedash=5)
 
-                self.figures_frame_treeview.insert('', 'end', id=id_, values=(f'RECT({f["category"]})'))
+                self.figures_frame_treeview.insert('', 'end', values=(f'RECT({f["category"]})', id_), tags=('#figures',))
 
             elif f['type'] == 'poly':
                 points = [self.from_image_to_canvas_coords(*point) for point in f['points']]
@@ -236,7 +236,7 @@ class Gui:
                                                          activefill='white',
                                                          activeoutline='red', activedash=5
                                                          )
-                self.figures_frame_treeview.insert('', 'end', id=id_, values=(f'POLY({f["category"]})'))
+                self.figures_frame_treeview.insert('', 'end', values=(f'POLY({f["category"]})', id_), tags=('#figures',))
 
     def bind_canvas_motion_poly_drawing(self):
         self.drawing_frame_canvas.bind('<Motion>', lambda _e: self.redraw_drawing_poly_temp_figure(_e.x, _e.y))
@@ -304,4 +304,13 @@ class Gui:
         abs_y = min_y + (y * i_h)
 
         return abs_x, abs_y
+
+    def bind_figure_delete_event(self):
+        self.figures_frame_treeview.bind('<KeyPress-Delete>', lambda _: self.send_figure_delete_event())
+
+    def send_figure_delete_event(self):
+        if len(self.figures_frame_treeview.selection()) > 0:
+            selected_item_id = self.figures_frame_treeview.selection()[0]
+            id_ = self.figures_frame_treeview.item(selected_item_id)['values'][1]
+            helpers.delete_figure_event(self.bus.statechart, id_)
 

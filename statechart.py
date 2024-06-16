@@ -59,6 +59,7 @@ class Statechart(ActiveObject):
                 helpers.select_image_event(self, list(self.files.keys())[0])
 
         self.bus.gui.bind_select_image_listener()
+        self.bus.gui.bind_figure_delete_event()
 
     def on_exit_in_project_state(self):
         self.bus.gui.unbind_select_image_listener()
@@ -182,6 +183,17 @@ def in_project(c: Statechart, e: Event) -> return_status:
         status = c.trans(removing_point)
     elif e.signal == signals.MOVE_POINT:
         status = c.trans(moving_point)
+    elif e.signal == signals.DELETE_FIGURE:
+        status = return_status.HANDLED
+
+        figure_idx = e.payload
+        if figure_idx is not None:
+            del c.files[c.active_file_id]['figures'][figure_idx]
+
+        c.bus.gui.clear_figures()
+        c.bus.gui.clear_canvas()
+        c.bus.gui.load_image_into_canvas(c.files[c.active_file_id]['abs_path'])
+        c.bus.gui.redraw_figures(c.files[c.active_file_id]['figures'])
     else:
         status = return_status.SUPER
         c.temp.fun = no_project

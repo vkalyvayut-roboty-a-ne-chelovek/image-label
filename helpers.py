@@ -105,5 +105,9 @@ def reset_drawing_event(s: ActiveObject) -> None:
     s.post_fifo(Event(signal=signals.RESET_DRAWING))
 
 
+def delete_figure_event(s: ActiveObject, id_: int) -> None:
+    s.post_fifo(Event(signal=signals.DELETE_FIGURE, payload=id_))
+
+
 def clamp(_min, _max, cur):
     return min(_max, max(_min, cur))
