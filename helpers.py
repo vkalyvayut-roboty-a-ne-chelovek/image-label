@@ -105,6 +105,10 @@ def reset_drawing_event(s: ActiveObject) -> None:
     s.post_fifo(Event(signal=signals.RESET_DRAWING))
 
 
+def figure_selected_event(s: ActiveObject, id_: int) -> None:
+    s.post_fifo(Event(signal=signals.FIGURE_SELECTED, payload=id_))
+
+
 def delete_figure_event(s: ActiveObject, id_: int) -> None:
     s.post_fifo(Event(signal=signals.DELETE_FIGURE, payload=id_))
 

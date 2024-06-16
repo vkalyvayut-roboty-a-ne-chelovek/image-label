@@ -215,28 +215,36 @@ class Gui:
         if self.drawing_rect_figure:
             self.drawing_frame_canvas.delete(self.drawing_rect_figure)
 
-    def redraw_figures(self, figures: typing.List) -> None:
+    def redraw_figures(self, figures: typing.List, highlight_figure_idx: typing.Optional[int] = None) -> None:
+        highlight_figure_style = {
+            'fill': 'white',
+            'outline': 'red',
+            'dash': 5
+        }
+        default_figure_style = {
+            'fill': 'red',
+        }
         for id_, f in enumerate(figures):
+            figure_style = highlight_figure_style if (highlight_figure_idx is not None) and (id_ == highlight_figure_idx) else default_figure_style
             if f['type'] == 'rect':
                 points = [self.from_image_to_canvas_coords(*point) for point in f['points']]
                 self.drawing_frame_canvas.create_rectangle(points[0][0], points[0][1],
                                                            points[1][0], points[1][1],
-                                                           fill='red', tags=('#draw_figures', ),
+                                                           tags=('#draw_figures', ),
                                                            width=3,
-                                                           activefill='white',
-                                                           activeoutline='red', activedash=5)
-
-                self.figures_frame_treeview.insert('', 'end', values=(f'RECT({f["category"]})', id_), tags=('#figures',))
+                                                           **figure_style)
+                if highlight_figure_idx is None:
+                    self.figures_frame_treeview.insert('', 'end', values=(f'RECT({f["category"]})', id_), tags=('#figures',))
 
             elif f['type'] == 'poly':
                 points = [self.from_image_to_canvas_coords(*point) for point in f['points']]
                 self.drawing_frame_canvas.create_polygon(points,
-                                                         fill='red', tags=('#draw_figures',),
+                                                         tags=('#draw_figures',),
                                                          width=3,
-                                                         activefill='white',
-                                                         activeoutline='red', activedash=5
+                                                         **figure_style
                                                          )
-                self.figures_frame_treeview.insert('', 'end', values=(f'POLY({f["category"]})', id_), tags=('#figures',))
+                if highlight_figure_idx is None:
+                    self.figures_frame_treeview.insert('', 'end', values=(f'POLY({f["category"]})', id_), tags=('#figures',))
 
     def bind_canvas_motion_poly_drawing(self):
         self.drawing_frame_canvas.bind('<Motion>', lambda _e: self.redraw_drawing_poly_temp_figure(_e.x, _e.y))
@@ -305,12 +313,19 @@ class Gui:
 
         return abs_x, abs_y
 
+    def bind_figure_selection_event(self):
+        self.figures_frame_treeview.bind('<<TreeviewSelect>>', lambda _: self.send_figure_selected_event())
+
     def bind_figure_delete_event(self):
         self.figures_frame_treeview.bind('<KeyPress-Delete>', lambda _: self.send_figure_delete_event())
 
     def send_figure_delete_event(self):
         if len(self.figures_frame_treeview.selection()) > 0:
-            selected_item_id = self.figures_frame_treeview.selection()[0]
-            id_ = self.figures_frame_treeview.item(selected_item_id)['values'][1]
+            id_ = self.figures_frame_treeview.item(self.figures_frame_treeview.selection()[0])['values'][1]
             helpers.delete_figure_event(self.bus.statechart, id_)
+
+    def send_figure_selected_event(self):
+        if len(self.figures_frame_treeview.selection()) > 0:
+            id_ = self.figures_frame_treeview.item(self.figures_frame_treeview.selection()[0])['values'][1]
+            helpers.figure_selected_event(self.bus.statechart, id_)
 
