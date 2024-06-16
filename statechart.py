@@ -176,8 +176,12 @@ def in_project(c: Statechart, e: Event) -> return_status:
         status = c.trans(drawing_rect)
     elif e.signal == signals.DRAW_POLY:
         status = c.trans(drawing_poly)
-    elif e.signal == signals.REMOVE_FIGURE:
-        status = c.trans(removing_figure)
+    elif e.signal == signals.ADD_POINT:
+        status = c.trans(adding_point)
+    elif e.signal == signals.REMOVE_POINT:
+        status = c.trans(removing_point)
+    elif e.signal == signals.MOVE_POINT:
+        status = c.trans(moving_point)
     else:
         status = return_status.SUPER
         c.temp.fun = no_project
@@ -238,7 +242,8 @@ def drawing_rect_waiting_for_2_point(c: Statechart, e: Event) -> return_status:
         c.points.append(e.payload)
         c.files[c.active_file_id]['figures'].append({
             'type': 'rect',
-            'points': [c.bus.gui.from_canvas_to_image_coords(*point) for point in c.points]
+            'points': [c.bus.gui.from_canvas_to_image_coords(*point) for point in c.points],
+            'category': helpers.ask_for_category_name(c.bus.gui.root)
         })
         c.points = []
         helpers.select_image_event(c, c.active_file_id)
@@ -290,7 +295,8 @@ def drawing_poly(c: Statechart, e: Event) -> return_status:
                 c.points.pop()
                 c.files[c.active_file_id]['figures'].append({
                     'type': 'poly',
-                    'points': [c.bus.gui.from_canvas_to_image_coords(*point) for point in c.points]
+                    'points': [c.bus.gui.from_canvas_to_image_coords(*point) for point in c.points],
+                    'category': helpers.ask_for_category_name(c.bus.gui.root)
                 })
                 c.points = []
                 helpers.select_image_event(c, c.active_file_id)
@@ -305,14 +311,27 @@ def drawing_poly(c: Statechart, e: Event) -> return_status:
 
 
 @spy_on
-def removing_figure(c: Statechart, e: Event) -> return_status:
+def adding_point(c: Statechart, e: Event) -> return_status:
     status = return_status.UNHANDLED
 
     if e.signal == signals.CLICK:
         status = return_status.HANDLED
     else:
         status = return_status.SUPER
-        c.temp.fun = c.top
+        c.temp.fun = in_project
+
+    return status
+
+
+@spy_on
+def removing_point(c: Statechart, e: Event) -> return_status:
+    status = return_status.UNHANDLED
+
+    if e.signal == signals.CLICK:
+        status = return_status.HANDLED
+    else:
+        status = return_status.SUPER
+        c.temp.fun = in_project
 
     return status
 
@@ -325,6 +344,6 @@ def moving_point(c: Statechart, e: Event) -> return_status:
         status = return_status.HANDLED
     else:
         status = return_status.SUPER
-        c.temp.fun = c.top
+        c.temp.fun = in_project
 
     return status

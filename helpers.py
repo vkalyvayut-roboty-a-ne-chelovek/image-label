@@ -4,6 +4,7 @@ import typing
 from tkinter import filedialog
 from tkinter import simpledialog
 from tkinter import messagebox
+from tkinter import commondialog
 
 from miros import Event
 from miros import signals
@@ -34,7 +35,7 @@ def ask_for_add_file_paths() -> typing.List[str]:
     return filedialog.askopenfilenames(filetypes=['PNG .png', 'JPEG .jpg', 'BMP .bmp'], multiple=True)
 
 
-def ask_for_category_name() -> str:
+def ask_for_category_name(prnt) -> str:
     return pick_random_color()
 
 
@@ -84,8 +85,12 @@ def draw_poly_event(s: ActiveObject) -> None:
     s.post_fifo(Event(signal=signals.DRAW_POLY))
 
 
-def remove_figure_event(s: ActiveObject) -> None:
-    s.post_fifo(Event(signal=signals.REMOVE_FIGURE))
+def add_point_event(s: ActiveObject) -> None:
+    s.post_fifo(Event(signal=signals.ADD_POINT))
+
+
+def remove_point_event(s: ActiveObject) -> None:
+    s.post_fifo(Event(signal=signals.REMOVE_POINT))
 
 
 def move_point_event(s: ActiveObject) -> None:
