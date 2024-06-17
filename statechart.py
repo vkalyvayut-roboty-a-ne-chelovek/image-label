@@ -62,8 +62,6 @@ class Statechart(ActiveObject):
         self.bus.gui.bind_figure_delete_event()
         self.bus.gui.bind_figure_selection_event()
 
-        self.post_fifo(Event(signal=signals.ADD_POINT), period=1.0, deferred=True, times=1)
-
     def on_exit_in_project_state(self):
         self.bus.gui.unbind_select_image_listener()
         self.bus.gui.clear_files()
@@ -140,10 +138,6 @@ def no_project(c: Statechart, e: Event) -> return_status:
         status = c.trans(in_project)
 
         c.empty_project()
-
-        c.post_fifo(Event(signal=signals.LOAD_PROJECT, payload='/home/user28/projects/python/booba-label/tests/assets/domik.blp'))
-
-
     elif e.signal == signals.LOAD_PROJECT:
         status = c.trans(in_project)
 

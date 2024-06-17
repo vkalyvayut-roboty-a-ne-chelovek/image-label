@@ -1,10 +1,9 @@
 import json
 import random
 import typing
+import tkinter
 from tkinter import filedialog
-from tkinter import simpledialog
 from tkinter import messagebox
-from tkinter import commondialog
 
 from miros import Event
 from miros import signals
@@ -33,10 +32,6 @@ def ask_for_save_project_path() -> str:
 
 def ask_for_add_file_paths() -> typing.List[str]:
     return filedialog.askopenfilenames(filetypes=['PNG .png', 'JPEG .jpg', 'BMP .bmp'], multiple=True)
-
-
-def ask_for_category_name(prnt) -> str:
-    return pick_random_color()
 
 
 def pick_random_color():
@@ -140,3 +135,19 @@ def delete_figure_event(s: ActiveObject, id_: int) -> None:
 
 def clamp(_min, _max, cur):
     return min(_max, max(_min, cur))
+
+# костыль, если в окне присутствует tkinter.Label
+# то происходит потеря фокуса и невозможность скрытия окна
+def ask_for_category_name(root: tkinter.Tk) -> str:
+
+    val = tkinter.StringVar()
+    w = tkinter.Toplevel(root)
+    w.title('Enter category name')
+    entry = tkinter.Entry(w, textvariable=val)
+    entry.grid(column=0, row=1, sticky='nesw')
+    btn_ok = tkinter.Button(w, text='OK', command=w.destroy)
+    btn_ok.grid(column=0, row=2, sticky='nesw')
+
+    root.wait_window(w)
+
+    return val.get()
