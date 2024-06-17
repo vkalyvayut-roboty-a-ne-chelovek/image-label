@@ -97,6 +97,15 @@ def move_point_event(s: ActiveObject) -> None:
     s.post_fifo(Event(signal=signals.MOVE_POINT))
 
 
+def update_figures_point_position_event(s: ActiveObject, coords: typing.Tuple[int, int], figure_point_data: typing.Dict) -> None:
+    if figure_point_data:
+        s.post_fifo(Event(signal=signals.UPDATE_FIGURE_POINT_POSITION, payload={
+            'coords': coords,
+            'figure_idx': figure_point_data['figure_idx'],
+            'point_idx': figure_point_data['point_idx']
+        }))
+
+
 def click_canvas_event(s: ActiveObject, coords: typing.Tuple[int, int]) -> None:
     s.post_fifo(Event(signal=signals.CLICK, payload=coords))
 

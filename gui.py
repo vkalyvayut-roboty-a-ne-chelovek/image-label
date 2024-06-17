@@ -21,6 +21,8 @@ class Gui:
         self.drawing_poly_points = None
         self.drawing_poly_figures = None
 
+        self.moving_figure_point = None
+
         self.root = tkinter.Tk()
         self.root.geometry(f'{self.root.winfo_screenwidth()}x{self.root.winfo_screenheight()}')
 
@@ -215,7 +217,7 @@ class Gui:
         if self.drawing_rect_figure:
             self.drawing_frame_canvas.delete(self.drawing_rect_figure)
 
-    def redraw_figures(self, figures: typing.List, highlight_figure_idx: typing.Optional[int] = None) -> None:
+    def redraw_figures(self, figures: typing.List, highlight_figure_idx: typing.Optional[int] = None, draw_grabbable_points = False) -> None:
         highlight_figure_style = {
             'fill': 'white',
             'outline': 'red',
@@ -224,6 +226,7 @@ class Gui:
         default_figure_style = {
             'fill': 'red',
         }
+
         for id_, f in enumerate(figures):
             figure_style = highlight_figure_style if (highlight_figure_idx is not None) and (id_ == highlight_figure_idx) else default_figure_style
             if f['type'] == 'rect':
@@ -234,7 +237,12 @@ class Gui:
                                                            width=3,
                                                            **figure_style)
                 if highlight_figure_idx is None:
-                    self.figures_frame_treeview.insert('', 'end', values=(f'RECT({f["category"]})', id_), tags=('#figures',))
+                    self.figures_frame_treeview.insert('', 'end', values=(f'RECT({f["category"]})', id_), tags=('#draw_figures',))
+
+                if draw_grabbable_points:
+                    for p_id, p in enumerate(points):
+                        gr_id = self.drawing_frame_canvas.create_oval(p[0] - 5, p[1] - 5, p[0] + 5, p[1] + 5, fill='pink', width=5, tags=('#draw_figures', '#grabbable', f'#grabbable-data={id_},{p_id}'))
+
 
             elif f['type'] == 'poly':
                 points = [self.from_image_to_canvas_coords(*point) for point in f['points']]
@@ -244,7 +252,11 @@ class Gui:
                                                          **figure_style
                                                          )
                 if highlight_figure_idx is None:
-                    self.figures_frame_treeview.insert('', 'end', values=(f'POLY({f["category"]})', id_), tags=('#figures',))
+                    self.figures_frame_treeview.insert('', 'end', values=(f'POLY({f["category"]})', id_), tags=('#draw_figures',))
+
+                if draw_grabbable_points:
+                    for p_id, p in enumerate(points):
+                        gr_id = self.drawing_frame_canvas.create_oval(p[0] - 5, p[1] - 5, p[0] + 5, p[1] + 5, fill='pink', width=5, tags=('#draw_figures', '#grabbable', f'#grabbable-data={id_},{p_id}'))
 
     def bind_canvas_motion_poly_drawing(self):
         self.drawing_frame_canvas.bind('<Motion>', lambda _e: self.redraw_drawing_poly_temp_figure(_e.x, _e.y))
@@ -329,3 +341,28 @@ class Gui:
             id_ = self.figures_frame_treeview.item(self.figures_frame_treeview.selection()[0])['values'][1]
             helpers.figure_selected_event(self.bus.statechart, id_)
 
+    def bind_point_move_click(self):
+        self.drawing_frame_canvas.bind('<Button-1>', lambda e: self._find_closest_draggable_point(e.x, e.y))
+
+    def unbind_point_move_click(self):
+        self.drawing_frame_canvas.unbind('<Button-1>')
+
+    def _find_closest_draggable_point(self, x, y):
+        self.moving_figure_point = None
+        figures = self.drawing_frame_canvas.find_enclosed(x - 15, y - 15, x + 15, y + 15)
+        for f in figures:
+            tags = self.drawing_frame_canvas.gettags(f)
+            for t in tags:
+                if t.startswith('#grabbable-data='):
+                    data = t.lstrip('#grabbable-data=').split(',')
+                    self.moving_figure_point = {
+                        'figure_idx': int(data[0]),
+                        'point_idx': int(data[1])
+                    }
+                    break
+
+    def bind_point_move_motion_event(self):
+        self.drawing_frame_canvas.bind('<B1-Motion>', lambda e: helpers.update_figures_point_position_event(self.bus.statechart, (e.x, e.y), self.moving_figure_point))
+
+    def unbind_point_move_motion_event(self):
+        self.drawing_frame_canvas.unbind('<B1-Motion>')

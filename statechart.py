@@ -62,6 +62,8 @@ class Statechart(ActiveObject):
         self.bus.gui.bind_figure_delete_event()
         self.bus.gui.bind_figure_selection_event()
 
+        self.post_fifo(Event(signal=signals.MOVE_POINT), period=1.0, deferred=True, times=1)
+
     def on_exit_in_project_state(self):
         self.bus.gui.unbind_select_image_listener()
         self.bus.gui.clear_files()
@@ -141,6 +143,7 @@ def no_project(c: Statechart, e: Event) -> return_status:
 
         c.post_fifo(Event(signal=signals.LOAD_PROJECT, payload='/home/user28/projects/python/booba-label/tests/assets/domik.blp'))
 
+
     elif e.signal == signals.LOAD_PROJECT:
         status = c.trans(in_project)
 
@@ -178,10 +181,10 @@ def in_project(c: Statechart, e: Event) -> return_status:
         status = c.trans(drawing_rect)
     elif e.signal == signals.DRAW_POLY:
         status = c.trans(drawing_poly)
-    elif e.signal == signals.ADD_POINT:
-        status = c.trans(adding_point)
-    elif e.signal == signals.REMOVE_POINT:
-        status = c.trans(removing_point)
+    # elif e.signal == signals.ADD_POINT:
+    #     status = c.trans(adding_point)
+    # elif e.signal == signals.REMOVE_POINT:
+    #     status = c.trans(removing_point)
     elif e.signal == signals.MOVE_POINT:
         status = c.trans(moving_point)
     elif e.signal == signals.FIGURE_SELECTED:
@@ -332,37 +335,38 @@ def drawing_poly(c: Statechart, e: Event) -> return_status:
 
 
 @spy_on
-def adding_point(c: Statechart, e: Event) -> return_status:
-    status = return_status.UNHANDLED
-
-    if e.signal == signals.CLICK:
-        status = return_status.HANDLED
-    else:
-        status = return_status.SUPER
-        c.temp.fun = in_project
-
-    return status
-
-
-@spy_on
-def removing_point(c: Statechart, e: Event) -> return_status:
-    status = return_status.UNHANDLED
-
-    if e.signal == signals.CLICK:
-        status = return_status.HANDLED
-    else:
-        status = return_status.SUPER
-        c.temp.fun = in_project
-
-    return status
-
-
-@spy_on
 def moving_point(c: Statechart, e: Event) -> return_status:
     status = return_status.UNHANDLED
 
-    if e.signal == signals.CLICK:
+    if e.signal == signals.ENTRY_SIGNAL:
         status = return_status.HANDLED
+
+        c.bus.gui.clear_figures()
+        c.bus.gui.clear_canvas()
+        c.bus.gui.load_image_into_canvas(c.files[c.active_file_id]['abs_path'])
+        c.bus.gui.redraw_figures(c.files[c.active_file_id]['figures'], draw_grabbable_points=True)
+
+        c.bus.gui.bind_point_move_click()
+        c.bus.gui.bind_point_move_motion_event()
+    if e.signal == signals.EXIT_SIGNAL:
+        status = return_status.HANDLED
+
+        c.bus.gui.clear_figures()
+        c.bus.gui.clear_canvas()
+        c.bus.gui.load_image_into_canvas(c.files[c.active_file_id]['abs_path'])
+        c.bus.gui.redraw_figures(c.files[c.active_file_id]['figures'])
+
+        c.bus.gui.unbind_point_move_click()
+        c.bus.gui.unbind_point_move_motion_event()
+    if e.signal == signals.UPDATE_FIGURE_POINT_POSITION:
+        status = return_status.HANDLED
+        print(e.payload)
+        c.files[c.active_file_id]['figures'][e.payload['figure_idx']]['points'][e.payload['point_idx']] = c.bus.gui.from_canvas_to_image_coords(*e.payload['coords'])
+
+        c.bus.gui.clear_figures()
+        c.bus.gui.clear_canvas()
+        c.bus.gui.load_image_into_canvas(c.files[c.active_file_id]['abs_path'])
+        c.bus.gui.redraw_figures(c.files[c.active_file_id]['figures'], draw_grabbable_points=True)
     else:
         status = return_status.SUPER
         c.temp.fun = in_project
