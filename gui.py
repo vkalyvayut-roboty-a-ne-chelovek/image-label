@@ -349,7 +349,8 @@ class Gui:
 
     def _find_closest_draggable_point(self, x, y):
         self.moving_figure_point = None
-        figures = self.drawing_frame_canvas.find_enclosed(x - 15, y - 15, x + 15, y + 15)
+        # figures = self.drawing_frame_canvas.find_enclosed(x - 15, y - 15, x + 15, y + 15)
+        figures = self.drawing_frame_canvas.find_closest(x, y, halo=10)
         for f in figures:
             tags = self.drawing_frame_canvas.gettags(f)
             for t in tags:
