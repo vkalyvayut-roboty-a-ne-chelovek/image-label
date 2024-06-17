@@ -183,8 +183,8 @@ def in_project(c: Statechart, e: Event) -> return_status:
         status = c.trans(drawing_poly)
     # elif e.signal == signals.ADD_POINT:
     #     status = c.trans(adding_point)
-    # elif e.signal == signals.REMOVE_POINT:
-    #     status = c.trans(removing_point)
+    elif e.signal == signals.REMOVE_POINT:
+        status = c.trans(removing_point)
     elif e.signal == signals.MOVE_POINT:
         status = c.trans(moving_point)
     elif e.signal == signals.FIGURE_SELECTED:
@@ -362,6 +362,49 @@ def moving_point(c: Statechart, e: Event) -> return_status:
         status = return_status.HANDLED
         print(e.payload)
         c.files[c.active_file_id]['figures'][e.payload['figure_idx']]['points'][e.payload['point_idx']] = c.bus.gui.from_canvas_to_image_coords(*e.payload['coords'])
+
+        c.bus.gui.clear_figures()
+        c.bus.gui.clear_canvas()
+        c.bus.gui.load_image_into_canvas(c.files[c.active_file_id]['abs_path'])
+        c.bus.gui.redraw_figures(c.files[c.active_file_id]['figures'], draw_grabbable_points=True)
+    else:
+        status = return_status.SUPER
+        c.temp.fun = in_project
+
+    return status
+
+
+@spy_on
+def removing_point(c: Statechart, e: Event) -> return_status:
+    status = return_status.UNHANDLED
+
+    if e.signal == signals.ENTRY_SIGNAL:
+        status = return_status.HANDLED
+
+        c.bus.gui.clear_figures()
+        c.bus.gui.clear_canvas()
+        c.bus.gui.load_image_into_canvas(c.files[c.active_file_id]['abs_path'])
+        c.bus.gui.redraw_figures(c.files[c.active_file_id]['figures'], draw_grabbable_points=True)
+
+        c.bus.gui.bind_point_remove_click()
+    if e.signal == signals.EXIT_SIGNAL:
+        status = return_status.HANDLED
+
+        c.bus.gui.clear_figures()
+        c.bus.gui.clear_canvas()
+        c.bus.gui.load_image_into_canvas(c.files[c.active_file_id]['abs_path'])
+        c.bus.gui.redraw_figures(c.files[c.active_file_id]['figures'])
+
+        c.bus.gui.bind_point_remove_click()
+    if e.signal == signals.UPDATE_FIGURE_REMOVE_POINT:
+        status = return_status.HANDLED
+        if c.files[c.active_file_id]['figures'][e.payload['figure_idx']]['type'] == 'rect':
+            del c.files[c.active_file_id]['figures'][e.payload['figure_idx']]
+        else:
+            if len(c.files[c.active_file_id]['figures'][e.payload['figure_idx']]['points']) <= 3:
+                del c.files[c.active_file_id]['figures'][e.payload['figure_idx']]
+            else:
+                del c.files[c.active_file_id]['figures'][e.payload['figure_idx']]['points'][e.payload['point_idx']]
 
         c.bus.gui.clear_figures()
         c.bus.gui.clear_canvas()

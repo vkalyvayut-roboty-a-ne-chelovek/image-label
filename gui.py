@@ -367,3 +367,15 @@ class Gui:
 
     def unbind_point_move_motion_event(self):
         self.drawing_frame_canvas.unbind('<B1-Motion>')
+
+    def bind_point_remove_click(self):
+        self.drawing_frame_canvas.bind('<Button-1>', lambda e: self.send_point_remove_remove_point_event(e.x, e.y))
+
+    def unbind_point_remove_click(self):
+        self.drawing_frame_canvas.unbind('<Button-1>')
+
+    # TODO переименовать метод лол
+    def send_point_remove_remove_point_event(self, x, y):
+        self._find_closest_draggable_point(x, y)
+        if self.moving_figure_point:
+            helpers.update_figure_remove_point_event(self.bus.statechart, self.moving_figure_point)
