@@ -379,3 +379,53 @@ class Gui:
         self._find_closest_draggable_point(x, y)
         if self.moving_figure_point:
             helpers.update_figure_remove_point_event(self.bus.statechart, self.moving_figure_point)
+
+    def bind_point_add_click(self):
+        self.drawing_frame_canvas.bind('<Button-1>', lambda e: self._find_closest_insertable_line(e.x, e.y))
+
+    def unbind_point_add_click(self):
+        self.drawing_frame_canvas.unbind('<Button-1>')
+
+    def _find_closest_insertable_line(self, x, y):
+        self.moving_figure_point = None
+        figures = self.drawing_frame_canvas.find_closest(x, y, halo=10)
+        for f in figures:
+            tags = self.drawing_frame_canvas.gettags(f)
+            print('>>>>TAGS', tags)
+            for t in tags:
+                if t.startswith('#insertable-data='):
+                    data = t.lstrip('#insertable-data=').split(',')
+                    insertable_line_data = {
+                        'figure_idx': int(data[0]),
+                        'point_idx': int(data[1])
+                    }
+                    helpers.update_figure_add_point_event(self.bus.statechart, (x, y), insertable_line_data)
+                    break
+
+    def redraw_figures_as_polylines(self, figures: typing.List) -> None:
+
+        for id_, f in enumerate(figures):
+            if f['type'] == 'rect':
+                points = [self.from_image_to_canvas_coords(*point) for point in f['points']]
+                point_1 = points[0][0], points[0][1]
+                point_2 = points[1][0], points[0][1]
+                point_3 = points[1][0], points[1][1]
+                point_4 = points[0][0], points[1][1]
+
+                self.drawing_frame_canvas.create_line(point_1, point_2, width=3)
+                self.drawing_frame_canvas.create_line(point_2, point_3, width=3)
+                self.drawing_frame_canvas.create_line(point_3, point_4, width=3)
+                self.drawing_frame_canvas.create_line(point_4, point_1, width=3)
+
+                for p_id, p in enumerate(points):
+                    gr_id = self.drawing_frame_canvas.create_oval(p[0] - 5, p[1] - 5, p[0] + 5, p[1] + 5, fill='pink', width=5, tags=('#draw_figures'))
+
+            elif f['type'] == 'poly':
+                points = [self.from_image_to_canvas_coords(*point) for point in f['points']]
+                p_idx = 0
+                while p_idx < len(points):
+                    self.drawing_frame_canvas.create_line(points[p_idx - 1], points[p_idx], width=3, fill='red', tags=('#draw_figures', '#insertable', f'#insertable-data={id_},{p_idx}'))
+                    p_idx += 1
+
+                for p_id, p in enumerate(points):
+                    gr_id = self.drawing_frame_canvas.create_oval(p[0] - 5, p[1] - 5, p[0] + 5, p[1] + 5, fill='pink', width=5, tags=('#draw_figures', '#grabbable', f'#grabbable-data={id_},{p_id}'))
