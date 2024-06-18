@@ -3,7 +3,7 @@ import tkinter
 import typing
 from tkinter import ttk
 
-from PIL import ImageTk
+from PIL import ImageTk, Image
 
 import helpers
 from common_bus import CommonBus
@@ -13,6 +13,7 @@ class Gui:
         self.bus = bus
         self.bus.register_item('gui', self)
 
+        self.image_to_load_on_canvas: Image = None
         self.image_on_canvas: ImageTk = None
         self.mouse_position_marker = None
         self.drawing_rect_point_1 = None
@@ -136,13 +137,33 @@ class Gui:
         self.files_frame_treeview.unbind('<Double-Button-1>')
 
     def load_image_into_canvas(self, abs_path):
-        self.image_on_canvas = ImageTk.PhotoImage(file=abs_path)
+        self.image_to_load_on_canvas = Image.open(abs_path)
+        new_sizes = self._get_size_to_resize(
+            self.image_to_load_on_canvas.width, self.image_to_load_on_canvas.height,
+            self.drawing_frame_canvas.winfo_width(), self.drawing_frame_canvas.winfo_height()
+        )
+        self.image_to_load_on_canvas = self.image_to_load_on_canvas.resize(new_sizes, resample=Image.Resampling.NEAREST)
+        self.image_on_canvas = ImageTk.PhotoImage(image=self.image_to_load_on_canvas)
         self.drawing_frame_canvas.create_image(
             self.drawing_frame_canvas.winfo_width() // 2,
             self.drawing_frame_canvas.winfo_height() // 2,
             image=self.image_on_canvas,
             tags=('#draw_figures',)
         )
+
+    def _get_size_to_resize(self, i_w: int, i_h: int, c_w: int, c_h: int) -> typing.List[int]:
+        result = [1, 1]
+
+        if i_w / i_h >= 1:
+            scale = c_w // i_w
+            result = [i_w * scale, i_h * scale]
+        else:
+            scale = c_h // i_h
+            result = [i_w * scale, i_h * scale]
+
+        result = [helpers.clamp(0, c_w, result[0]), helpers.clamp(0, c_h, result[1])]
+
+        return result
 
     def enable_save_project_btn(self):
         self.save_project_btn['state'] = 'normal'
