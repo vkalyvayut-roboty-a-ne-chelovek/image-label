@@ -44,6 +44,7 @@ class Gui:
         self.add_point_btn = tkinter.Button(self.command_palette, text='Add Point')
         self.remove_point_btn = tkinter.Button(self.command_palette, text='Remove Point')
         self.move_point_btn = tkinter.Button(self.command_palette, text='Move Point')
+        self.undo_btn = tkinter.Button(self.command_palette, text='UNDO')
 
         self.command_palette.grid(column=0, row=0, sticky='nsw', rowspan=2)
         self.new_project_btn.grid(column=0, row=0)
@@ -58,6 +59,7 @@ class Gui:
         self.add_point_btn.grid(column=0, row=7)
         self.remove_point_btn.grid(column=0, row=8)
         self.move_point_btn.grid(column=0, row=9)
+        self.undo_btn.grid(column=0, row=10)
 
         self.drawing_frame = tkinter.Frame(self.root, background='green')
         self.drawing_frame_canvas = tkinter.Canvas(self.drawing_frame)
@@ -104,6 +106,7 @@ class Gui:
         self.add_point_btn.configure(command=lambda: helpers.add_point_event(self.bus.statechart))
         self.remove_point_btn.configure(command=lambda: helpers.remove_point_event(self.bus.statechart))
         self.move_point_btn.configure(command=lambda: helpers.move_point_event(self.bus.statechart))
+        self.undo_btn.configure(command=lambda: helpers.undo_event(self.bus.statechart))
 
         self.root.mainloop()
 

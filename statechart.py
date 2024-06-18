@@ -1,3 +1,5 @@
+import copy
+import typing
 import uuid
 
 from miros import ActiveObject
@@ -12,6 +14,37 @@ from common_bus import CommonBus
 import helpers
 
 
+class History:
+    def __init__(self, defaults: typing.Dict):
+        self.history = {}
+        for file_id, new_state in defaults.items():
+            self.set_defaults(file_id, new_state)
+
+    def set_defaults(self, file_id, new_state):
+        print(f'SET DEFAULTS {file_id} = {new_state}')
+        self.history[file_id] = [copy.deepcopy(new_state)]
+
+    def add_snapshot(self, file_id, new_state):
+        print('PREV', self.history[file_id])
+        self.history[file_id].append(copy.deepcopy(new_state))
+        print('CURR', self.history[file_id])
+
+    def pop_history(self, file_id):
+        if len(self.history[file_id]) > 1:
+            self.history[file_id].pop()
+            return self.history[file_id][-1]
+        else:
+            return self.history[file_id][-1]
+
+    def has_history(self, file_id):
+        if file_id in self.history and len(self.history[file_id]) > 0:
+            return True
+        return False
+
+    def reset_history(self):
+        self.history = dict()
+
+
 class Statechart(ActiveObject):
     def __init__(self, name: str, bus: CommonBus):
         super().__init__(name=name)
@@ -23,6 +56,8 @@ class Statechart(ActiveObject):
         self.active_file_id = None
         self.points = []
 
+        self.history = None
+
     def run(self):
         self.start_at(no_project)
 
@@ -31,10 +66,14 @@ class Statechart(ActiveObject):
         self.active_file_id = None
         self.points = []
 
+        self.history = History({})
+
     def load_project(self, abs_path):
         self.files = helpers.read_project_file_from_path(abs_path)
         self.active_file_id = None
         self.points = []
+
+        self.history = History(self.files)
 
 
 @spy_on
@@ -97,15 +136,30 @@ def in_project(c: Statechart, e: Event) -> return_status:
         c.bus.gui.clear_files()
         c.bus.gui.clear_figures()
         c.bus.gui.clear_canvas()
+    elif e.signal == signals.UNDO_HISTORY:
+        status = return_status.HANDLED
+
+        if c.history.has_history(c.active_file_id):
+            snapshot = c.history.pop_history(c.active_file_id)
+            c.files[c.active_file_id] = snapshot
+
+            c.bus.gui.clear_figures()
+            c.bus.gui.clear_canvas()
+            c.bus.gui.load_image_into_canvas(c.files[c.active_file_id]['abs_path'])
+            c.bus.gui.redraw_figures(c.files[c.active_file_id]['figures'])
+
     elif e.signal == signals.ADD_FILE:
         status = return_status.HANDLED
         prev_files_count = len(c.files.keys())
 
         for filename in e.payload:
-            c.files[str(uuid.uuid4())] = {
+            file_id = str(uuid.uuid4())
+            c.files[file_id] = {
                 'abs_path': filename,
                 'figures': []
             }
+
+            c.history.set_defaults(file_id, c.files[file_id])
 
         c.bus.gui.clear_files()
         for id_, filedata in c.files.items():
@@ -120,6 +174,7 @@ def in_project(c: Statechart, e: Event) -> return_status:
             helpers.select_image_event(c, list(c.files.keys())[0])
         else:
             helpers.select_image_event(c, c.active_file_id)
+
     elif e.signal == signals.REMOVE_FILE:
         status = return_status.HANDLED
         del c.files[e.payload]
@@ -182,6 +237,8 @@ def in_project(c: Statechart, e: Event) -> return_status:
         c.bus.gui.clear_canvas()
         c.bus.gui.load_image_into_canvas(c.files[c.active_file_id]['abs_path'])
         c.bus.gui.redraw_figures(c.files[c.active_file_id]['figures'])
+
+        c.history.add_snapshot(c.active_file_id, c.files[c.active_file_id])
     else:
         status = return_status.SUPER
         c.temp.fun = no_project
@@ -243,10 +300,12 @@ def drawing_rect_waiting_for_2_point(c: Statechart, e: Event) -> return_status:
         c.files[c.active_file_id]['figures'].append({
             'type': 'rect',
             'points': [c.bus.gui.from_canvas_to_image_coords(*point) for point in c.points],
-            'category': helpers.ask_for_category_name(c.bus.gui.root)
+            'category': helpers.ask_for_category_name(c)
         })
         c.points = []
         helpers.select_image_event(c, c.active_file_id)
+
+        c.history.add_snapshot(c.active_file_id, c.files[c.active_file_id])
     elif e.signal == signals.RESET_DRAWING:
         status = c.trans(in_project)
 
@@ -292,16 +351,19 @@ def drawing_poly(c: Statechart, e: Event) -> return_status:
             point_finish = c.points[-1]
 
             if abs(point_finish[0] - point_start[0]) <= 5 and abs(point_finish[1] - point_start[1]) <= 5:
+
                 c.points.pop()
                 c.files[c.active_file_id]['figures'].append({
                     'type': 'poly',
                     'points': [c.bus.gui.from_canvas_to_image_coords(*point) for point in c.points],
-                    'category': helpers.ask_for_category_name(c.bus.gui.root)
+                    'category': helpers.ask_for_category_name(c)
                 })
                 c.points = []
                 helpers.select_image_event(c, c.active_file_id)
 
                 status = c.trans(in_project)
+
+                c.history.add_snapshot(c.active_file_id, c.files[c.active_file_id])
 
     else:
         status = return_status.SUPER
@@ -336,13 +398,15 @@ def moving_point(c: Statechart, e: Event) -> return_status:
         c.bus.gui.unbind_point_move_motion_event()
     if e.signal == signals.UPDATE_FIGURE_POINT_POSITION:
         status = return_status.HANDLED
-        print(e.payload)
+
         c.files[c.active_file_id]['figures'][e.payload['figure_idx']]['points'][e.payload['point_idx']] = c.bus.gui.from_canvas_to_image_coords(*e.payload['coords'])
 
         c.bus.gui.clear_figures()
         c.bus.gui.clear_canvas()
         c.bus.gui.load_image_into_canvas(c.files[c.active_file_id]['abs_path'])
         c.bus.gui.redraw_figures(c.files[c.active_file_id]['figures'], draw_grabbable_points=True)
+
+        c.history.add_snapshot(c.active_file_id, c.files[c.active_file_id])
     else:
         status = return_status.SUPER
         c.temp.fun = in_project
@@ -374,6 +438,7 @@ def removing_point(c: Statechart, e: Event) -> return_status:
         c.bus.gui.bind_point_remove_click()
     if e.signal == signals.UPDATE_FIGURE_REMOVE_POINT:
         status = return_status.HANDLED
+
         if c.files[c.active_file_id]['figures'][e.payload['figure_idx']]['type'] == 'rect':
             del c.files[c.active_file_id]['figures'][e.payload['figure_idx']]
         else:
@@ -386,6 +451,8 @@ def removing_point(c: Statechart, e: Event) -> return_status:
         c.bus.gui.clear_canvas()
         c.bus.gui.load_image_into_canvas(c.files[c.active_file_id]['abs_path'])
         c.bus.gui.redraw_figures(c.files[c.active_file_id]['figures'], draw_grabbable_points=True)
+
+        c.history.add_snapshot(c.active_file_id, c.files[c.active_file_id])
     else:
         status = return_status.SUPER
         c.temp.fun = in_project
@@ -424,6 +491,8 @@ def adding_point(c: Statechart, e: Event) -> return_status:
         c.bus.gui.clear_canvas()
         c.bus.gui.load_image_into_canvas(c.files[c.active_file_id]['abs_path'])
         c.bus.gui.redraw_figures_as_polylines(c.files[c.active_file_id]['figures'])
+
+        c.history.add_snapshot(c.active_file_id, c.files[c.active_file_id])
     else:
         status = return_status.SUPER
         c.temp.fun = in_project

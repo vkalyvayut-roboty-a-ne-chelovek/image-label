@@ -138,16 +138,20 @@ def clamp(_min, _max, cur):
 
 # костыль, если в окне присутствует tkinter.Label
 # то происходит потеря фокуса и невозможность скрытия окна
-def ask_for_category_name(root: tkinter.Tk) -> str:
+def ask_for_category_name(c: ActiveObject) -> str:
+    return pick_random_color()
 
-    val = tkinter.StringVar()
-    w = tkinter.Toplevel(root)
-    w.title('Enter category name')
-    entry = tkinter.Entry(w, textvariable=val)
-    entry.grid(column=0, row=1, sticky='nesw')
-    btn_ok = tkinter.Button(w, text='OK', command=w.destroy)
-    btn_ok.grid(column=0, row=2, sticky='nesw')
+    # val = tkinter.StringVar()
+    # w = tkinter.Toplevel(c.bus.gui.root)
+    # w.title('Enter category name')
+    #
+    # def on_ok():
+    #     w.destroy()
+    #
+    # entry = tkinter.Entry(w, textvariable=val)
+    # entry.grid(column=0, row=1, sticky='nesw')
+    # btn_ok = tkinter.Button(w, text='OK', command=on_ok)
+    # btn_ok.grid(column=0, row=2, sticky='nesw')
 
-    root.wait_window(w)
-
-    return val.get()
+def undo_event(s: ActiveObject):
+    s.post_fifo(Event(signal=signals.UNDO_HISTORY))
