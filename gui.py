@@ -254,14 +254,14 @@ class Gui:
         for id_, f in enumerate(figures):
             figure_style = highlight_figure_style if (highlight_figure_idx is not None) and (id_ == highlight_figure_idx) else default_figure_style
             if f['type'] == 'rect':
+                self.figures_frame_treeview.insert('', 'end', values=(f'RECT({f["category"]})', id_, f'{self.bus.statechart.active_file_id};{id_};{f["category"]}'), tags=('#figures',))
+
                 points = [self.from_image_to_canvas_coords(*point) for point in f['points']]
                 self.drawing_frame_canvas.create_rectangle(points[0][0], points[0][1],
                                                            points[1][0], points[1][1],
                                                            tags=('#draw_figures', ),
                                                            width=3,
                                                            **figure_style)
-                if highlight_figure_idx is None:
-                    self.figures_frame_treeview.insert('', 'end', values=(f'RECT({f["category"]})', id_), tags=('#draw_figures',))
 
                 if draw_grabbable_points:
                     for p_id, p in enumerate(points):
@@ -269,14 +269,13 @@ class Gui:
 
 
             elif f['type'] == 'poly':
+                self.figures_frame_treeview.insert('', 'end', values=(f'POLY({f["category"]})', id_, f'{self.bus.statechart.active_file_id};{id_};{f["category"]}'), tags=('#figures',))
                 points = [self.from_image_to_canvas_coords(*point) for point in f['points']]
                 self.drawing_frame_canvas.create_polygon(points,
                                                          tags=('#draw_figures',),
                                                          width=3,
                                                          **figure_style
                                                          )
-                if highlight_figure_idx is None:
-                    self.figures_frame_treeview.insert('', 'end', values=(f'POLY({f["category"]})', id_), tags=('#draw_figures',))
 
                 if draw_grabbable_points:
                     for p_id, p in enumerate(points):
@@ -351,9 +350,17 @@ class Gui:
 
     def bind_figure_selection_event(self):
         self.figures_frame_treeview.bind('<<TreeviewSelect>>', lambda _: self.send_figure_selected_event())
+        self.figures_frame_treeview.bind('<Double-Button-1>', lambda _: self.show_popup_figure_category_rename())
 
     def bind_figure_delete_event(self):
         self.figures_frame_treeview.bind('<KeyPress-Delete>', lambda _: self.send_figure_delete_event())
+
+    def show_popup_figure_category_rename(self):
+        if len(self.figures_frame_treeview.selection()) > 0:
+            data = self.figures_frame_treeview.item(self.figures_frame_treeview.selection()[0])['values'][2].split(';')
+            print('DATA>>>>>', data, self.figures_frame_treeview.item(self.figures_frame_treeview.selection()[0]))
+            file_id, figure_id, category_name = data[0], int(data[1]), data[2]
+            helpers.ask_for_category_name(self.bus.statechart, file_id, figure_id, default_val=category_name)
 
     def send_figure_delete_event(self):
         if len(self.figures_frame_treeview.selection()) > 0:

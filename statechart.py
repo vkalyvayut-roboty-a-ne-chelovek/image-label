@@ -239,6 +239,27 @@ def in_project(c: Statechart, e: Event) -> return_status:
         c.bus.gui.redraw_figures(c.files[c.active_file_id]['figures'])
 
         c.history.add_snapshot(c.active_file_id, c.files[c.active_file_id])
+    elif e.signal == signals.SET_FIGURE_CATEGORY:
+        status = return_status.HANDLED
+
+        file_id = e.payload['file_id']
+        figure_id = e.payload['figure_id']
+        category = e.payload['category']
+
+        print('SET_FIGURE_CATEGORY', e.payload)
+        print(c.files)
+
+        if file_id in c.files and c.files[file_id]['figures'][figure_id] is not None:
+            c.files[file_id]['figures'][figure_id]['category'] = category
+            c.history.add_snapshot(file_id, c.files[file_id])
+
+            print(c.files[c.active_file_id]['figures'])
+
+            if file_id == c.active_file_id:
+                c.bus.gui.clear_figures()
+                c.bus.gui.clear_canvas()
+                c.bus.gui.load_image_into_canvas(c.files[c.active_file_id]['abs_path'])
+                c.bus.gui.redraw_figures(c.files[c.active_file_id]['figures'])
     else:
         status = return_status.SUPER
         c.temp.fun = no_project
@@ -300,8 +321,10 @@ def drawing_rect_waiting_for_2_point(c: Statechart, e: Event) -> return_status:
         c.files[c.active_file_id]['figures'].append({
             'type': 'rect',
             'points': [c.bus.gui.from_canvas_to_image_coords(*point) for point in c.points],
-            'category': helpers.ask_for_category_name(c)
+            'category': None
         })
+        helpers.ask_for_category_name(c, copy.copy(c.active_file_id), len(c.files[c.active_file_id]['figures']) - 1)
+
         c.points = []
         helpers.select_image_event(c, c.active_file_id)
 
@@ -356,8 +379,11 @@ def drawing_poly(c: Statechart, e: Event) -> return_status:
                 c.files[c.active_file_id]['figures'].append({
                     'type': 'poly',
                     'points': [c.bus.gui.from_canvas_to_image_coords(*point) for point in c.points],
-                    'category': helpers.ask_for_category_name(c)
+                    'category': None
                 })
+
+                helpers.ask_for_category_name(c, copy.copy(c.active_file_id), len(c.files[c.active_file_id]['figures']) - 1)
+
                 c.points = []
                 helpers.select_image_event(c, c.active_file_id)
 

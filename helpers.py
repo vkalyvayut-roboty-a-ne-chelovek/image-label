@@ -136,22 +136,28 @@ def delete_figure_event(s: ActiveObject, id_: int) -> None:
 def clamp(_min, _max, cur):
     return min(_max, max(_min, cur))
 
+
 # костыль, если в окне присутствует tkinter.Label
 # то происходит потеря фокуса и невозможность скрытия окна
-def ask_for_category_name(c: ActiveObject) -> str:
-    return pick_random_color()
+def ask_for_category_name(c: ActiveObject, file_id: str, figure_id: int, default_val: str = ''):
+    val = tkinter.StringVar()
 
-    # val = tkinter.StringVar()
-    # w = tkinter.Toplevel(c.bus.gui.root)
-    # w.title('Enter category name')
-    #
-    # def on_ok():
-    #     w.destroy()
-    #
-    # entry = tkinter.Entry(w, textvariable=val)
-    # entry.grid(column=0, row=1, sticky='nesw')
-    # btn_ok = tkinter.Button(w, text='OK', command=on_ok)
-    # btn_ok.grid(column=0, row=2, sticky='nesw')
+    w = tkinter.Toplevel()
+    w.title('Enter category name')
+
+    def on_ok():
+        set_figure_category_event(c, file_id, figure_id, val.get())
+        w.destroy()
+
+    entry = tkinter.Entry(w, textvariable=val)
+    entry.grid(column=0, row=1, sticky='nesw')
+    btn_ok = tkinter.Button(w, text='OK', command=on_ok)
+    btn_ok.grid(column=0, row=2, sticky='nesw')
+
 
 def undo_event(s: ActiveObject):
     s.post_fifo(Event(signal=signals.UNDO_HISTORY))
+
+
+def set_figure_category_event(s: ActiveObject, file_id, figure_id, category_name):
+    s.post_fifo(Event(signal=signals.SET_FIGURE_CATEGORY, payload={'file_id': file_id, 'figure_id': figure_id, 'category': category_name}))
