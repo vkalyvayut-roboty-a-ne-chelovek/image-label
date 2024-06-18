@@ -36,91 +36,6 @@ class Statechart(ActiveObject):
         self.active_file_id = None
         self.points = []
 
-    def on_save_project_in_project_state(self, e):
-        helpers.save_project_file_to_path(e.payload, self.files)
-
-    def on_enter_in_project_state(self):
-        self.bus.gui.enable_save_project_btn()
-        self.bus.gui.enable_add_file_btn()
-        if len(self.files.keys()) > 0:
-            self.bus.gui.enable_remove_file_btn()
-
-        self.bus.gui.clear_files()
-        self.bus.gui.clear_figures()
-        self.bus.gui.clear_canvas()
-
-        for id_, filedata in self.files.items():
-            self.bus.gui.add_file(id_, filedata)
-
-        if len(self.files.keys()) > 0:
-            if self.active_file_id and self.active_file_id in self.files.keys():
-                helpers.select_image_event(self, self.active_file_id)
-            else:
-                helpers.select_image_event(self, list(self.files.keys())[0])
-
-        self.bus.gui.bind_select_image_listener()
-        self.bus.gui.bind_figure_delete_event()
-        self.bus.gui.bind_figure_selection_event()
-
-    def on_exit_in_project_state(self):
-        self.bus.gui.unbind_select_image_listener()
-        self.bus.gui.clear_files()
-        self.bus.gui.clear_figures()
-        self.bus.gui.clear_canvas()
-
-    def on_add_file_in_project_state(self, e: Event):
-        prev_files_count = len(self.files.keys())
-
-        for filename in e.payload:
-            self.files[str(uuid.uuid4())] = {
-                'abs_path': filename,
-                'figures': []
-            }
-
-        self.bus.gui.clear_files()
-        for id_, filedata in self.files.items():
-            self.bus.gui.add_file(id_, filedata)
-
-        if len(self.files.keys()) > 0:
-            self.bus.gui.enable_remove_file_btn()
-        else:
-            self.bus.gui.disable_remove_file_btn()
-
-        if prev_files_count == 0:
-            helpers.select_image_event(self, list(self.files.keys())[0])
-        else:
-            helpers.select_image_event(self, self.active_file_id)
-
-    def on_remove_file_in_project_state(self, e: Event):
-        del self.files[e.payload]
-
-        self.bus.gui.remove_file(e.payload)
-        if e.payload == self.active_file_id:
-            self.bus.gui.clear_figures()
-            self.bus.gui.clear_canvas()
-
-        if len(self.files.keys()) > 0:
-            self.bus.gui.enable_remove_file_btn()
-        else:
-            self.bus.gui.disable_remove_file_btn()
-
-        self.bus.gui.disable_draw_buttons()
-
-        if e.payload == self.active_file_id:
-            if len(self.files.keys()) > 0:
-                helpers.select_image_event(self, list(self.files.keys())[0])
-
-    def on_select_file_in_project_state(self, e: Event):
-        self.bus.gui.clear_figures()
-        self.bus.gui.clear_canvas()
-        self.bus.gui.load_image_into_canvas(self.files[e.payload]['abs_path'])
-        self.bus.gui.redraw_figures(self.files[self.active_file_id]['figures'])
-
-        self.bus.gui.enable_draw_buttons()
-
-        self.bus.gui.files_frame_treeview.selection_set([e.payload])
-        helpers.reset_drawing_event(self)
-
 
 @spy_on
 def no_project(c: Statechart, e: Event) -> return_status:
@@ -155,22 +70,89 @@ def in_project(c: Statechart, e: Event) -> return_status:
 
     if e.signal == signals.ENTRY_SIGNAL:
         status = return_status.HANDLED
-        c.on_enter_in_project_state()
+        c.bus.gui.enable_save_project_btn()
+        c.bus.gui.enable_add_file_btn()
+        if len(c.files.keys()) > 0:
+            c.bus.gui.enable_remove_file_btn()
+
+        c.bus.gui.clear_files()
+        c.bus.gui.clear_figures()
+        c.bus.gui.clear_canvas()
+
+        for id_, filedata in c.files.items():
+            c.bus.gui.add_file(id_, filedata)
+
+        if len(c.files.keys()) > 0:
+            if c.active_file_id and c.active_file_id in c.files.keys():
+                helpers.select_image_event(c, c.active_file_id)
+            else:
+                helpers.select_image_event(c, list(c.files.keys())[0])
+
+        c.bus.gui.bind_select_image_listener()
+        c.bus.gui.bind_figure_delete_event()
+        c.bus.gui.bind_figure_selection_event()
     elif e.signal == signals.EXIT_SIGNAL:
         status = return_status.HANDLED
-        c.on_exit_in_project_state()
+        c.bus.gui.unbind_select_image_listener()
+        c.bus.gui.clear_files()
+        c.bus.gui.clear_figures()
+        c.bus.gui.clear_canvas()
     elif e.signal == signals.ADD_FILE:
         status = return_status.HANDLED
-        c.on_add_file_in_project_state(e)
+        prev_files_count = len(c.files.keys())
+
+        for filename in e.payload:
+            c.files[str(uuid.uuid4())] = {
+                'abs_path': filename,
+                'figures': []
+            }
+
+        c.bus.gui.clear_files()
+        for id_, filedata in c.files.items():
+            c.bus.gui.add_file(id_, filedata)
+
+        if len(c.files.keys()) > 0:
+            c.bus.gui.enable_remove_file_btn()
+        else:
+            c.bus.gui.disable_remove_file_btn()
+
+        if prev_files_count == 0:
+            helpers.select_image_event(c, list(c.files.keys())[0])
+        else:
+            helpers.select_image_event(c, c.active_file_id)
     elif e.signal == signals.REMOVE_FILE:
         status = return_status.HANDLED
-        c.on_remove_file_in_project_state(e)
+        del c.files[e.payload]
+
+        c.bus.gui.remove_file(e.payload)
+        if e.payload == c.active_file_id:
+            c.bus.gui.clear_figures()
+            c.bus.gui.clear_canvas()
+
+        if len(c.files.keys()) > 0:
+            c.bus.gui.enable_remove_file_btn()
+        else:
+            c.bus.gui.disable_remove_file_btn()
+
+        c.bus.gui.disable_draw_buttons()
+
+        if e.payload == c.active_file_id:
+            if len(c.files.keys()) > 0:
+                helpers.select_image_event(c, list(c.files.keys())[0])
     elif e.signal == signals.SELECT_IMAGE:
         c.active_file_id = e.payload
-        c.on_select_file_in_project_state(e)
+        c.bus.gui.clear_figures()
+        c.bus.gui.clear_canvas()
+        c.bus.gui.load_image_into_canvas(c.files[e.payload]['abs_path'])
+        c.bus.gui.redraw_figures(c.files[c.active_file_id]['figures'])
+
+        c.bus.gui.enable_draw_buttons()
+
+        c.bus.gui.files_frame_treeview.selection_set([e.payload])
+        helpers.reset_drawing_event(c)
     elif e.signal == signals.SAVE_PROJECT:
         status = return_status.HANDLED
-        c.on_save_project_in_project_state(e)
+        helpers.save_project_file_to_path(e.payload, c.files)
     elif e.signal == signals.DRAW_RECT:
         status = c.trans(drawing_rect)
     elif e.signal == signals.DRAW_POLY:
