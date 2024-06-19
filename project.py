@@ -45,16 +45,6 @@ class Project:
         self.history.add_snapshot(self.selected_file_id, self.files[self.selected_file_id])
         del self.files[self.selected_file_id]['figures'][figure_id]
 
-    def add_rectangle(self, points: typing.List[float]):
-        self.history.add_snapshot(self.selected_file_id, self.files[self.selected_file_id])
-        self.files[self.selected_file_id]['figures'].append({
-            'type': 'rect',
-            'points': copy.deepcopy(points),
-            'category': None,
-            'color': None,
-        })
-        return len(self.files[self.selected_file_id]['figures']) - 1
-
     def save_project(self, abs_path: typing.Union[str, pathlib.Path]):
         with open(abs_path, 'w+') as f:
             data = {
@@ -65,4 +55,16 @@ class Project:
 
         self.history.reset_history()
 
+    def undo_history(self):
+        snapshot = self.history.pop_history(self.selected_file_id)
+        self.files[self.selected_file_id] = snapshot
 
+    def add_rectangle(self, points: typing.List[float]):
+        self.history.add_snapshot(self.selected_file_id, self.files[self.selected_file_id])
+        self.files[self.selected_file_id]['figures'].append({
+            'type': 'rect',
+            'points': copy.deepcopy(points),
+            'category': None,
+            'color': None,
+        })
+        return len(self.files[self.selected_file_id]['figures']) - 1

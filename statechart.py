@@ -132,6 +132,20 @@ class Statechart(ActiveObject):
     def on_in_project_save_project(self, abs_path):
         self.project.save_project(abs_path)
 
+    def on_in_project_undo_history(self):
+        selected_file_id, _ = self.project.get_selected_file()
+        if self.project.history.has_history(selected_file_id):
+            self.project.undo_history()
+            selected_file_id, selected_file_data = self.project.get_selected_file()
+
+            self.bus.gui.clear_figures()
+            self.bus.gui.clear_canvas()
+            self.bus.gui.load_image_into_canvas(selected_file_data['abs_path'])
+            for figure_id, figure_data in enumerate(selected_file_data['figures']):
+                self.bus.gui.draw_figure(selected_file_id, figure_id, figure_data)
+                self.bus.gui.insert_figure_into_figures_list(selected_file_id, figure_id, figure_data)
+
+
 
 
 @spy_on
@@ -164,18 +178,9 @@ def in_project(c: Statechart, e: Event) -> return_status:
     elif e.signal == signals.EXIT_SIGNAL:
         status = return_status.HANDLED
         c.on_in_project_exit()
-    # elif e.signal == signals.UNDO_HISTORY:
-    #     status = return_status.HANDLED
-    #
-    #     if c.history.has_history(c.active_file_id):
-    #         snapshot = c.history.pop_history(c.active_file_id)
-    #         c.files[c.active_file_id] = snapshot
-    #
-    #         c.bus.gui.clear_figures()
-    #         c.bus.gui.clear_canvas()
-    #         c.bus.gui.load_image_into_canvas(c.files[c.active_file_id]['abs_path'])
-    #         c.bus.gui.redraw_figures(c.files[c.active_file_id]['figures'])
-
+    elif e.signal == signals.UNDO_HISTORY:
+        status = return_status.HANDLED
+        c.on_in_project_undo_history()
     elif e.signal == signals.ADD_FILE:
         status = return_status.HANDLED
         c.on_in_project_add_file(e.payload)
