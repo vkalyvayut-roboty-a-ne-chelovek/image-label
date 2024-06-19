@@ -334,8 +334,9 @@ class Gui:
 
     def send_figure_delete_event(self):
         if len(self.figures_frame_treeview.selection()) > 0:
-            id_ = self.figures_frame_treeview.item(self.figures_frame_treeview.selection()[0])['values'][1]
-            helpers.delete_figure_event(self.bus.statechart, id_)
+            values = self.figures_frame_treeview.item(self.figures_frame_treeview.selection()[0])['values']
+            _, figure_id, _ = values[1].split(';')
+            helpers.delete_figure_event(self.bus.statechart, int(figure_id))
 
     def send_figure_selected_event(self):
         if len(self.figures_frame_treeview.selection()) > 0:

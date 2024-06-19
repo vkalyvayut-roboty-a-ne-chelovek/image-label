@@ -117,6 +117,19 @@ class Statechart(ActiveObject):
             highlight_figure = selected_figure_id == figure_id
             self.bus.gui.draw_figure(selected_file_id, figure_id, figure_data, highlight_figure=highlight_figure)
 
+    def on_in_project_delete_figure(self, figure_id):
+        if figure_id is not None:
+            self.project.delete_figure(figure_id)
+
+        selected_file_id, selected_file_data = self.project.get_selected_file()
+        self.bus.gui.clear_figures()
+        self.bus.gui.clear_canvas()
+        self.bus.gui.load_image_into_canvas(selected_file_data['abs_path'])
+        for figure_id, figure_data in enumerate(selected_file_data['figures']):
+            self.bus.gui.draw_figure(selected_file_id, figure_id, figure_data)
+            self.bus.gui.insert_figure_into_figures_list(selected_file_id, figure_id, figure_data)
+
+
 
 @spy_on
 def no_project(c: Statechart, e: Event) -> return_status:
@@ -204,17 +217,8 @@ def in_project(c: Statechart, e: Event) -> return_status:
         c.on_in_project_figure_selected(selected_figure_id)
     elif e.signal == signals.DELETE_FIGURE:
         status = return_status.HANDLED
-
-        figure_idx = e.payload
-        if figure_idx is not None:
-            del c.files[c.active_file_id]['figures'][figure_idx]
-
-        c.bus.gui.clear_figures()
-        c.bus.gui.clear_canvas()
-        c.bus.gui.load_image_into_canvas(c.files[c.active_file_id]['abs_path'])
-        c.bus.gui.redraw_figures(c.files[c.active_file_id]['figures'])
-
-        c.history.add_snapshot(c.active_file_id, c.files[c.active_file_id])
+        figure_id = e.payload
+        c.on_in_project_delete_figure(figure_id)
     elif e.signal == signals.SET_FIGURE_CATEGORY:
         status = return_status.HANDLED
 

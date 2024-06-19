@@ -70,6 +70,20 @@ class TestProject(unittest.TestCase):
         selected_file_id, selected_file_data = p.get_selected_file()
         assert selected_file_id == list(p.files.keys())[0]
 
+    def test_delete_figure(self):
+        path = pathlib.Path('.', 'assets', 'domik.boobalp')
+
+        p = Project(path)
+        p.select_file('58da0c08-2529-43bc-b784-389c1fe6997b')
+
+        _, selected_file_data = p.get_selected_file()
+        prev_number_of_figures = len(selected_file_data['figures'])
+
+        p.delete_figure(1)
+        _, selected_file_data = p.get_selected_file()
+
+        assert len(selected_file_data['figures']) != prev_number_of_figures
+
 
 if __name__ == '__main__':
     unittest.main()

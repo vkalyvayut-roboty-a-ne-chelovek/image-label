@@ -41,11 +41,16 @@ class Project:
         else:
             return None, None
 
+    def delete_figure(self, figure_id):
+        self.history.add_snapshot(self.selected_file_id, self.files[self.selected_file_id])
+        del self.files[self.selected_file_id]['figures'][figure_id]
+
     def add_rectangle(self, points: typing.List[float]):
         self.history.add_snapshot(self.selected_file_id, self.files[self.selected_file_id])
         self.files[self.selected_file_id]['figures'].append({
             'type': 'rect',
             'points': copy.deepcopy(points),
-            'category': None
+            'category': None,
+            'color': None,
         })
         return len(self.files[self.selected_file_id]['figures']) - 1
