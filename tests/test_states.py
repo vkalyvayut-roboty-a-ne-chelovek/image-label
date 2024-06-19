@@ -53,7 +53,7 @@ class TestStates(unittest.TestCase):
         statechart = Statechart('statechart', gui=gui)
         gui.run()
 
-        abs_path_to_empty_project_file = pathlib.Path('', 'assets', 'empty.blp').absolute()
+        abs_path_to_empty_project_file = pathlib.Path('', 'assets', 'empty.boobalp').absolute()
         statechart.post_fifo(Event(signal=signals.LOAD_PROJECT, payload=abs_path_to_empty_project_file))
 
         time.sleep(0.1)
@@ -72,7 +72,7 @@ class TestStates(unittest.TestCase):
         statechart = Statechart('statechart', gui=gui)
         gui.run()
 
-        abs_path_to_project_file = pathlib.Path('', 'assets', 'empty.blp').absolute()
+        abs_path_to_project_file = pathlib.Path('', 'assets', 'empty.boobalp').absolute()
         statechart.post_fifo(Event(signal=signals.LOAD_PROJECT, payload=abs_path_to_project_file))
 
         time.sleep(0.1)
@@ -84,7 +84,7 @@ class TestStates(unittest.TestCase):
         statechart = Statechart('statechart', gui=gui)
         gui.run()
 
-        abs_path_to_project_file = pathlib.Path('', 'assets', 'non-empty.blp').absolute()
+        abs_path_to_project_file = pathlib.Path('', 'assets', 'non-empty.boobalp').absolute()
         statechart.post_fifo(Event(signal=signals.LOAD_PROJECT, payload=abs_path_to_project_file))
 
         time.sleep(0.1)
@@ -96,7 +96,7 @@ class TestStates(unittest.TestCase):
         statechart = Statechart('statechart', gui=gui)
         gui.run()
 
-        abs_path_to_project_file_to_load = pathlib.Path('', 'assets', 'empty.blp').absolute()
+        abs_path_to_project_file_to_load = pathlib.Path('', 'assets', 'empty.boobalp').absolute()
         abs_path_to_project_file_to_save = tempfile.mktemp()
 
         statechart.post_fifo(Event(signal=signals.LOAD_PROJECT, payload=abs_path_to_project_file_to_load))
@@ -119,7 +119,7 @@ class TestStates(unittest.TestCase):
         statechart = Statechart('statechart', gui=gui)
         gui.run()
 
-        abs_path_to_project_file_to_load = pathlib.Path('', 'assets', 'non-empty.blp').absolute()
+        abs_path_to_project_file_to_load = pathlib.Path('', 'assets', 'non-empty.boobalp').absolute()
         abs_path_to_project_file_to_save = tempfile.mktemp()
 
         statechart.post_fifo(Event(signal=signals.LOAD_PROJECT, payload=abs_path_to_project_file_to_load))
@@ -230,7 +230,7 @@ class TestStates(unittest.TestCase):
         statechart = Statechart('statechart', gui=gui)
         gui.run()
 
-        abs_path_to_load_project = pathlib.Path('', 'assets', 'domik.blp').absolute()
+        abs_path_to_load_project = pathlib.Path('', 'assets', 'domik.boobalp').absolute()
 
         statechart.post_fifo(Event(signal=signals.LOAD_PROJECT, payload=abs_path_to_load_project))
 
@@ -256,7 +256,7 @@ class TestStates(unittest.TestCase):
         statechart = Statechart('statechart', gui=gui)
         gui.run()
 
-        abs_path_to_load_project = pathlib.Path('', 'assets', 'domik.blp').absolute()
+        abs_path_to_load_project = pathlib.Path('', 'assets', 'domik.boobalp').absolute()
 
         statechart.post_fifo(Event(signal=signals.LOAD_PROJECT, payload=abs_path_to_load_project))
 

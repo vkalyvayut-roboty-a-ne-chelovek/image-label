@@ -1,5 +1,4 @@
 import copy
-import typing
 import uuid
 
 from miros import ActiveObject
@@ -8,41 +7,11 @@ from miros import return_status
 from miros import signals
 from miros import spy_on
 
-from PIL import ImageTk
-
 from common_bus import CommonBus
 import helpers
+from history import History
 
 
-class History:
-    def __init__(self, defaults: typing.Dict):
-        self.history = {}
-        for file_id, new_state in defaults.items():
-            self.set_defaults(file_id, new_state)
-
-    def set_defaults(self, file_id, new_state):
-        print(f'SET DEFAULTS {file_id} = {new_state}')
-        self.history[file_id] = [copy.deepcopy(new_state)]
-
-    def add_snapshot(self, file_id, new_state):
-        print('PREV', self.history[file_id])
-        self.history[file_id].append(copy.deepcopy(new_state))
-        print('CURR', self.history[file_id])
-
-    def pop_history(self, file_id):
-        if len(self.history[file_id]) > 1:
-            self.history[file_id].pop()
-            return self.history[file_id][-1]
-        else:
-            return self.history[file_id][-1]
-
-    def has_history(self, file_id):
-        if file_id in self.history and len(self.history[file_id]) > 0:
-            return True
-        return False
-
-    def reset_history(self):
-        self.history = dict()
 
 
 class Statechart(ActiveObject):
