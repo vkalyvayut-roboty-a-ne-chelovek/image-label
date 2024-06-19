@@ -20,9 +20,15 @@ class History:
             return self.history[file_id].pop()
 
     def has_history(self, file_id):
-        if file_id in self.history and len(self.history[file_id]) > 0:
+        if self.get_history_len(file_id) > 0:
             return True
         return False
 
+    def get_history_len(self, file_id):
+        if file_id in self.history:
+            return len(self.history[file_id])
+        return 0
+
     def reset_history(self):
-        self.history = dict()
+        for file_id, file_states in self.history.items():
+            self.set_defaults(file_id, file_states[-1])

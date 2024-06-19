@@ -129,6 +129,9 @@ class Statechart(ActiveObject):
             self.bus.gui.draw_figure(selected_file_id, figure_id, figure_data)
             self.bus.gui.insert_figure_into_figures_list(selected_file_id, figure_id, figure_data)
 
+    def on_in_project_save_project(self, abs_path):
+        self.project.save_project(abs_path)
+
 
 
 @spy_on
@@ -200,7 +203,8 @@ def in_project(c: Statechart, e: Event) -> return_status:
         c.on_in_project_select_image(e.payload)
     elif e.signal == signals.SAVE_PROJECT:
         status = return_status.HANDLED
-        helpers.save_project_file_to_path(e.payload, c.files)
+        abs_path = e.payload
+        c.on_in_project_save_project(abs_path)
     elif e.signal == signals.DRAW_RECT:
         status = c.trans(drawing_rect)
     elif e.signal == signals.DRAW_POLY:

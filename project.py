@@ -54,3 +54,15 @@ class Project:
             'color': None,
         })
         return len(self.files[self.selected_file_id]['figures']) - 1
+
+    def save_project(self, abs_path: typing.Union[str, pathlib.Path]):
+        with open(abs_path, 'w+') as f:
+            data = {
+                'version': 0,
+                'files': self.files
+            }
+            f.write(json.dumps(data))
+
+        self.history.reset_history()
+
+

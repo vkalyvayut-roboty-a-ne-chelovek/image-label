@@ -84,6 +84,36 @@ class TestProject(unittest.TestCase):
 
         assert len(selected_file_data['figures']) != prev_number_of_figures
 
+    def test_save_object(self):
+        file_path = tempfile.mktemp()
+        p = Project()
+        file_id = p.add_file(file_path)
+        assert p.history.has_history(file_id)
+
+        project_path = tempfile.mktemp()
+        p.save_project(project_path)
+
+        assert pathlib.Path(project_path).exists()
+
+    def test_history_sets_to_1_after_saveing(self):
+        path = pathlib.Path('.', 'assets', 'domik.boobalp')
+
+        p = Project(path)
+        p.select_file('58da0c08-2529-43bc-b784-389c1fe6997b')
+
+        selected_file_id, selected_file_data = p.get_selected_file()
+
+        for figure_id, _ in enumerate(selected_file_data['figures']):
+            p.delete_figure(figure_id)
+
+        assert p.history.get_history_len(selected_file_id) != 0
+        assert p.history.get_history_len(selected_file_id) == 2
+
+        project_path = tempfile.mktemp()
+        p.save_project(project_path)
+
+        assert p.history.get_history_len(selected_file_id) != 1
+
 
 if __name__ == '__main__':
     unittest.main()

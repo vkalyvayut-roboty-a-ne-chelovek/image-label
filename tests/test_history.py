@@ -65,5 +65,6 @@ class TestHistory(unittest.TestCase):
 
         assert h.pop_history('1') == data['1']
 
+
 if __name__ == '__main__':
     unittest.main()
