@@ -47,6 +47,28 @@ class TestProject(unittest.TestCase):
 
         assert p.history.has_history('58da0c08-2529-43bc-b784-389c1fe6997b')
 
+    def test_after_adding_file_in_also_add_to_history(self):
+        abs_path = tempfile.mktemp()
+        p = Project()
+        p.add_file(abs_path)
+
+        assert p.history.has_history(list(p.files.keys())[0])
+
+    def test_get_files_after_creating_not_empty_project(self):
+        path = pathlib.Path('.', 'assets', 'domik.boobalp')
+
+        p = Project(path)
+
+        assert len(p.get_files()) > 0
+
+    def test_select_file(self):
+        abs_path = tempfile.mktemp()
+        p = Project()
+        p.add_file(abs_path)
+
+        p.select_file(list(p.files.keys())[0])
+        assert p.get_selected_file_id() == list(p.files.keys())[0]
+
 
 if __name__ == '__main__':
     unittest.main()
