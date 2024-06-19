@@ -40,6 +40,13 @@ class TestProject(unittest.TestCase):
         with open(path, 'r') as f:
             assert p.files == json.loads(f.read())['files']
 
+    def test_after_load_not_empty_project_object_has_not_empty_history(self):
+        path = pathlib.Path('.', 'assets', 'domik.boobalp')
+
+        p = Project(path)
+
+        assert p.history.has_history('58da0c08-2529-43bc-b784-389c1fe6997b')
+
 
 if __name__ == '__main__':
     unittest.main()
