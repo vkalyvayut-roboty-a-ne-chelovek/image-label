@@ -7,6 +7,7 @@ from PIL import ImageTk, Image
 
 import helpers
 from common_bus import CommonBus
+from figure import Figure
 
 class Gui:
     def __init__(self, bus: CommonBus):
@@ -241,45 +242,14 @@ class Gui:
         if self.drawing_rect_figure:
             self.drawing_frame_canvas.delete(self.drawing_rect_figure)
 
-    def redraw_figures(self, figures: typing.List, highlight_figure_idx: typing.Optional[int] = None, draw_grabbable_points = False) -> None:
-        highlight_figure_style = {
-            'fill': 'white',
-            'outline': 'red',
-            'dash': 5
-        }
-        default_figure_style = {
-            'fill': 'red',
-        }
+    def draw_figure(self, file_id, figure_id, figure_data, highlight_figure: bool = False, draggable: bool = False) -> None:
+        f = Figure(file_id, figure_id, figure_data, self.image_on_canvas, self.drawing_frame_canvas)
+        f.draw(highlight=highlight_figure, draggable=draggable)
 
-        for id_, f in enumerate(figures):
-            figure_style = highlight_figure_style if (highlight_figure_idx is not None) and (id_ == highlight_figure_idx) else default_figure_style
-            if f['type'] == 'rect':
-                self.figures_frame_treeview.insert('', 'end', values=(f'RECT({f["category"]})', id_, f'{self.bus.statechart.active_file_id};{id_};{f["category"]}'), tags=('#figures',))
-
-                points = [self.from_image_to_canvas_coords(*point) for point in f['points']]
-                self.drawing_frame_canvas.create_rectangle(points[0][0], points[0][1],
-                                                           points[1][0], points[1][1],
-                                                           tags=('#draw_figures', ),
-                                                           width=3,
-                                                           **figure_style)
-
-                if draw_grabbable_points:
-                    for p_id, p in enumerate(points):
-                        gr_id = self.drawing_frame_canvas.create_oval(p[0] - 5, p[1] - 5, p[0] + 5, p[1] + 5, fill='pink', width=5, tags=('#draw_figures', '#grabbable', f'#grabbable-data={id_},{p_id}'))
-
-
-            elif f['type'] == 'poly':
-                self.figures_frame_treeview.insert('', 'end', values=(f'POLY({f["category"]})', id_, f'{self.bus.statechart.active_file_id};{id_};{f["category"]}'), tags=('#figures',))
-                points = [self.from_image_to_canvas_coords(*point) for point in f['points']]
-                self.drawing_frame_canvas.create_polygon(points,
-                                                         tags=('#draw_figures',),
-                                                         width=3,
-                                                         **figure_style
-                                                         )
-
-                if draw_grabbable_points:
-                    for p_id, p in enumerate(points):
-                        gr_id = self.drawing_frame_canvas.create_oval(p[0] - 5, p[1] - 5, p[0] + 5, p[1] + 5, fill='pink', width=5, tags=('#draw_figures', '#grabbable', f'#grabbable-data={id_},{p_id}'))
+    def insert_figure_into_figures_list(self, file_id, figure_id, figure_data):
+        values = (figure_data['category'], f'{file_id};{figure_id};{figure_data["category"]}')
+        tags = ('#figures',)
+        self.figures_frame_treeview.insert('', 'end', values=values, tags=tags)
 
     def bind_canvas_motion_poly_drawing(self):
         self.drawing_frame_canvas.bind('<Motion>', lambda _e: self.redraw_drawing_poly_temp_figure(_e.x, _e.y))
@@ -369,8 +339,9 @@ class Gui:
 
     def send_figure_selected_event(self):
         if len(self.figures_frame_treeview.selection()) > 0:
-            id_ = self.figures_frame_treeview.item(self.figures_frame_treeview.selection()[0])['values'][1]
-            helpers.figure_selected_event(self.bus.statechart, id_)
+            values = self.figures_frame_treeview.item(self.figures_frame_treeview.selection()[0])['values']
+            _, figure_id, _ = values[1].split(';')
+            helpers.figure_selected_event(self.bus.statechart, int(figure_id))
 
     def bind_point_move_click(self):
         self.drawing_frame_canvas.bind('<Button-1>', lambda e: self._find_closest_draggable_point(e.x, e.y))
@@ -432,6 +403,34 @@ class Gui:
                     }
                     helpers.update_figure_add_point_event(self.bus.statechart, (x, y), insertable_line_data)
                     break
+
+    def redraw_figures_as_polylines(self, figures: typing.List) -> None:
+
+        for id_, f in enumerate(figures):
+            if f['type'] == 'rect':
+                points = [self.from_image_to_canvas_coords(*point) for point in f['points']]
+                point_1 = points[0][0], points[0][1]
+                point_2 = points[1][0], points[0][1]
+                point_3 = points[1][0], points[1][1]
+                point_4 = points[0][0], points[1][1]
+
+                self.drawing_frame_canvas.create_line(point_1, point_2, width=3)
+                self.drawing_frame_canvas.create_line(point_2, point_3, width=3)
+                self.drawing_frame_canvas.create_line(point_3, point_4, width=3)
+                self.drawing_frame_canvas.create_line(point_4, point_1, width=3)
+
+                for p_id, p in enumerate(points):
+                    gr_id = self.drawing_frame_canvas.create_oval(p[0] - 5, p[1] - 5, p[0] + 5, p[1] + 5, fill='pink', width=5, tags=('#draw_figures'))
+
+            elif f['type'] == 'poly':
+                points = [self.from_image_to_canvas_coords(*point) for point in f['points']]
+                p_idx = 0
+                while p_idx < len(points):
+                    self.drawing_frame_canvas.create_line(points[p_idx - 1], points[p_idx], width=3, fill='red', tags=('#draw_figures', '#insertable', f'#insertable-data={id_},{p_idx}'))
+                    p_idx += 1
+
+                for p_id, p in enumerate(points):
+                    gr_id = self.drawing_frame_canvas.create_oval(p[0] - 5, p[1] - 5, p[0] + 5, p[1] + 5, fill='pink', width=5, tags=('#draw_figures', '#grabbable', f'#grabbable-data={id_},{p_id}'))
 
     def redraw_figures_as_polylines(self, figures: typing.List) -> None:
 

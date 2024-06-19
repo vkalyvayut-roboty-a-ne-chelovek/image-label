@@ -23,11 +23,11 @@ def save_project_file_to_path(path_to_project_file: str, data: typing.Dict) -> N
 
 
 def ask_for_load_project_path() -> str:
-    return filedialog.askopenfilename(filetypes=[('Booba Label Project', '.blp')])
+    return filedialog.askopenfilename(filetypes=[('Booba Label Project', '.boobalp')])
 
 
 def ask_for_save_project_path() -> str:
-    return filedialog.asksaveasfilename(filetypes=[('Booba Label Project', '.blp')])
+    return filedialog.asksaveasfilename(filetypes=[('Booba Label Project', '.boobalp')])
 
 
 def ask_for_add_file_paths() -> typing.List[str]:
@@ -161,3 +161,42 @@ def undo_event(s: ActiveObject):
 
 def set_figure_category_event(s: ActiveObject, file_id, figure_id, category_name):
     s.post_fifo(Event(signal=signals.SET_FIGURE_CATEGORY, payload={'file_id': file_id, 'figure_id': figure_id, 'category': category_name}))
+
+
+def clamp_coords_in_image_area(i_w, i_h, c_w, c_h, x, y) -> (int, int):
+    center_x, center_y = c_w / 2.0, c_h / 2.0
+    min_x = center_x - i_w / 2
+    max_x = center_x + i_w / 2
+    min_y = center_y - i_h / 2
+    max_y = center_y + i_h / 2
+
+    clamped_x = clamp(min_x, max_x, x)
+    clamped_y = clamp(min_y, max_y, y)
+
+    return clamped_x, clamped_y
+
+
+def from_canvas_to_image_coords(self, i_w, i_h, c_w, c_h, x, y):
+    clamped_x, clamped_y = clamp_coords_in_image_area(i_w, i_h, c_w, c_h, x, y)
+
+    center_x, center_y = c_w / 2.0, c_h / 2.0
+
+    max_x = center_x + i_w / 2
+    max_y = center_y + i_h / 2
+
+    rel_x = 1.0 - (max_x - clamped_x) / i_w
+    rel_y = 1.0 - (max_y - clamped_y) / i_h
+
+    return rel_x, rel_y
+
+
+def from_image_to_canvas_coords(i_w, i_h, c_w, c_h, x, y):
+    center_x, center_y = c_w / 2.0, c_h / 2.0
+
+    min_x = center_x - i_w / 2
+    min_y = center_y - i_h / 2
+
+    abs_x = min_x + (x * i_w)
+    abs_y = min_y + (y * i_h)
+
+    return abs_x, abs_y

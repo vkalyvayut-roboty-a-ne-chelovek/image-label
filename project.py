@@ -27,15 +27,19 @@ class Project:
         file_id = str(uuid.uuid4())
         self.files[file_id] = {'abs_path': abs_path, 'figures': []}
         self.history.set_defaults(file_id, self.files[file_id])
+        return file_id
 
     def get_files(self):
-        return self.files
+        return self.files.items()
 
     def select_file(self, file_id):
         self.selected_file_id = file_id
 
-    def get_selected_file_id(self):
-        return self.selected_file_id
+    def get_selected_file(self):
+        if self.selected_file_id:
+            return self.selected_file_id, self.files[self.selected_file_id]
+        else:
+            return None, None
 
     def add_rectangle(self, points: typing.List[float]):
         self.history.add_snapshot(self.selected_file_id, self.files[self.selected_file_id])

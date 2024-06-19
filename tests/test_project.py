@@ -67,7 +67,8 @@ class TestProject(unittest.TestCase):
         p.add_file(abs_path)
 
         p.select_file(list(p.files.keys())[0])
-        assert p.get_selected_file_id() == list(p.files.keys())[0]
+        selected_file_id, selected_file_data = p.get_selected_file()
+        assert selected_file_id == list(p.files.keys())[0]
 
 
 if __name__ == '__main__':
