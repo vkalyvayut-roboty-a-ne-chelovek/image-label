@@ -145,7 +145,26 @@ class Statechart(ActiveObject):
                 self.bus.gui.draw_figure(selected_file_id, figure_id, figure_data)
                 self.bus.gui.insert_figure_into_figures_list(selected_file_id, figure_id, figure_data)
 
+    def on_in_project_remove_file(self, file_id):
+        selected_file_id, selected_file_data = self.project.get_selected_file()
 
+        self.bus.gui.remove_file(file_id)
+        self.project.remove_file(file_id)
+
+        all_project_files = self.project.get_files()
+        keys, _ = all_project_files
+
+        if file_id == selected_file_id:
+            self.bus.gui.clear_figures()
+            self.bus.gui.clear_canvas()
+            if len(keys) > 0:
+                helpers.select_image_event(self, keys[0])
+
+        self.bus.gui.disable_draw_buttons()
+        if len(all_project_files) > 0:
+            self.bus.gui.enable_remove_file_btn()
+        else:
+            self.bus.gui.disable_remove_file_btn()
 
 
 @spy_on
@@ -186,23 +205,7 @@ def in_project(c: Statechart, e: Event) -> return_status:
         c.on_in_project_add_file(e.payload)
     elif e.signal == signals.REMOVE_FILE:
         status = return_status.HANDLED
-        del c.files[e.payload]
-
-        c.bus.gui.remove_file(e.payload)
-        if e.payload == c.active_file_id:
-            c.bus.gui.clear_figures()
-            c.bus.gui.clear_canvas()
-
-        if len(c.files.keys()) > 0:
-            c.bus.gui.enable_remove_file_btn()
-        else:
-            c.bus.gui.disable_remove_file_btn()
-
-        c.bus.gui.disable_draw_buttons()
-
-        if e.payload == c.active_file_id:
-            if len(c.files.keys()) > 0:
-                helpers.select_image_event(c, list(c.files.keys())[0])
+        c.on_in_project_remove_file(e.payload)
     elif e.signal == signals.SELECT_IMAGE:
         status = return_status.HANDLED
         c.on_in_project_select_image(e.payload)

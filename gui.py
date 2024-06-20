@@ -119,10 +119,10 @@ class Gui:
             for item in self.files_frame_treeview.get_children(''):
                 self.files_frame_treeview.delete(item)
 
-    def remove_file(self, id_):
+    def remove_file(self, file_id):
         if self.files_frame_treeview.tag_has('#files'):
             for item in self.files_frame_treeview.get_children():
-                if item == id_:
+                if item == file_id:
                     self.files_frame_treeview.delete(item)
 
     def clear_figures(self):

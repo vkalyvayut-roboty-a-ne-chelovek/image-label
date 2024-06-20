@@ -29,6 +29,9 @@ class Project:
         self.history.set_defaults(file_id, self.files[file_id])
         return file_id
 
+    def remove_file(self, file_id):
+        del self.files[file_id]
+
     def get_files(self):
         return self.files.items()
 
