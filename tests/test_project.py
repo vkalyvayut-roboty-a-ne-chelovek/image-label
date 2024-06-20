@@ -114,6 +114,16 @@ class TestProject(unittest.TestCase):
 
         assert p.history.get_history_len(selected_file_id) != 1
 
+    def test_remove_file_from_project(self):
+        path = pathlib.Path('.', 'assets', 'domik.boobalp')
+
+        p = Project(path)
+        number_of_files_before = len(p.get_files())
+        expected_number_of_files_after = number_of_files_before - 1
+        p.remove_file('58da0c08-2529-43bc-b784-389c1fe6997b')
+
+        assert len(p.get_files()) == expected_number_of_files_after
+
 
 if __name__ == '__main__':
     unittest.main()
