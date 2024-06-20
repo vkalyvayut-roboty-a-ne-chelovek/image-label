@@ -112,7 +112,7 @@ class TestProject(unittest.TestCase):
         project_path = tempfile.mktemp()
         p.save_project(project_path)
 
-        assert p.history.get_history_len(selected_file_id) != 1
+        assert p.history.get_history_len(selected_file_id) == 1
 
     def test_remove_file_from_project(self):
         path = pathlib.Path('.', 'assets', 'domik.boobalp')
