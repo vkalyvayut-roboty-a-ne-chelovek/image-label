@@ -124,6 +124,15 @@ class TestProject(unittest.TestCase):
 
         assert len(p.get_files()) == expected_number_of_files_after
 
+    def test_get_files(self):
+        path = pathlib.Path('.', 'assets', 'domik.boobalp')
+
+        p = Project(path)
+        keys = ('767b79a3-655d-406e-af69-39ee0b085bc2',)
+
+        assert len(p.get_files()) != len(p.get_files(keys))
+        assert len(p.get_files(keys)) == 1
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -151,8 +151,7 @@ class Statechart(ActiveObject):
         self.bus.gui.remove_file(file_id)
         self.project.remove_file(file_id)
 
-        all_project_files = self.project.get_files()
-        keys, _ = all_project_files
+        keys, _ = [k for k, _ in self.project.get_files()]
 
         if file_id == selected_file_id:
             self.bus.gui.clear_figures()
@@ -161,7 +160,7 @@ class Statechart(ActiveObject):
                 helpers.select_image_event(self, keys[0])
 
         self.bus.gui.disable_draw_buttons()
-        if len(all_project_files) > 0:
+        if len(keys) > 0:
             self.bus.gui.enable_remove_file_btn()
         else:
             self.bus.gui.disable_remove_file_btn()

@@ -32,8 +32,10 @@ class Project:
     def remove_file(self, file_id):
         del self.files[file_id]
 
-    def get_files(self):
-        return self.files.items()
+    def get_files(self, only_keys: typing.Tuple = None):
+        if only_keys:
+            return [(k, self.files.get(k)) for k in only_keys]
+        return [(k, v) for k, v in self.files.items()]
 
     def select_file(self, file_id):
         self.selected_file_id = file_id
@@ -71,3 +73,6 @@ class Project:
             'color': None,
         })
         return len(self.files[self.selected_file_id]['figures']) - 1
+
+    # def update_figure_category(self, file_id, figure_id, category):
+    #     pass
