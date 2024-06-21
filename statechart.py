@@ -57,7 +57,7 @@ class Statechart(ActiveObject):
 
         if self.project.get_files():
             if selected_file_id:
-                helpers.select_image_event(self, self.project.get_selected_file_id())
+                helpers.select_image_event(self, selected_file_id)
             else:
                 for file_id, filedata in self.project.get_files():
                     helpers.select_image_event(self, file_id)
@@ -165,6 +165,19 @@ class Statechart(ActiveObject):
         else:
             self.bus.gui.disable_remove_file_btn()
 
+    def on_in_project_set_figure_category(self, file_id, figure_id, category):
+        self.project.update_figure_category(file_id, figure_id, category)
+
+        selected_file_id, selected_file_data = self.project.get_selected_file()
+
+        if file_id == selected_file_id:
+            self.bus.gui.clear_figures()
+            self.bus.gui.clear_canvas()
+            self.bus.gui.load_image_into_canvas(selected_file_data['abs_path'])
+            for figure_id, figure_data in enumerate(selected_file_data['figures']):
+                self.bus.gui.draw_figure(selected_file_id, figure_id, figure_data)
+                self.bus.gui.insert_figure_into_figures_list(selected_file_id, figure_id, figure_data)
+
 
 @spy_on
 def no_project(c: Statechart, e: Event) -> return_status:
@@ -237,20 +250,7 @@ def in_project(c: Statechart, e: Event) -> return_status:
         figure_id = e.payload['figure_id']
         category = e.payload['category']
 
-        print('SET_FIGURE_CATEGORY', e.payload)
-        print(c.files)
-
-        if file_id in c.files and c.files[file_id]['figures'][figure_id] is not None:
-            c.files[file_id]['figures'][figure_id]['category'] = category
-            c.history.add_snapshot(file_id, c.files[file_id])
-
-            print(c.files[c.active_file_id]['figures'])
-
-            if file_id == c.active_file_id:
-                c.bus.gui.clear_figures()
-                c.bus.gui.clear_canvas()
-                c.bus.gui.load_image_into_canvas(c.files[c.active_file_id]['abs_path'])
-                c.bus.gui.redraw_figures(c.files[c.active_file_id]['figures'])
+        c.on_in_project_set_figure_category(file_id, figure_id, category)
     else:
         status = return_status.SUPER
         c.temp.fun = no_project

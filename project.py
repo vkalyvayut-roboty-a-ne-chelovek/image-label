@@ -74,5 +74,5 @@ class Project:
         })
         return len(self.files[self.selected_file_id]['figures']) - 1
 
-    # def update_figure_category(self, file_id, figure_id, category):
-    #     pass
+    def update_figure_category(self, file_id, figure_id, category):
+        self.files[file_id]['figures'][figure_id]['category'] = category

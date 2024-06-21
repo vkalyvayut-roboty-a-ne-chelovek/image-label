@@ -327,8 +327,7 @@ class Gui:
 
     def show_popup_figure_category_rename(self):
         if len(self.figures_frame_treeview.selection()) > 0:
-            data = self.figures_frame_treeview.item(self.figures_frame_treeview.selection()[0])['values'][2].split(';')
-            print('DATA>>>>>', data, self.figures_frame_treeview.item(self.figures_frame_treeview.selection()[0]))
+            data = self.figures_frame_treeview.item(self.figures_frame_treeview.selection()[0])['values'][1].split(';')
             file_id, figure_id, category_name = data[0], int(data[1]), data[2]
             helpers.ask_for_category_name(self.bus.statechart, file_id, figure_id, default_val=category_name)
 

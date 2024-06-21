@@ -133,6 +133,20 @@ class TestProject(unittest.TestCase):
         assert len(p.get_files()) != len(p.get_files(keys))
         assert len(p.get_files(keys)) == 1
 
+    def test_update_figure_category(self):
+        path = pathlib.Path('.', 'assets', 'domik.boobalp')
+
+        p = Project(path)
+        file_id = '767b79a3-655d-406e-af69-39ee0b085bc2'
+        figure_id = 0
+
+        file_data = p.get_files((file_id,))
+        prev_category = file_data[0][1]['figures'][figure_id]['category']
+        p.update_figure_category(file_id, figure_id, 'test')
+
+        assert file_data[0][1]['figures'][figure_id]['category'] == 'test'
+
+
 
 if __name__ == '__main__':
     unittest.main()
