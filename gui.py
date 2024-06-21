@@ -242,9 +242,9 @@ class Gui:
         if self.drawing_rect_figure:
             self.drawing_frame_canvas.delete(self.drawing_rect_figure)
 
-    def draw_figure(self, file_id, figure_id, figure_data, highlight_figure: bool = False, draggable: bool = False) -> None:
+    def draw_figure(self, file_id, figure_id, figure_data, highlight: bool = False, draggable: bool = False) -> None:
         f = Figure(file_id, figure_id, figure_data, self.image_on_canvas, self.drawing_frame_canvas)
-        f.draw(highlight=highlight_figure, draggable=draggable)
+        f.draw(highlight=highlight, draggable=draggable)
 
     def insert_figure_into_figures_list(self, file_id, figure_id, figure_data):
         values = (figure_data['category'], f'{file_id};{figure_id};{figure_data["category"]}')
@@ -279,43 +279,26 @@ class Gui:
             f = self.drawing_frame_canvas.create_polygon(temp_points, fill='green', outline='yellow', tags=('#draw_figures',))
             self.drawing_poly_figures.append(f)
 
-    def clamp_coords_in_image_area(self, x, y) -> (int, int):
-        i_w, i_h = self.image_on_canvas.width(), self.image_on_canvas.height()
-        c_w, c_h = self.drawing_frame_canvas.winfo_width(), self.drawing_frame_canvas.winfo_height()
-        center_x, center_y = self.drawing_frame_canvas.winfo_width() / 2.0, self.drawing_frame_canvas.winfo_height() / 2.0
-        min_x = center_x - self.image_on_canvas.width() / 2
-        max_x = center_x + self.image_on_canvas.width() / 2
-        min_y = center_y - self.image_on_canvas.height() / 2
-        max_y = center_y + self.image_on_canvas.height() / 2
+    def _get_image_and_canvas_sizes(self):
+        return (self.image_on_canvas.width(), self.image_on_canvas.height(),
+                self.drawing_frame_canvas.winfo_width(), self.drawing_frame_canvas.winfo_height())
 
-        clamped_x = helpers.clamp(min_x, max_x, x)
-        clamped_y = helpers.clamp(min_y, max_y, y)
+    def clamp_coords_in_image_area(self, x, y) -> (int, int):
+        i_w, i_h, c_w, c_h = self._get_image_and_canvas_sizes()
+        clamped_x, clamped_y = helpers.clamp_coords_in_image_area(i_w=i_w, i_h=i_h, c_w=c_w, c_h=c_h, x=x, y=y)
 
         return clamped_x, clamped_y
 
     def from_canvas_to_image_coords(self, x, y):
-        clamped_x, clamped_y = self.clamp_coords_in_image_area(x, y)
-        i_w, i_h = self.image_on_canvas.width(), self.image_on_canvas.height()
-        center_x, center_y = self.drawing_frame_canvas.winfo_width() / 2.0, self.drawing_frame_canvas.winfo_height() / 2.0
-
-        max_x = center_x + i_w / 2
-        max_y = center_y + i_h / 2
-
-        rel_x = 1.0 - (max_x - clamped_x) / i_w
-        rel_y = 1.0 - (max_y - clamped_y) / i_h
+        i_w, i_h, c_w, c_h = self._get_image_and_canvas_sizes()
+        clamped_x, clamped_y = helpers.clamp_coords_in_image_area(i_w=i_w, i_h=i_h, c_w=c_w, c_h=c_h, x=x, y=y)
+        rel_x, rel_y = helpers.from_canvas_to_image_coords(i_w=i_w, i_h=i_h, c_w=c_w, c_h=c_h, x=clamped_x, y=clamped_y)
 
         return rel_x, rel_y
 
     def from_image_to_canvas_coords(self, x, y):
-        i_w, i_h = self.image_on_canvas.width(), self.image_on_canvas.height()
-        center_x, center_y = self.drawing_frame_canvas.winfo_width() / 2.0, self.drawing_frame_canvas.winfo_height() / 2.0
-
-        min_x = center_x - i_w / 2
-        min_y = center_y - i_h / 2
-
-        abs_x = min_x + (x * i_w)
-        abs_y = min_y + (y * i_h)
-
+        i_w, i_h, c_w, c_h = self._get_image_and_canvas_sizes()
+        abs_x, abs_y = helpers.from_image_to_canvas_coords(i_w=i_w, i_h=i_h, c_w=c_w, c_h=c_h, x=x, y=y)
         return abs_x, abs_y
 
     def bind_figure_selection_event(self):

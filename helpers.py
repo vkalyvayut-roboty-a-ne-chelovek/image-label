@@ -57,8 +57,9 @@ def select_image_event(s: ActiveObject, file_id: typing.Any) -> None:
 
 def add_file_event(s: ActiveObject) -> None:
     file_path = ask_for_add_file_paths()
-    if file_path:
+    if len(file_path) > 0:
         s.post_fifo(Event(signal=signals.ADD_FILE, payload=file_path))
+
 
 
 def remove_file_event(s: ActiveObject, file_ids: typing.Any) -> None:
@@ -171,7 +172,7 @@ def clamp_coords_in_image_area(i_w, i_h, c_w, c_h, x, y) -> (int, int):
     return clamped_x, clamped_y
 
 
-def from_canvas_to_image_coords(self, i_w, i_h, c_w, c_h, x, y):
+def from_canvas_to_image_coords(i_w, i_h, c_w, c_h, x, y):
     clamped_x, clamped_y = clamp_coords_in_image_area(i_w, i_h, c_w, c_h, x, y)
 
     center_x, center_y = c_w / 2.0, c_h / 2.0

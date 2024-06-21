@@ -73,9 +73,10 @@ class Statechart(ActiveObject):
         self.bus.gui.clear_figures()
         self.bus.gui.clear_canvas()
 
-    def on_in_project_add_file(self, abs_path):
+    def on_in_project_add_file(self, files):
         selected_file_id, _ = self.project.get_selected_file()
-        self.project.add_file(abs_path)
+        for abs_path in files:
+            self.project.add_file(abs_path)
 
         self.bus.gui.clear_files()
         for file_id, file_data in self.project.get_files():
@@ -114,8 +115,8 @@ class Statechart(ActiveObject):
 
         self.bus.gui.load_image_into_canvas(selected_file_data['abs_path'])
         for figure_id, figure_data in enumerate(selected_file_data['figures']):
-            highlight_figure = selected_figure_id == figure_id
-            self.bus.gui.draw_figure(selected_file_id, figure_id, figure_data, highlight_figure=highlight_figure)
+            highlight = selected_figure_id == figure_id
+            self.bus.gui.draw_figure(selected_file_id, figure_id, figure_data, highlight=highlight)
 
     def on_in_project_delete_figure(self, figure_id):
         if figure_id is not None:
@@ -177,6 +178,52 @@ class Statechart(ActiveObject):
             for figure_id, figure_data in enumerate(selected_file_data['figures']):
                 self.bus.gui.draw_figure(selected_file_id, figure_id, figure_data)
                 self.bus.gui.insert_figure_into_figures_list(selected_file_id, figure_id, figure_data)
+
+    def on_drawing_rect_entry(self):
+        self.bus.gui.bind_canvas_click_event()
+        self.bus.gui.bind_canvas_motion_rect_drawing_stage_1()
+
+        self.points = []
+
+    def on_drawing_rect_exit(self):
+        self.bus.gui.unbind_canvas_click_event()
+        self.bus.gui.unbind_canvas_motion_rect_drawing_stage_1()
+
+    def on_drawing_rect_reset_drawing(self):
+        self.points = []
+
+    def on_drawing_rect_click(self, point):
+        self.points.append(point)
+
+    def on_drawing_rect_waiting_for_2_point_entry(self):
+        self.bus.gui.drawing_rect_point_1 = self.points[0]
+
+        self.bus.gui.bind_canvas_click_event()
+        self.bus.gui.bind_canvas_motion_rect_drawing_stage_2()
+
+    def on_drawing_rect_waiting_for_2_point_exit(self):
+        self.bus.gui.unbind_canvas_motion_rect_drawing_stage_2()
+        self.bus.gui.unbind_canvas_click_event()
+
+        self.bus.gui.drawing_rect_point_1 = None
+
+        self.points = []
+
+    def on_drawing_rect_waiting_for_2_point_click(self, point):
+        self.points.append(point)
+        points = [self.bus.gui.from_canvas_to_image_coords(*point) for point in self.points]
+        new_figure_id = self.project.add_rectangle(points=points, color=helpers.pick_random_color())
+        self.points = []
+
+        selected_file_id, _ = self.project.get_selected_file()
+        helpers.ask_for_category_name(self, copy.copy(selected_file_id), new_figure_id)
+
+        helpers.select_image_event(self, selected_file_id)
+
+    def on_drawing_rect_waiting_for_2_point_reset_drawing(self):
+        self.points = []
+        selected_file_id, _ = self.project.get_selected_file()
+        helpers.select_image_event(self, selected_file_id)
 
 
 @spy_on
@@ -264,22 +311,16 @@ def drawing_rect(c: Statechart, e: Event) -> return_status:
 
     if e.signal == signals.ENTRY_SIGNAL:
         status = return_status.HANDLED
-        c.bus.gui.bind_canvas_click_event()
-        c.bus.gui.bind_canvas_motion_rect_drawing_stage_1()
-
-        c.points = []
+        c.on_drawing_rect_entry()
     elif e.signal == signals.EXIT_SIGNAL:
         status = return_status.HANDLED
-        c.bus.gui.unbind_canvas_click_event()
-        c.bus.gui.unbind_canvas_motion_rect_drawing_stage_1()
+        c.on_drawing_rect_exit()
     elif e.signal == signals.RESET_DRAWING:
         status = c.trans(in_project)
-        c.points = []
-
+        c.on_drawing_rect_reset_drawing()
     elif e.signal == signals.CLICK:
         status = c.trans(drawing_rect_waiting_for_2_point)
-
-        c.points.append(e.payload)
+        c.on_drawing_rect_click(e.payload)
     else:
         status = return_status.SUPER
         c.temp.fun = in_project
@@ -293,37 +334,16 @@ def drawing_rect_waiting_for_2_point(c: Statechart, e: Event) -> return_status:
 
     if e.signal == signals.ENTRY_SIGNAL:
         status = return_status.HANDLED
-        c.bus.gui.drawing_rect_point_1 = c.points[0]
-
-        c.bus.gui.bind_canvas_click_event()
-        c.bus.gui.bind_canvas_motion_rect_drawing_stage_2()
+        c.on_drawing_rect_waiting_for_2_point_entry()
     elif e.signal == signals.EXIT_SIGNAL:
         status = return_status.HANDLED
-        c.bus.gui.unbind_canvas_motion_rect_drawing_stage_2()
-        c.bus.gui.unbind_canvas_click_event()
-
-        c.bus.gui.drawing_rect_point_1 = None
-
-        c.points = []
+        c.on_drawing_rect_waiting_for_2_point_exit()
     if e.signal == signals.CLICK:
         status = c.trans(in_project)
-
-        c.points.append(e.payload)
-        c.files[c.active_file_id]['figures'].append({
-            'type': 'rect',
-            'points': [c.bus.gui.from_canvas_to_image_coords(*point) for point in c.points],
-            'category': None
-        })
-        helpers.ask_for_category_name(c, copy.copy(c.active_file_id), len(c.files[c.active_file_id]['figures']) - 1)
-
-        c.points = []
-        helpers.select_image_event(c, c.active_file_id)
-
-        c.history.add_snapshot(c.active_file_id, c.files[c.active_file_id])
+        c.on_drawing_rect_waiting_for_2_point_click(e.payload)
     elif e.signal == signals.RESET_DRAWING:
         status = c.trans(in_project)
-
-        helpers.select_image_event(c, c.active_file_id)
+        c.on_drawing_rect_waiting_for_2_point_reset_drawing()
     else:
         status = return_status.SUPER
         c.temp.fun = in_project

@@ -64,13 +64,13 @@ class Project:
         snapshot = self.history.pop_history(self.selected_file_id)
         self.files[self.selected_file_id] = snapshot
 
-    def add_rectangle(self, points: typing.List[float]):
+    def add_rectangle(self, points: typing.List[float], color: str = None, category: str = '<NOCATEGORY>'):
         self.history.add_snapshot(self.selected_file_id, self.files[self.selected_file_id])
         self.files[self.selected_file_id]['figures'].append({
             'type': 'rect',
             'points': copy.deepcopy(points),
-            'category': None,
-            'color': None,
+            'category': category,
+            'color': color,
         })
         return len(self.files[self.selected_file_id]['figures']) - 1
 
