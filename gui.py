@@ -354,13 +354,12 @@ class Gui:
         self.drawing_frame_canvas.unbind('<B1-Motion>')
 
     def bind_point_remove_click(self):
-        self.drawing_frame_canvas.bind('<Button-1>', lambda e: self.send_point_remove_remove_point_event(e.x, e.y))
+        self.drawing_frame_canvas.bind('<Button-1>', lambda e: self.send_update_figure_remove_point_event(e.x, e.y))
 
     def unbind_point_remove_click(self):
         self.drawing_frame_canvas.unbind('<Button-1>')
 
-    # TODO переименовать метод лол
-    def send_point_remove_remove_point_event(self, x, y):
+    def send_update_figure_remove_point_event(self, x, y):
         self._find_closest_draggable_point(x, y)
         if self.moving_figure_point:
             helpers.update_figure_remove_point_event(self.bus.statechart, self.moving_figure_point)
@@ -379,10 +378,10 @@ class Gui:
             print('>>>>TAGS', tags)
             for t in tags:
                 if t.startswith('#insertable-data='):
-                    data = t.lstrip('#insertable-data=').split(',')
+                    data = t.lstrip('#insertable-data=').split(';')
                     insertable_line_data = {
-                        'figure_idx': int(data[0]),
-                        'point_idx': int(data[1])
+                        'figure_idx': int(data[1]),
+                        'point_idx': int(data[2])
                     }
                     helpers.update_figure_add_point_event(self.bus.statechart, (x, y), insertable_line_data)
                     break

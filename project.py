@@ -86,3 +86,18 @@ class Project:
     def update_figure_point_position(self, file_id, figure_id, point_id, new_coords):
         self.history.add_snapshot(file_id, self.files[file_id])
         self.files[file_id]['figures'][figure_id]['points'][point_id] = new_coords
+
+    def update_figure_remove_point(self, file_id, figure_id, point_id):
+        self.history.add_snapshot(file_id, self.files[file_id])
+
+        if self.files[file_id]['figures'][figure_id]['type'] == 'rect':
+            del self.files[file_id]['figures'][figure_id]
+        else:
+            if len(self.files[file_id]['figures'][figure_id]['points']) <= 3:
+                del self.files[file_id]['figures'][figure_id]
+            else:
+                del self.files[file_id]['figures'][figure_id]['points'][point_id]
+
+    def update_figure_insert_point(self, file_id, figure_id, point_id, coords):
+        self.history.add_snapshot(file_id, self.files[file_id])
+        self.files[file_id]['figures'][figure_id]['points'].insert(point_id, coords)

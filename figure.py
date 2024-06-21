@@ -76,7 +76,6 @@ class Figure:
         style = self._make_figure_style(as_line=True)
         p_idx = 0
         while p_idx < len(self._points):
-            tags = ('#draw_figures', '#insertable', f'#insertable-data="{self.file_id},{self.figure_id},{p_idx}"')
-            self.canvas.create_line(self._points[p_idx - 1], self._points[p_idx],
-                                    tags=tags, **style)
+            tags = ('#draw_figures', '#insertable', f'#insertable-data={self.file_id};{self.figure_id};{p_idx}')
+            self.canvas.create_line(self._points[p_idx - 1], self._points[p_idx], tags=tags, **style)
             p_idx += 1

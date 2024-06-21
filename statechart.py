@@ -296,6 +296,81 @@ class Statechart(ActiveObject):
         for figure_id, figure_data in enumerate(selected_file_data['figures']):
             self.bus.gui.draw_figure(selected_file_id, figure_id, figure_data, draggable=True)
 
+    def on_removing_point_entry(self):
+        self.bus.gui.clear_figures()
+        self.bus.gui.clear_canvas()
+
+        selected_file_id, selected_file_data = self.project.get_selected_file()
+        self.bus.gui.load_image_into_canvas(selected_file_data['abs_path'])
+        for figure_id, figure_data in enumerate(selected_file_data['figures']):
+            self.bus.gui.draw_figure(selected_file_id, figure_id, figure_data, draggable=True)
+
+        self.bus.gui.bind_point_remove_click()
+
+    def on_removing_point_exit(self):
+        self.bus.gui.clear_figures()
+        self.bus.gui.clear_canvas()
+
+        selected_file_id, selected_file_data = self.project.get_selected_file()
+        self.bus.gui.load_image_into_canvas(selected_file_data['abs_path'])
+        for figure_id, figure_data in enumerate(selected_file_data['figures']):
+            self.bus.gui.draw_figure(selected_file_id, figure_id, figure_data)
+            self.bus.gui.insert_figure_into_figures_list(selected_file_id, figure_id, figure_data)
+
+        self.bus.gui.bind_point_remove_click()
+
+    def on_removing_point_update_figure_remove_point(self, figure_id, point_id):
+        selected_file_id, selected_file_data = self.project.get_selected_file()
+
+        self.project.update_figure_remove_point(selected_file_id, figure_id, point_id)
+
+        self.bus.gui.clear_figures()
+        self.bus.gui.clear_canvas()
+
+        selected_file_id, selected_file_data = self.project.get_selected_file()
+        self.bus.gui.load_image_into_canvas(selected_file_data['abs_path'])
+        for figure_id, figure_data in enumerate(selected_file_data['figures']):
+            self.bus.gui.draw_figure(selected_file_id, figure_id, figure_data, draggable=True)
+            self.bus.gui.insert_figure_into_figures_list(selected_file_id, figure_id, figure_data)
+
+    def on_adding_point_entry(self):
+        self.bus.gui.clear_figures()
+        self.bus.gui.clear_canvas()
+
+        selected_file_id, selected_file_data = self.project.get_selected_file()
+        self.bus.gui.load_image_into_canvas(selected_file_data['abs_path'])
+        for figure_id, figure_data in enumerate(selected_file_data['figures']):
+            self.bus.gui.draw_figure(selected_file_id, figure_id, figure_data, draggable=True)
+            self.bus.gui.insert_figure_into_figures_list(selected_file_id, figure_id, figure_data)
+
+        self.bus.gui.bind_point_add_click()
+
+    def on_adding_point_exit(self):
+        self.bus.gui.clear_figures()
+        self.bus.gui.clear_canvas()
+
+        selected_file_id, selected_file_data = self.project.get_selected_file()
+        self.bus.gui.load_image_into_canvas(selected_file_data['abs_path'])
+        for figure_id, figure_data in enumerate(selected_file_data['figures']):
+            self.bus.gui.draw_figure(selected_file_id, figure_id, figure_data)
+            self.bus.gui.insert_figure_into_figures_list(selected_file_id, figure_id, figure_data)
+
+        self.bus.gui.unbind_point_add_click()
+
+    def on_adding_point_update_figure_insert_point(self, figure_id, point_id, coords):
+        selected_file_id, selected_file_data = self.project.get_selected_file()
+        coords = self.bus.gui.from_canvas_to_image_coords(*coords)
+        self.project.update_figure_insert_point(selected_file_id, figure_id, point_id, coords)
+
+        self.bus.gui.clear_figures()
+        self.bus.gui.clear_canvas()
+
+        selected_file_id, selected_file_data = self.project.get_selected_file()
+        self.bus.gui.load_image_into_canvas(selected_file_data['abs_path'])
+        for figure_id, figure_data in enumerate(selected_file_data['figures']):
+            self.bus.gui.draw_figure(selected_file_id, figure_id, figure_data, draggable=True)
+            self.bus.gui.insert_figure_into_figures_list(selected_file_id, figure_id, figure_data)
+
 
 @spy_on
 def no_project(c: Statechart, e: Event) -> return_status:
@@ -471,39 +546,13 @@ def removing_point(c: Statechart, e: Event) -> return_status:
 
     if e.signal == signals.ENTRY_SIGNAL:
         status = return_status.HANDLED
-
-        c.bus.gui.clear_figures()
-        c.bus.gui.clear_canvas()
-        c.bus.gui.load_image_into_canvas(c.files[c.active_file_id]['abs_path'])
-        c.bus.gui.redraw_figures(c.files[c.active_file_id]['figures'], draw_grabbable_points=True)
-
-        c.bus.gui.bind_point_remove_click()
+        c.on_removing_point_entry()
     if e.signal == signals.EXIT_SIGNAL:
         status = return_status.HANDLED
-
-        c.bus.gui.clear_figures()
-        c.bus.gui.clear_canvas()
-        c.bus.gui.load_image_into_canvas(c.files[c.active_file_id]['abs_path'])
-        c.bus.gui.redraw_figures(c.files[c.active_file_id]['figures'])
-
-        c.bus.gui.bind_point_remove_click()
+        c.on_removing_point_exit()
     if e.signal == signals.UPDATE_FIGURE_REMOVE_POINT:
         status = return_status.HANDLED
-
-        if c.files[c.active_file_id]['figures'][e.payload['figure_idx']]['type'] == 'rect':
-            del c.files[c.active_file_id]['figures'][e.payload['figure_idx']]
-        else:
-            if len(c.files[c.active_file_id]['figures'][e.payload['figure_idx']]['points']) <= 3:
-                del c.files[c.active_file_id]['figures'][e.payload['figure_idx']]
-            else:
-                del c.files[c.active_file_id]['figures'][e.payload['figure_idx']]['points'][e.payload['point_idx']]
-
-        c.bus.gui.clear_figures()
-        c.bus.gui.clear_canvas()
-        c.bus.gui.load_image_into_canvas(c.files[c.active_file_id]['abs_path'])
-        c.bus.gui.redraw_figures(c.files[c.active_file_id]['figures'], draw_grabbable_points=True)
-
-        c.history.add_snapshot(c.active_file_id, c.files[c.active_file_id])
+        c.on_removing_point_update_figure_remove_point(e.payload['figure_idx'], e.payload['point_idx'])
     else:
         status = return_status.SUPER
         c.temp.fun = in_project
@@ -517,33 +566,13 @@ def adding_point(c: Statechart, e: Event) -> return_status:
 
     if e.signal == signals.ENTRY_SIGNAL:
         status = return_status.HANDLED
-
-        c.bus.gui.clear_figures()
-        c.bus.gui.clear_canvas()
-        c.bus.gui.load_image_into_canvas(c.files[c.active_file_id]['abs_path'])
-        c.bus.gui.redraw_figures_as_polylines(c.files[c.active_file_id]['figures'])
-
-        c.bus.gui.bind_point_add_click()
+        c.on_adding_point_entry()
     if e.signal == signals.EXIT_SIGNAL:
         status = return_status.HANDLED
-
-        c.bus.gui.clear_figures()
-        c.bus.gui.clear_canvas()
-        c.bus.gui.load_image_into_canvas(c.files[c.active_file_id]['abs_path'])
-        c.bus.gui.redraw_figures(c.files[c.active_file_id]['figures'])
-
-        c.bus.gui.unbind_point_add_click()
+        c.on_adding_point_exit()
     if e.signal == signals.UPDATE_FIGURE_INSERT_POINT:
         status = return_status.HANDLED
-
-        c.files[c.active_file_id]['figures'][e.payload['figure_idx']]['points'].insert(e.payload['point_idx'], c.bus.gui.from_canvas_to_image_coords(*e.payload['coords']))
-
-        c.bus.gui.clear_figures()
-        c.bus.gui.clear_canvas()
-        c.bus.gui.load_image_into_canvas(c.files[c.active_file_id]['abs_path'])
-        c.bus.gui.redraw_figures_as_polylines(c.files[c.active_file_id]['figures'])
-
-        c.history.add_snapshot(c.active_file_id, c.files[c.active_file_id])
+        c.on_adding_point_update_figure_insert_point(e.payload['figure_idx'], e.payload['point_idx'], e.payload['coords'])
     else:
         status = return_status.SUPER
         c.temp.fun = in_project
