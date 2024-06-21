@@ -259,6 +259,43 @@ class Statechart(ActiveObject):
                 helpers.ask_for_category_name(self, copy.copy(selected_file_id), new_figure_id)
                 helpers.select_image_event(self, selected_file_id)
 
+    def on_moving_point_entry(self):
+        self.bus.gui.clear_canvas()
+
+        selected_file_id, selected_file_data = self.project.get_selected_file()
+
+        self.bus.gui.load_image_into_canvas(selected_file_data['abs_path'])
+        for figure_id, figure_data in enumerate(selected_file_data['figures']):
+            self.bus.gui.draw_figure(selected_file_id, figure_id, figure_data, draggable=True)
+
+        self.bus.gui.bind_point_move_click()
+        self.bus.gui.bind_point_move_motion_event()
+
+    def on_moving_point_exit(self):
+        self.bus.gui.clear_canvas()
+
+        selected_file_id, selected_file_data = self.project.get_selected_file()
+
+        self.bus.gui.load_image_into_canvas(selected_file_data['abs_path'])
+        for figure_id, figure_data in enumerate(selected_file_data['figures']):
+            self.bus.gui.draw_figure(selected_file_id, figure_id, figure_data, draggable=True)
+
+        self.bus.gui.unbind_point_move_click()
+        self.bus.gui.unbind_point_move_motion_event()
+
+    def on_moving_point_update_figure_point_position(self, figure_id, point_id, new_coords):
+        selected_file_id, _ = self.project.get_selected_file()
+        new_coords = self.bus.gui.from_canvas_to_image_coords(*new_coords)
+        self.project.update_figure_point_position(selected_file_id, figure_id, point_id, new_coords)
+
+        self.bus.gui.clear_canvas()
+
+        selected_file_id, selected_file_data = self.project.get_selected_file()
+
+        self.bus.gui.load_image_into_canvas(selected_file_data['abs_path'])
+        for figure_id, figure_data in enumerate(selected_file_data['figures']):
+            self.bus.gui.draw_figure(selected_file_id, figure_id, figure_data, draggable=True)
+
 
 @spy_on
 def no_project(c: Statechart, e: Event) -> return_status:
@@ -414,35 +451,13 @@ def moving_point(c: Statechart, e: Event) -> return_status:
 
     if e.signal == signals.ENTRY_SIGNAL:
         status = return_status.HANDLED
-
-        c.bus.gui.clear_figures()
-        c.bus.gui.clear_canvas()
-        c.bus.gui.load_image_into_canvas(c.files[c.active_file_id]['abs_path'])
-        c.bus.gui.redraw_figures(c.files[c.active_file_id]['figures'], draw_grabbable_points=True)
-
-        c.bus.gui.bind_point_move_click()
-        c.bus.gui.bind_point_move_motion_event()
+        c.on_moving_point_entry()
     if e.signal == signals.EXIT_SIGNAL:
         status = return_status.HANDLED
-
-        c.bus.gui.clear_figures()
-        c.bus.gui.clear_canvas()
-        c.bus.gui.load_image_into_canvas(c.files[c.active_file_id]['abs_path'])
-        c.bus.gui.redraw_figures(c.files[c.active_file_id]['figures'])
-
-        c.bus.gui.unbind_point_move_click()
-        c.bus.gui.unbind_point_move_motion_event()
+        c.on_moving_point_exit()
     if e.signal == signals.UPDATE_FIGURE_POINT_POSITION:
         status = return_status.HANDLED
-
-        c.files[c.active_file_id]['figures'][e.payload['figure_idx']]['points'][e.payload['point_idx']] = c.bus.gui.from_canvas_to_image_coords(*e.payload['coords'])
-
-        c.bus.gui.clear_figures()
-        c.bus.gui.clear_canvas()
-        c.bus.gui.load_image_into_canvas(c.files[c.active_file_id]['abs_path'])
-        c.bus.gui.redraw_figures(c.files[c.active_file_id]['figures'], draw_grabbable_points=True)
-
-        c.history.add_snapshot(c.active_file_id, c.files[c.active_file_id])
+        c.on_moving_point_update_figure_point_position(e.payload['figure_idx'], e.payload['point_idx'], e.payload['coords'])
     else:
         status = return_status.SUPER
         c.temp.fun = in_project

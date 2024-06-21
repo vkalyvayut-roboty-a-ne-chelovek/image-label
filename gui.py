@@ -340,10 +340,10 @@ class Gui:
             tags = self.drawing_frame_canvas.gettags(f)
             for t in tags:
                 if t.startswith('#grabbable-data='):
-                    data = t.lstrip('#grabbable-data=').split(',')
+                    data = t.lstrip('#grabbable-data=').split(';')
                     self.moving_figure_point = {
-                        'figure_idx': int(data[0]),
-                        'point_idx': int(data[1])
+                        'figure_idx': int(data[1]),
+                        'point_idx': int(data[2])
                     }
                     break
 

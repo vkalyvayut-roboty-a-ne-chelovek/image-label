@@ -44,7 +44,7 @@ class Figure:
 
         if draggable:
             for point_id, point_data in enumerate(self._points):
-                tags = ('#draw_figures', '#grabbable', f'#grabbable-data={self.file_id},{self.figure_id},{point_id}')
+                tags = ('#draw_figures', '#grabbable', f'#grabbable-data={self.file_id};{self.figure_id};{point_id}')
                 self.canvas.create_oval(point_data[0] - 5, point_data[1] - 5,
                                         point_data[0] + 5, point_data[1] + 5,
                                         fill='pink', width=5,

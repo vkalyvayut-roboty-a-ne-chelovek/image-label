@@ -64,10 +64,10 @@ class Project:
         snapshot = self.history.pop_history(self.selected_file_id)
         self.files[self.selected_file_id] = snapshot
 
-    def _add_figure(self, type: str, points: typing.List[float], color: str = None, category: str = '<NOCATEGORY>'):
+    def _add_figure(self, type_: str, points: typing.List[float], color: str = None, category: str = '<NOCATEGORY>'):
         self.history.add_snapshot(self.selected_file_id, self.files[self.selected_file_id])
         self.files[self.selected_file_id]['figures'].append({
-            'type': 'rect',
+            'type': type_,
             'points': copy.deepcopy(points),
             'category': category,
             'color': color,
@@ -75,10 +75,14 @@ class Project:
         return len(self.files[self.selected_file_id]['figures']) - 1
 
     def add_rectangle(self, points: typing.List[float], color: str = None, category: str = '<NOCATEGORY>'):
-        return self._add_figure(type='rect', points=points, color=color, category=category)
+        return self._add_figure(type_='rect', points=points, color=color, category=category)
 
     def add_polygon(self, points: typing.List[float], color: str = None, category: str = '<NOCATEGORY>'):
-        return self._add_figure(type='poly', points=points, color=color, category=category)
+        return self._add_figure(type_='poly', points=points, color=color, category=category)
 
     def update_figure_category(self, file_id, figure_id, category):
         self.files[file_id]['figures'][figure_id]['category'] = category
+
+    def update_figure_point_position(self, file_id, figure_id, point_id, new_coords):
+        self.history.add_snapshot(file_id, self.files[file_id])
+        self.files[file_id]['figures'][figure_id]['points'][point_id] = new_coords
