@@ -1,6 +1,8 @@
 from tkinter import Canvas
 from PIL import ImageTk
 from helpers import from_image_to_canvas_coords
+
+
 class Figure:
     def __init__(self, file_id, figure_id, figure_data, image_on_canvas: ImageTk, canvas: Canvas):
         self.file_id = file_id

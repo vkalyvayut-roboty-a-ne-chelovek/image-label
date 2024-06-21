@@ -1,5 +1,4 @@
 import copy
-import uuid
 
 from miros import ActiveObject
 from miros import Event
@@ -10,8 +9,6 @@ from miros import spy_on
 from common_bus import CommonBus
 import helpers
 from project import Project
-
-
 
 
 class Statechart(ActiveObject):
@@ -32,7 +29,7 @@ class Statechart(ActiveObject):
 
         self.bus.gui.load_image_into_canvas(selected_file_data['abs_path'])
         for figure_id, figure_data in enumerate(selected_file_data['figures']):
-            highlight = True if (highlight_figure_id is not None) and (highlight_figure_id == figure_id) else False
+            highlight = bool((highlight_figure_id is not None) and (highlight_figure_id == figure_id))
             self.bus.gui.draw_figure(selected_file_id, figure_id, figure_data, highlight=highlight, draggable=draggable)
             self.bus.gui.insert_figure_into_figures_list(selected_file_id, figure_id, figure_data)
 
@@ -104,7 +101,7 @@ class Statechart(ActiveObject):
 
     def on_in_project_select_image(self, file_id):
         self.project.select_file(file_id)
-        file_id, file_data = self.project.get_selected_file()
+        file_id, _ = self.project.get_selected_file()
 
         self._redraw_canvas_and_figures()
 
@@ -132,7 +129,7 @@ class Statechart(ActiveObject):
             self._redraw_canvas_and_figures()
 
     def on_in_project_remove_file(self, file_id):
-        selected_file_id, selected_file_data = self.project.get_selected_file()
+        selected_file_id, _ = self.project.get_selected_file()
 
         self.bus.gui.remove_file(file_id)
         self.project.remove_file(file_id)
@@ -154,7 +151,7 @@ class Statechart(ActiveObject):
     def on_in_project_set_figure_category(self, file_id, figure_id, category):
         self.project.update_figure_category(file_id, figure_id, category)
 
-        selected_file_id, selected_file_data = self.project.get_selected_file()
+        selected_file_id, _ = self.project.get_selected_file()
 
         if file_id == selected_file_id:
             self._redraw_canvas_and_figures()
@@ -266,10 +263,10 @@ class Statechart(ActiveObject):
     def on_removing_point_exit(self):
         self._redraw_canvas_and_figures()
 
-        self.bus.gui.bind_point_remove_click()
+        self.bus.gui.unbind_point_remove_click()
 
     def on_removing_point_update_figure_remove_point(self, figure_id, point_id):
-        selected_file_id, selected_file_data = self.project.get_selected_file()
+        selected_file_id, _ = self.project.get_selected_file()
 
         self.project.update_figure_remove_point(selected_file_id, figure_id, point_id)
 
@@ -286,7 +283,7 @@ class Statechart(ActiveObject):
         self.bus.gui.unbind_point_add_click()
 
     def on_adding_point_update_figure_insert_point(self, figure_id, point_id, coords):
-        selected_file_id, selected_file_data = self.project.get_selected_file()
+        selected_file_id, _ = self.project.get_selected_file()
         coords = self.bus.gui.from_canvas_to_image_coords(*coords)
         self.project.update_figure_insert_point(selected_file_id, figure_id, point_id, coords)
 
@@ -294,208 +291,210 @@ class Statechart(ActiveObject):
 
 
 @spy_on
-def no_project(c: Statechart, e: Event) -> return_status:
+def no_project(chart: Statechart, event: Event) -> return_status:
     status = return_status.UNHANDLED
 
-    if e.signal == signals.ENTRY_SIGNAL:
+    if event.signal == signals.ENTRY_SIGNAL:
         status = return_status.HANDLED
-        c.on_no_project_entry()
-    elif e.signal == signals.NEW_PROJECT:
-        status = c.trans(in_project)
-        c.empty_project()
-    elif e.signal == signals.LOAD_PROJECT:
-        status = c.trans(in_project)
-        c.load_project(e.payload)
+        chart.on_no_project_entry()
+    elif event.signal == signals.NEW_PROJECT:
+        status = chart.trans(in_project)
+        chart.empty_project()
+    elif event.signal == signals.LOAD_PROJECT:
+        status = chart.trans(in_project)
+        chart.load_project(event.payload)
     else:
         status = return_status.SUPER
-        c.temp.fun = c.top
+        chart.temp.fun = chart.top
 
     return status
 
 
 @spy_on
-def in_project(c: Statechart, e: Event) -> return_status:
+def in_project(chart: Statechart, event: Event) -> return_status:
     status = return_status.UNHANDLED
 
-    if e.signal == signals.ENTRY_SIGNAL:
+    if event.signal == signals.ENTRY_SIGNAL:
         status = return_status.HANDLED
-        c.on_in_project_entry()
-    elif e.signal == signals.EXIT_SIGNAL:
+        chart.on_in_project_entry()
+    elif event.signal == signals.EXIT_SIGNAL:
         status = return_status.HANDLED
-        c.on_in_project_exit()
-    elif e.signal == signals.UNDO_HISTORY:
+        chart.on_in_project_exit()
+    elif event.signal == signals.UNDO_HISTORY:
         status = return_status.HANDLED
-        c.on_in_project_undo_history()
-    elif e.signal == signals.ADD_FILE:
+        chart.on_in_project_undo_history()
+    elif event.signal == signals.ADD_FILE:
         status = return_status.HANDLED
-        c.on_in_project_add_file(e.payload)
-    elif e.signal == signals.REMOVE_FILE:
+        chart.on_in_project_add_file(event.payload)
+    elif event.signal == signals.REMOVE_FILE:
         status = return_status.HANDLED
-        c.on_in_project_remove_file(e.payload)
-    elif e.signal == signals.SELECT_IMAGE:
+        chart.on_in_project_remove_file(event.payload)
+    elif event.signal == signals.SELECT_IMAGE:
         status = return_status.HANDLED
-        c.on_in_project_select_image(e.payload)
-    elif e.signal == signals.SAVE_PROJECT:
+        chart.on_in_project_select_image(event.payload)
+    elif event.signal == signals.SAVE_PROJECT:
         status = return_status.HANDLED
-        abs_path = e.payload
-        c.on_in_project_save_project(abs_path)
-    elif e.signal == signals.DRAW_RECT:
-        status = c.trans(drawing_rect)
-    elif e.signal == signals.DRAW_POLY:
-        status = c.trans(drawing_poly)
-    elif e.signal == signals.ADD_POINT:
-        status = c.trans(adding_point)
-    elif e.signal == signals.REMOVE_POINT:
-        status = c.trans(removing_point)
-    elif e.signal == signals.MOVE_POINT:
-        status = c.trans(moving_point)
-    elif e.signal == signals.FIGURE_SELECTED:
+        abs_path = event.payload
+        chart.on_in_project_save_project(abs_path)
+    elif event.signal == signals.DRAW_RECT:
+        status = chart.trans(drawing_rect)
+    elif event.signal == signals.DRAW_POLY:
+        status = chart.trans(drawing_poly)
+    elif event.signal == signals.ADD_POINT:
+        status = chart.trans(adding_point)
+    elif event.signal == signals.REMOVE_POINT:
+        status = chart.trans(removing_point)
+    elif event.signal == signals.MOVE_POINT:
+        status = chart.trans(moving_point)
+    elif event.signal == signals.FIGURE_SELECTED:
         status = return_status.HANDLED
-        selected_figure_id = e.payload
-        c.on_in_project_figure_selected(selected_figure_id)
-    elif e.signal == signals.DELETE_FIGURE:
+        selected_figure_id = event.payload
+        chart.on_in_project_figure_selected(selected_figure_id)
+    elif event.signal == signals.DELETE_FIGURE:
         status = return_status.HANDLED
-        figure_id = e.payload
-        c.on_in_project_delete_figure(figure_id)
-    elif e.signal == signals.SET_FIGURE_CATEGORY:
+        figure_id = event.payload
+        chart.on_in_project_delete_figure(figure_id)
+    elif event.signal == signals.SET_FIGURE_CATEGORY:
         status = return_status.HANDLED
 
-        file_id = e.payload['file_id']
-        figure_id = e.payload['figure_id']
-        category = e.payload['category']
+        file_id = event.payload['file_id']
+        figure_id = event.payload['figure_id']
+        category = event.payload['category']
 
-        c.on_in_project_set_figure_category(file_id, figure_id, category)
+        chart.on_in_project_set_figure_category(file_id, figure_id, category)
     else:
         status = return_status.SUPER
-        c.temp.fun = no_project
+        chart.temp.fun = no_project
 
     return status
 
 
 @spy_on
-def drawing_rect(c: Statechart, e: Event) -> return_status:
+def drawing_rect(chart: Statechart, event: Event) -> return_status:
     status = return_status.UNHANDLED
 
-    if e.signal == signals.ENTRY_SIGNAL:
+    if event.signal == signals.ENTRY_SIGNAL:
         status = return_status.HANDLED
-        c.on_drawing_rect_entry()
-    elif e.signal == signals.EXIT_SIGNAL:
+        chart.on_drawing_rect_entry()
+    elif event.signal == signals.EXIT_SIGNAL:
         status = return_status.HANDLED
-        c.on_drawing_rect_exit()
-    elif e.signal == signals.RESET_DRAWING:
-        status = c.trans(in_project)
-        c.on_drawing_rect_reset_drawing()
-    elif e.signal == signals.CLICK:
-        status = c.trans(drawing_rect_waiting_for_2_point)
-        c.on_drawing_rect_click(e.payload)
+        chart.on_drawing_rect_exit()
+    elif event.signal == signals.RESET_DRAWING:
+        status = chart.trans(in_project)
+        chart.on_drawing_rect_reset_drawing()
+    elif event.signal == signals.CLICK:
+        status = chart.trans(drawing_rect_waiting_for_2_point)
+        chart.on_drawing_rect_click(event.payload)
     else:
         status = return_status.SUPER
-        c.temp.fun = in_project
+        chart.temp.fun = in_project
 
     return status
 
 
 @spy_on
-def drawing_rect_waiting_for_2_point(c: Statechart, e: Event) -> return_status:
+def drawing_rect_waiting_for_2_point(chart: Statechart, event: Event) -> return_status:
     status = return_status.HANDLED
 
-    if e.signal == signals.ENTRY_SIGNAL:
+    if event.signal == signals.ENTRY_SIGNAL:
         status = return_status.HANDLED
-        c.on_drawing_rect_waiting_for_2_point_entry()
-    elif e.signal == signals.EXIT_SIGNAL:
+        chart.on_drawing_rect_waiting_for_2_point_entry()
+    elif event.signal == signals.EXIT_SIGNAL:
         status = return_status.HANDLED
-        c.on_drawing_rect_waiting_for_2_point_exit()
-    if e.signal == signals.CLICK:
-        status = c.trans(in_project)
-        c.on_drawing_rect_waiting_for_2_point_click(e.payload)
-    elif e.signal == signals.RESET_DRAWING:
-        status = c.trans(in_project)
-        c.on_drawing_rect_waiting_for_2_point_reset_drawing()
+        chart.on_drawing_rect_waiting_for_2_point_exit()
+    if event.signal == signals.CLICK:
+        status = chart.trans(in_project)
+        chart.on_drawing_rect_waiting_for_2_point_click(event.payload)
+    elif event.signal == signals.RESET_DRAWING:
+        status = chart.trans(in_project)
+        chart.on_drawing_rect_waiting_for_2_point_reset_drawing()
     else:
         status = return_status.SUPER
-        c.temp.fun = in_project
+        chart.temp.fun = in_project
 
     return status
 
 
 @spy_on
-def drawing_poly(c: Statechart, e: Event) -> return_status:
+def drawing_poly(chart: Statechart, event: Event) -> return_status:
     status = return_status.UNHANDLED
 
-    if e.signal == signals.ENTRY_SIGNAL:
+    if event.signal == signals.ENTRY_SIGNAL:
         status = return_status.HANDLED
-        c.on_drawing_poly_entry()
-    elif e.signal == signals.EXIT_SIGNAL:
+        chart.on_drawing_poly_entry()
+    elif event.signal == signals.EXIT_SIGNAL:
         status = return_status.HANDLED
-        c.on_drawing_poly_exit()
-    elif e.signal == signals.RESET_DRAWING:
-        status = c.trans(in_project)
-        c.on_drawing_poly_reset_drawing()
-    elif e.signal == signals.CLICK:
+        chart.on_drawing_poly_exit()
+    elif event.signal == signals.RESET_DRAWING:
+        status = chart.trans(in_project)
+        chart.on_drawing_poly_reset_drawing()
+    elif event.signal == signals.CLICK:
         status = return_status.HANDLED
-        c.on_drawing_poly_click(e.payload)
+        chart.on_drawing_poly_click(event.payload)
     else:
         status = return_status.SUPER
-        c.temp.fun = in_project
+        chart.temp.fun = in_project
 
     return status
 
 
 @spy_on
-def moving_point(c: Statechart, e: Event) -> return_status:
+def moving_point(chart: Statechart, event: Event) -> return_status:
     status = return_status.UNHANDLED
 
-    if e.signal == signals.ENTRY_SIGNAL:
+    if event.signal == signals.ENTRY_SIGNAL:
         status = return_status.HANDLED
-        c.on_moving_point_entry()
-    if e.signal == signals.EXIT_SIGNAL:
+        chart.on_moving_point_entry()
+    if event.signal == signals.EXIT_SIGNAL:
         status = return_status.HANDLED
-        c.on_moving_point_exit()
-    if e.signal == signals.UPDATE_FIGURE_POINT_POSITION:
+        chart.on_moving_point_exit()
+    if event.signal == signals.UPDATE_FIGURE_POINT_POSITION:
         status = return_status.HANDLED
-        c.on_moving_point_update_figure_point_position(e.payload['figure_idx'], e.payload['point_idx'], e.payload['coords'])
+        chart.on_moving_point_update_figure_point_position(event.payload['figure_idx'],
+                                                           event.payload['point_idx'],
+                                                           event.payload['coords'])
     else:
         status = return_status.SUPER
-        c.temp.fun = in_project
+        chart.temp.fun = in_project
 
     return status
 
 
 @spy_on
-def removing_point(c: Statechart, e: Event) -> return_status:
+def removing_point(chart: Statechart, event: Event) -> return_status:
     status = return_status.UNHANDLED
 
-    if e.signal == signals.ENTRY_SIGNAL:
+    if event.signal == signals.ENTRY_SIGNAL:
         status = return_status.HANDLED
-        c.on_removing_point_entry()
-    if e.signal == signals.EXIT_SIGNAL:
+        chart.on_removing_point_entry()
+    if event.signal == signals.EXIT_SIGNAL:
         status = return_status.HANDLED
-        c.on_removing_point_exit()
-    if e.signal == signals.UPDATE_FIGURE_REMOVE_POINT:
+        chart.on_removing_point_exit()
+    if event.signal == signals.UPDATE_FIGURE_REMOVE_POINT:
         status = return_status.HANDLED
-        c.on_removing_point_update_figure_remove_point(e.payload['figure_idx'], e.payload['point_idx'])
+        chart.on_removing_point_update_figure_remove_point(event.payload['figure_idx'], event.payload['point_idx'])
     else:
         status = return_status.SUPER
-        c.temp.fun = in_project
+        chart.temp.fun = in_project
 
     return status
 
 
 @spy_on
-def adding_point(c: Statechart, e: Event) -> return_status:
+def adding_point(chart: Statechart, event: Event) -> return_status:
     status = return_status.UNHANDLED
 
-    if e.signal == signals.ENTRY_SIGNAL:
+    if event.signal == signals.ENTRY_SIGNAL:
         status = return_status.HANDLED
-        c.on_adding_point_entry()
-    if e.signal == signals.EXIT_SIGNAL:
+        chart.on_adding_point_entry()
+    if event.signal == signals.EXIT_SIGNAL:
         status = return_status.HANDLED
-        c.on_adding_point_exit()
-    if e.signal == signals.UPDATE_FIGURE_INSERT_POINT:
+        chart.on_adding_point_exit()
+    if event.signal == signals.UPDATE_FIGURE_INSERT_POINT:
         status = return_status.HANDLED
-        c.on_adding_point_update_figure_insert_point(e.payload['figure_idx'], e.payload['point_idx'], e.payload['coords'])
+        chart.on_adding_point_update_figure_insert_point(event.payload['figure_idx'], event.payload['point_idx'], event.payload['coords'])
     else:
         status = return_status.SUPER
-        c.temp.fun = in_project
+        chart.temp.fun = in_project
 
     return status

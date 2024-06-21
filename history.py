@@ -1,6 +1,7 @@
 import copy
 import typing
 
+
 class History:
     def __init__(self, defaults: typing.Dict = None):
         self.history = {}

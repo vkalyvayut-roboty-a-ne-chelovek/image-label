@@ -9,15 +9,15 @@ from history import History
 
 class Project:
     def __init__(self, path: typing.Union[str, pathlib.Path] = None):
-        self.files = dict() if not path else self._load_from_path(path)
+        self.files = {} if not path else self._load_from_path(path)
         self.history = History(self.files)
         self.selected_file_id = None
 
     @staticmethod
     def _load_from_path(path: str) -> typing.Dict:
-        result = dict()
-        with open(path, 'r') as f:
-            data = json.loads(f.read())
+        result = {}
+        with open(path, 'r') as handle:
+            data = json.loads(handle.read())
             if isinstance(data, dict) and 'files' in data:
                 result = data['files']
 
@@ -43,20 +43,19 @@ class Project:
     def get_selected_file(self):
         if self.selected_file_id:
             return self.selected_file_id, self.files[self.selected_file_id]
-        else:
-            return None, None
+        return None, None
 
     def delete_figure(self, figure_id):
         self.history.add_snapshot(self.selected_file_id, self.files[self.selected_file_id])
         del self.files[self.selected_file_id]['figures'][figure_id]
 
     def save_project(self, abs_path: typing.Union[str, pathlib.Path]):
-        with open(abs_path, 'w+') as f:
+        with open(abs_path, 'w+') as handle:
             data = {
                 'version': 0,
                 'files': self.files
             }
-            f.write(json.dumps(data))
+            handle.write(json.dumps(data))
 
         self.history.reset_history()
 
