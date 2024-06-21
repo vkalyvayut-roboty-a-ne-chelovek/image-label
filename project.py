@@ -64,7 +64,7 @@ class Project:
         snapshot = self.history.pop_history(self.selected_file_id)
         self.files[self.selected_file_id] = snapshot
 
-    def add_rectangle(self, points: typing.List[float], color: str = None, category: str = '<NOCATEGORY>'):
+    def _add_figure(self, type: str, points: typing.List[float], color: str = None, category: str = '<NOCATEGORY>'):
         self.history.add_snapshot(self.selected_file_id, self.files[self.selected_file_id])
         self.files[self.selected_file_id]['figures'].append({
             'type': 'rect',
@@ -73,6 +73,12 @@ class Project:
             'color': color,
         })
         return len(self.files[self.selected_file_id]['figures']) - 1
+
+    def add_rectangle(self, points: typing.List[float], color: str = None, category: str = '<NOCATEGORY>'):
+        return self._add_figure(type='rect', points=points, color=color, category=category)
+
+    def add_polygon(self, points: typing.List[float], color: str = None, category: str = '<NOCATEGORY>'):
+        return self._add_figure(type='poly', points=points, color=color, category=category)
 
     def update_figure_category(self, file_id, figure_id, category):
         self.files[file_id]['figures'][figure_id]['category'] = category

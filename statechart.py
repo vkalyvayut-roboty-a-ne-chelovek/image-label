@@ -225,6 +225,40 @@ class Statechart(ActiveObject):
         selected_file_id, _ = self.project.get_selected_file()
         helpers.select_image_event(self, selected_file_id)
 
+    def on_drawing_poly_entry(self):
+        self.bus.gui.bind_canvas_click_event()
+        self.bus.gui.bind_canvas_motion_poly_drawing()
+        self.points = []
+        self.bus.gui.drawing_poly_points = []
+
+    def on_drawing_poly_exit(self):
+        self.bus.gui.unbind_canvas_click_event()
+        self.bus.gui.unbind_canvas_motion_poly_drawing()
+
+    def on_drawing_poly_reset_drawing(self):
+        self.points = []
+        self.bus.gui.drawing_poly_points = []
+
+    def on_drawing_poly_click(self, point):
+        self.points.append(point)
+
+        self.bus.gui.drawing_poly_points.append(point)
+
+        if len(self.points) >= 3:
+            point_start = self.points[0]
+            point_finish = self.points[-1]
+
+            if abs(point_finish[0] - point_start[0]) <= 5 and abs(point_finish[1] - point_start[1]) <= 5:
+                selected_file_id, _ = self.project.get_selected_file()
+                self.points.pop()
+                new_figure_id = self.project.add_polygon(
+                    points=[self.bus.gui.from_canvas_to_image_coords(*point) for point in self.points],
+                    color=helpers.pick_random_color()
+                )
+
+                helpers.ask_for_category_name(self, copy.copy(selected_file_id), new_figure_id)
+                helpers.select_image_event(self, selected_file_id)
+
 
 @spy_on
 def no_project(c: Statechart, e: Event) -> return_status:
@@ -357,51 +391,16 @@ def drawing_poly(c: Statechart, e: Event) -> return_status:
 
     if e.signal == signals.ENTRY_SIGNAL:
         status = return_status.HANDLED
-        c.bus.gui.bind_canvas_click_event()
-        c.bus.gui.bind_canvas_motion_poly_drawing()
-    elif e.signal == signals.INIT_SIGNAL:
-        status = return_status.HANDLED
-
-        c.points = []
-
-        c.bus.gui.drawing_poly_points = []
+        c.on_drawing_poly_entry()
     elif e.signal == signals.EXIT_SIGNAL:
         status = return_status.HANDLED
-        c.bus.gui.unbind_canvas_click_event()
-        c.bus.gui.unbind_canvas_motion_poly_drawing()
+        c.on_drawing_poly_exit()
     elif e.signal == signals.RESET_DRAWING:
         status = c.trans(in_project)
-        c.points = []
-
+        c.on_drawing_poly_reset_drawing()
     elif e.signal == signals.CLICK:
         status = return_status.HANDLED
-
-        c.points.append(e.payload)
-
-        c.bus.gui.drawing_poly_points.append(e.payload)
-
-        if len(c.points) >= 3:
-            point_start = c.points[0]
-            point_finish = c.points[-1]
-
-            if abs(point_finish[0] - point_start[0]) <= 5 and abs(point_finish[1] - point_start[1]) <= 5:
-
-                c.points.pop()
-                c.files[c.active_file_id]['figures'].append({
-                    'type': 'poly',
-                    'points': [c.bus.gui.from_canvas_to_image_coords(*point) for point in c.points],
-                    'category': None
-                })
-
-                helpers.ask_for_category_name(c, copy.copy(c.active_file_id), len(c.files[c.active_file_id]['figures']) - 1)
-
-                c.points = []
-                helpers.select_image_event(c, c.active_file_id)
-
-                status = c.trans(in_project)
-
-                c.history.add_snapshot(c.active_file_id, c.files[c.active_file_id])
-
+        c.on_drawing_poly_click(e.payload)
     else:
         status = return_status.SUPER
         c.temp.fun = in_project
