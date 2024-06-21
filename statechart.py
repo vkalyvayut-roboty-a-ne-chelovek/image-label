@@ -25,6 +25,17 @@ class Statechart(ActiveObject):
 
         self.points = []
 
+    def _redraw_canvas_and_figures(self, highlight_figure_id: int = None, draggable=False):
+        selected_file_id, selected_file_data = self.project.get_selected_file()
+        self.bus.gui.clear_figures()
+        self.bus.gui.clear_canvas()
+
+        self.bus.gui.load_image_into_canvas(selected_file_data['abs_path'])
+        for figure_id, figure_data in enumerate(selected_file_data['figures']):
+            highlight = True if (highlight_figure_id is not None) and (highlight_figure_id == figure_id) else False
+            self.bus.gui.draw_figure(selected_file_id, figure_id, figure_data, highlight=highlight, draggable=draggable)
+            self.bus.gui.insert_figure_into_figures_list(selected_file_id, figure_id, figure_data)
+
     def run(self):
         self.start_at(no_project)
 
@@ -95,13 +106,7 @@ class Statechart(ActiveObject):
         self.project.select_file(file_id)
         file_id, file_data = self.project.get_selected_file()
 
-        self.bus.gui.clear_figures()
-        self.bus.gui.clear_canvas()
-
-        self.bus.gui.load_image_into_canvas(file_data['abs_path'])
-        for figure_id, figure_data in enumerate(file_data['figures']):
-            self.bus.gui.draw_figure(file_id, figure_id, figure_data)
-            self.bus.gui.insert_figure_into_figures_list(file_id, figure_id, figure_data)
+        self._redraw_canvas_and_figures()
 
         self.bus.gui.enable_draw_buttons()
 
@@ -109,26 +114,13 @@ class Statechart(ActiveObject):
         helpers.reset_drawing_event(self)
 
     def on_in_project_figure_selected(self, selected_figure_id):
-        self.bus.gui.clear_canvas()
-
-        selected_file_id, selected_file_data = self.project.get_selected_file()
-
-        self.bus.gui.load_image_into_canvas(selected_file_data['abs_path'])
-        for figure_id, figure_data in enumerate(selected_file_data['figures']):
-            highlight = selected_figure_id == figure_id
-            self.bus.gui.draw_figure(selected_file_id, figure_id, figure_data, highlight=highlight)
+        self._redraw_canvas_and_figures(highlight_figure_id=selected_figure_id)
 
     def on_in_project_delete_figure(self, figure_id):
         if figure_id is not None:
             self.project.delete_figure(figure_id)
 
-        selected_file_id, selected_file_data = self.project.get_selected_file()
-        self.bus.gui.clear_figures()
-        self.bus.gui.clear_canvas()
-        self.bus.gui.load_image_into_canvas(selected_file_data['abs_path'])
-        for figure_id, figure_data in enumerate(selected_file_data['figures']):
-            self.bus.gui.draw_figure(selected_file_id, figure_id, figure_data)
-            self.bus.gui.insert_figure_into_figures_list(selected_file_id, figure_id, figure_data)
+        self._redraw_canvas_and_figures()
 
     def on_in_project_save_project(self, abs_path):
         self.project.save_project(abs_path)
@@ -137,14 +129,7 @@ class Statechart(ActiveObject):
         selected_file_id, _ = self.project.get_selected_file()
         if self.project.history.has_history(selected_file_id):
             self.project.undo_history()
-            selected_file_id, selected_file_data = self.project.get_selected_file()
-
-            self.bus.gui.clear_figures()
-            self.bus.gui.clear_canvas()
-            self.bus.gui.load_image_into_canvas(selected_file_data['abs_path'])
-            for figure_id, figure_data in enumerate(selected_file_data['figures']):
-                self.bus.gui.draw_figure(selected_file_id, figure_id, figure_data)
-                self.bus.gui.insert_figure_into_figures_list(selected_file_id, figure_id, figure_data)
+            self._redraw_canvas_and_figures()
 
     def on_in_project_remove_file(self, file_id):
         selected_file_id, selected_file_data = self.project.get_selected_file()
@@ -172,12 +157,7 @@ class Statechart(ActiveObject):
         selected_file_id, selected_file_data = self.project.get_selected_file()
 
         if file_id == selected_file_id:
-            self.bus.gui.clear_figures()
-            self.bus.gui.clear_canvas()
-            self.bus.gui.load_image_into_canvas(selected_file_data['abs_path'])
-            for figure_id, figure_data in enumerate(selected_file_data['figures']):
-                self.bus.gui.draw_figure(selected_file_id, figure_id, figure_data)
-                self.bus.gui.insert_figure_into_figures_list(selected_file_id, figure_id, figure_data)
+            self._redraw_canvas_and_figures()
 
     def on_drawing_rect_entry(self):
         self.bus.gui.bind_canvas_click_event()
@@ -260,25 +240,13 @@ class Statechart(ActiveObject):
                 helpers.select_image_event(self, selected_file_id)
 
     def on_moving_point_entry(self):
-        self.bus.gui.clear_canvas()
-
-        selected_file_id, selected_file_data = self.project.get_selected_file()
-
-        self.bus.gui.load_image_into_canvas(selected_file_data['abs_path'])
-        for figure_id, figure_data in enumerate(selected_file_data['figures']):
-            self.bus.gui.draw_figure(selected_file_id, figure_id, figure_data, draggable=True)
+        self._redraw_canvas_and_figures(draggable=True)
 
         self.bus.gui.bind_point_move_click()
         self.bus.gui.bind_point_move_motion_event()
 
     def on_moving_point_exit(self):
-        self.bus.gui.clear_canvas()
-
-        selected_file_id, selected_file_data = self.project.get_selected_file()
-
-        self.bus.gui.load_image_into_canvas(selected_file_data['abs_path'])
-        for figure_id, figure_data in enumerate(selected_file_data['figures']):
-            self.bus.gui.draw_figure(selected_file_id, figure_id, figure_data, draggable=True)
+        self._redraw_canvas_and_figures()
 
         self.bus.gui.unbind_point_move_click()
         self.bus.gui.unbind_point_move_motion_event()
@@ -288,34 +256,15 @@ class Statechart(ActiveObject):
         new_coords = self.bus.gui.from_canvas_to_image_coords(*new_coords)
         self.project.update_figure_point_position(selected_file_id, figure_id, point_id, new_coords)
 
-        self.bus.gui.clear_canvas()
-
-        selected_file_id, selected_file_data = self.project.get_selected_file()
-
-        self.bus.gui.load_image_into_canvas(selected_file_data['abs_path'])
-        for figure_id, figure_data in enumerate(selected_file_data['figures']):
-            self.bus.gui.draw_figure(selected_file_id, figure_id, figure_data, draggable=True)
+        self._redraw_canvas_and_figures(draggable=True)
 
     def on_removing_point_entry(self):
-        self.bus.gui.clear_figures()
-        self.bus.gui.clear_canvas()
-
-        selected_file_id, selected_file_data = self.project.get_selected_file()
-        self.bus.gui.load_image_into_canvas(selected_file_data['abs_path'])
-        for figure_id, figure_data in enumerate(selected_file_data['figures']):
-            self.bus.gui.draw_figure(selected_file_id, figure_id, figure_data, draggable=True)
+        self._redraw_canvas_and_figures(draggable=True)
 
         self.bus.gui.bind_point_remove_click()
 
     def on_removing_point_exit(self):
-        self.bus.gui.clear_figures()
-        self.bus.gui.clear_canvas()
-
-        selected_file_id, selected_file_data = self.project.get_selected_file()
-        self.bus.gui.load_image_into_canvas(selected_file_data['abs_path'])
-        for figure_id, figure_data in enumerate(selected_file_data['figures']):
-            self.bus.gui.draw_figure(selected_file_id, figure_id, figure_data)
-            self.bus.gui.insert_figure_into_figures_list(selected_file_id, figure_id, figure_data)
+        self._redraw_canvas_and_figures()
 
         self.bus.gui.bind_point_remove_click()
 
@@ -324,36 +273,15 @@ class Statechart(ActiveObject):
 
         self.project.update_figure_remove_point(selected_file_id, figure_id, point_id)
 
-        self.bus.gui.clear_figures()
-        self.bus.gui.clear_canvas()
-
-        selected_file_id, selected_file_data = self.project.get_selected_file()
-        self.bus.gui.load_image_into_canvas(selected_file_data['abs_path'])
-        for figure_id, figure_data in enumerate(selected_file_data['figures']):
-            self.bus.gui.draw_figure(selected_file_id, figure_id, figure_data, draggable=True)
-            self.bus.gui.insert_figure_into_figures_list(selected_file_id, figure_id, figure_data)
+        self._redraw_canvas_and_figures(draggable=True)
 
     def on_adding_point_entry(self):
-        self.bus.gui.clear_figures()
-        self.bus.gui.clear_canvas()
-
-        selected_file_id, selected_file_data = self.project.get_selected_file()
-        self.bus.gui.load_image_into_canvas(selected_file_data['abs_path'])
-        for figure_id, figure_data in enumerate(selected_file_data['figures']):
-            self.bus.gui.draw_figure(selected_file_id, figure_id, figure_data, draggable=True)
-            self.bus.gui.insert_figure_into_figures_list(selected_file_id, figure_id, figure_data)
+        self._redraw_canvas_and_figures(draggable=True)
 
         self.bus.gui.bind_point_add_click()
 
     def on_adding_point_exit(self):
-        self.bus.gui.clear_figures()
-        self.bus.gui.clear_canvas()
-
-        selected_file_id, selected_file_data = self.project.get_selected_file()
-        self.bus.gui.load_image_into_canvas(selected_file_data['abs_path'])
-        for figure_id, figure_data in enumerate(selected_file_data['figures']):
-            self.bus.gui.draw_figure(selected_file_id, figure_id, figure_data)
-            self.bus.gui.insert_figure_into_figures_list(selected_file_id, figure_id, figure_data)
+        self._redraw_canvas_and_figures()
 
         self.bus.gui.unbind_point_add_click()
 
@@ -362,14 +290,7 @@ class Statechart(ActiveObject):
         coords = self.bus.gui.from_canvas_to_image_coords(*coords)
         self.project.update_figure_insert_point(selected_file_id, figure_id, point_id, coords)
 
-        self.bus.gui.clear_figures()
-        self.bus.gui.clear_canvas()
-
-        selected_file_id, selected_file_data = self.project.get_selected_file()
-        self.bus.gui.load_image_into_canvas(selected_file_data['abs_path'])
-        for figure_id, figure_data in enumerate(selected_file_data['figures']):
-            self.bus.gui.draw_figure(selected_file_id, figure_id, figure_data, draggable=True)
-            self.bus.gui.insert_figure_into_figures_list(selected_file_id, figure_id, figure_data)
+        self._redraw_canvas_and_figures(draggable=True)
 
 
 @spy_on
