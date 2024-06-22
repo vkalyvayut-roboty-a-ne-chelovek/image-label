@@ -22,16 +22,25 @@ class Statechart(ActiveObject):
 
         self.points = []
 
-    def _redraw_canvas_and_figures(self, highlight_figure_id: int = None, draggable=False):
+    def _redraw_canvas_and_figures(self, highlight_figure_id: int = None, draggable: bool = False,
+                                   update_figure_list: bool = True):
         selected_file_id, selected_file_data = self.project.get_selected_file()
-        self.bus.gui.clear_figures()
+        if update_figure_list:
+            self.bus.gui.clear_figures()
         self.bus.gui.clear_canvas()
 
         self.bus.gui.load_image_into_canvas(selected_file_data['abs_path'])
         for figure_id, figure_data in enumerate(selected_file_data['figures']):
             highlight = bool((highlight_figure_id is not None) and (highlight_figure_id == figure_id))
             self.bus.gui.draw_figure(selected_file_id, figure_id, figure_data, highlight=highlight, draggable=draggable)
-            self.bus.gui.insert_figure_into_figures_list(selected_file_id, figure_id, figure_data)
+            if update_figure_list:
+                self.bus.gui.insert_figure_into_figures_list(selected_file_id, figure_id, figure_data)
+
+    def ask_category_name(self, file_id, figure_id):
+        categories = self.project.get_all_categories()
+        default_category = categories[0] if len(categories) > 0 else ''
+        helpers.ask_for_category_name(self, copy.copy(file_id), figure_id,
+                                      default_val=default_category, values=categories)
 
     def run(self):
         self.start_at(no_project)
@@ -111,7 +120,7 @@ class Statechart(ActiveObject):
         helpers.reset_drawing_event(self)
 
     def on_in_project_figure_selected(self, selected_figure_id):
-        self._redraw_canvas_and_figures(highlight_figure_id=selected_figure_id)
+        self._redraw_canvas_and_figures(highlight_figure_id=selected_figure_id, update_figure_list=False)
 
     def on_in_project_delete_figure(self, figure_id):
         if figure_id is not None:
@@ -193,7 +202,8 @@ class Statechart(ActiveObject):
         self.points = []
 
         selected_file_id, _ = self.project.get_selected_file()
-        helpers.ask_for_category_name(self, copy.copy(selected_file_id), new_figure_id)
+
+        self.ask_category_name(selected_file_id, new_figure_id)
 
         helpers.select_image_event(self, selected_file_id)
 
@@ -233,7 +243,8 @@ class Statechart(ActiveObject):
                     color=helpers.pick_random_color()
                 )
 
-                helpers.ask_for_category_name(self, copy.copy(selected_file_id), new_figure_id)
+
+                self.ask_category_name(selected_file_id, new_figure_id)
                 helpers.select_image_event(self, selected_file_id)
 
     def on_moving_point_entry(self):

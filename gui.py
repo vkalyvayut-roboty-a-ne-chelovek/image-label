@@ -156,6 +156,7 @@ class Gui:
             tags=('#draw_figures',)
         )
 
+    @staticmethod
     def _get_size_to_resize(i_w: int, i_h: int, c_w: int, c_h: int) -> typing.List[int]:
         result = [1, 1]
 

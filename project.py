@@ -100,3 +100,13 @@ class Project:
     def update_figure_insert_point(self, file_id, figure_id, point_id, coords):
         self.history.add_snapshot(file_id, self.files[file_id])
         self.files[file_id]['figures'][figure_id]['points'].insert(point_id, coords)
+
+    def get_all_categories(self):
+        result = []
+
+        for _, file_data in self.get_files():
+            for figure in file_data['figures']:
+                result.append(figure['category'])
+        result = list(set(result))
+
+        return result

@@ -4,6 +4,7 @@ import typing
 import tkinter
 from tkinter import filedialog
 from tkinter import messagebox
+from tkinter import ttk
 
 from miros import Event
 from miros import signals
@@ -135,20 +136,30 @@ def clamp(_min, _max, cur):
 
 # костыль, если в окне присутствует tkinter.Label
 # то происходит потеря фокуса и невозможность скрытия окна
-def ask_for_category_name(c: ActiveObject, file_id: str, figure_id: int, default_val: str = ''):
-    val = tkinter.StringVar()
+def ask_for_category_name(c: ActiveObject, file_id: str, figure_id: int, default_val: str = '', values: typing.Sequence[str] = ()):
+    val = tkinter.StringVar(value=default_val)
 
     w = tkinter.Toplevel()
+    w.geometry(f'+{c.bus.gui.root.winfo_width()//2}+{c.bus.gui.root.winfo_height()//2}')
     w.title('Enter category name')
+    w.columnconfigure(0, weight=1)
+    w.rowconfigure(0, weight=1)
+    w.rowconfigure(1, weight=1)
+    w.rowconfigure(2, weight=1)
 
     def on_ok():
-        set_figure_category_event(c, file_id, figure_id, val.get())
-        w.destroy()
+        if len(val.get()) > 0:
+            set_figure_category_event(c, file_id, figure_id, val.get())
+            w.destroy()
 
-    entry = tkinter.Entry(w, textvariable=val)
+    label = tkinter.Label(w, text='Enter category name')
+    label.grid(column=0, row=0, sticky='nesw')
+    entry = ttk.Combobox(w, textvariable=val, values=values)
     entry.grid(column=0, row=1, sticky='nesw')
     btn_ok = tkinter.Button(w, text='OK', command=on_ok)
     btn_ok.grid(column=0, row=2, sticky='nesw')
+
+    w.geometry(f'250x100+{c.bus.gui.root.winfo_width()//2 - 125 }+{c.bus.gui.root.winfo_height()//2 - 50}')
 
 
 def undo_event(s: ActiveObject):
