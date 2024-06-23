@@ -33,6 +33,8 @@ class Project:
         del self.files[file_id]
 
     def get_files(self, only_keys: typing.Tuple = None):
+        if len(self.files) == 0:
+            return []
         if only_keys:
             return [(k, self.files.get(k)) for k in only_keys]
         return [(k, v) for k, v in self.files.items()]
@@ -41,7 +43,7 @@ class Project:
         self.selected_file_id = file_id
 
     def get_selected_file(self):
-        if self.selected_file_id:
+        if self.selected_file_id and self.selected_file_id in self.files:
             return self.selected_file_id, self.files[self.selected_file_id]
         return None, None
 

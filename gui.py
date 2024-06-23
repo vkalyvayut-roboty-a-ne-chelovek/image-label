@@ -32,7 +32,7 @@ class Gui:
         self.main_menu = None
         self.project_menu = None
         self.figure_menu = None
-        self.files_frame_menu = None
+        self.files_frame_treeview_menu = None
         self.figures_frame_treeview_menu = None
 
         self.root.columnconfigure(1, weight=90)
@@ -182,11 +182,18 @@ class Gui:
         self.main_menu.add_cascade(label='Project', menu=self.project_menu)
         self.main_menu.add_cascade(label='Figure', menu=self.figure_menu)
 
+        self.files_frame_treeview_menu = tkinter.Menu(tearoff=False)
+        self.files_frame_treeview_menu.add_command(label='Add File', command=lambda: helpers.add_file_event(self.bus.statechart))
+        self.files_frame_treeview_menu.add_command(label='Remove File', command=lambda: helpers.remove_file_event(self.bus.statechart, self.files_frame_treeview.selection()[0]))
+
         self.figures_frame_treeview_menu = tkinter.Menu(tearoff=False)
         self.figures_frame_treeview_menu.add_command(label='Change Category', command=lambda: self.show_popup_figure_category_rename())
         self.figures_frame_treeview_menu.add_command(label='Change Color', state='disabled')
         self.figures_frame_treeview_menu.add_separator()
         self.figures_frame_treeview_menu.add_command(label='Delete', command=lambda: self.send_figure_delete_event())
+
+        self.files_frame_treeview.bind('<Button-1>', lambda _: self.files_frame_treeview_menu.unpost())
+        self.files_frame_treeview.bind('<Button-3>', lambda _: self.show_files_frame_treeview_menu())
 
         self.figures_frame_treeview.bind('<Button-1>', lambda _: self.figures_frame_treeview_menu.unpost())
         self.figures_frame_treeview.bind('<Button-3>', lambda _: self.show_figures_frame_treeview_menu())
@@ -479,6 +486,20 @@ class Gui:
                 self.root.winfo_pointerx(),
                 self.root.winfo_pointery()
             )
+
+    def show_files_frame_treeview_menu(self):
+        self.files_frame_treeview_menu.entryconfig('Remove File', state='normal')
+        if len(self.files_frame_treeview.selection()) > 0:
+            self.files_frame_treeview_menu.post(
+                self.root.winfo_pointerx(),
+                self.root.winfo_pointery()
+            )
+        else:
+            self.files_frame_treeview_menu.post(
+                self.root.winfo_pointerx(),
+                self.root.winfo_pointery()
+            )
+            self.files_frame_treeview_menu.entryconfig('Remove File', state='disabled')
 
     def show_popup_figure_category_rename(self):
         if len(self.figures_frame_treeview.selection()) > 0:
