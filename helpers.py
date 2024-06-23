@@ -164,7 +164,6 @@ def ask_for_category_name(c: ActiveObject, file_id: str, figure_id: int, default
     w.bind('<Return>', lambda _: on_ok())
 
 
-
 def undo_event(s: ActiveObject):
     s.post_fifo(Event(signal=signals.UNDO_HISTORY))
 

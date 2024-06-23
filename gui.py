@@ -110,6 +110,9 @@ class Gui:
         self.move_point_btn.configure(command=lambda: helpers.move_point_event(self.bus.statechart))
         self.undo_btn.configure(command=lambda: helpers.undo_event(self.bus.statechart))
 
+        self.root.bind('<Control-s>', lambda _: helpers.save_project_event(self.bus.statechart))
+        self.root.bind('<Control-z>', lambda _: helpers.undo_event(self.bus.statechart))
+
         self.root.mainloop()
 
     def add_file(self, id_, filedata):
