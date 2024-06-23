@@ -110,7 +110,12 @@ class Gui:
         self.move_point_btn.configure(command=lambda: helpers.move_point_event(self.bus.statechart))
         self.undo_btn.configure(command=lambda: helpers.undo_event(self.bus.statechart))
 
+        self.root.bind('<Control-n>', lambda _: helpers.new_project_event(self.bus.statechart))
+        self.root.bind('<Control-o>', lambda _: helpers.load_project_event(self.bus.statechart))
         self.root.bind('<Control-s>', lambda _: helpers.save_project_event(self.bus.statechart))
+
+        self.root.bind('<Control-i>', lambda _: helpers.add_file_event(self.bus.statechart))
+
         self.root.bind('<Control-z>', lambda _: helpers.undo_event(self.bus.statechart))
 
         self.root.mainloop()

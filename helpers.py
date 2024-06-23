@@ -35,14 +35,34 @@ def pick_random_color():
     return random.sample(colors, 1)
 
 
+def there_are_some_changes_in_project_ask_what_to_do() -> bool:
+    title = 'There are some changes made to project'
+    msg = 'There are some changes made to project. They all will be lost. Do you want to do it anyway?'
+    return messagebox.askyesno(title=title, message=msg)
+
+
 def new_project_event(s: ActiveObject) -> None:
-    s.post_fifo(Event(signal=signals.NEW_PROJECT))
+    are_there_any_changes_made_in_project = s.check_if_there_are_any_changes_made_in_project()
+    create_new_anyway = True
+
+    if are_there_any_changes_made_in_project:
+        create_new_anyway = there_are_some_changes_in_project_ask_what_to_do()
+
+    if create_new_anyway:
+        s.post_fifo(Event(signal=signals.NEW_PROJECT))
 
 
 def load_project_event(s: ActiveObject) -> None:
-    file_path = ask_for_load_project_path()
-    if file_path:
-        s.post_fifo(Event(signal=signals.LOAD_PROJECT, payload=file_path))
+    are_there_any_changes_made_in_project = s.check_if_there_are_any_changes_made_in_project()
+    load_anyway = True
+
+    if are_there_any_changes_made_in_project:
+        load_anyway = there_are_some_changes_in_project_ask_what_to_do()
+
+    if load_anyway:
+        file_path = ask_for_load_project_path()
+        if file_path:
+            s.post_fifo(Event(signal=signals.LOAD_PROJECT, payload=file_path))
 
 
 def save_project_event(s: ActiveObject) -> None:

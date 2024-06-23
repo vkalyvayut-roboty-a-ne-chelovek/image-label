@@ -53,6 +53,17 @@ class Statechart(ActiveObject):
         else:
             self.bus.gui.disable_undo_action_button()
 
+    def check_if_there_are_any_changes_made_in_project(self):
+        result = False
+
+        if self.project:
+            for file_id, _ in self.project.get_files():
+                if self.project.history.has_history(file_id) and self.project.history.get_history_len(file_id) > 0:
+                    result = True
+                    break
+
+        return result
+
     def run(self):
         self.start_at(no_project)
 
