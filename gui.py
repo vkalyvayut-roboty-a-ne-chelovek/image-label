@@ -33,12 +33,12 @@ class Gui:
         self.project_menu = None
         self.figure_menu = None
 
-        self.root.columnconfigure(1, weight=75)
-        self.root.columnconfigure(2, weight=20)
-        self.root.rowconfigure(0, weight=1)
-        self.root.rowconfigure(1, weight=1)
+        self.root.columnconfigure(1, weight=90)
+        self.root.columnconfigure(2, weight=10)
+        self.root.rowconfigure(0, weight=80)
+        self.root.rowconfigure(1, weight=20)
 
-        self.command_palette = tkinter.Frame(self.root, background='red')
+        self.command_palette = tkinter.Frame(self.root)
 
         self.new_project_btn = tkinter.Button(self.command_palette, text='New Project')
         self.load_project_btn = tkinter.Button(self.command_palette, text='Load Project')
@@ -67,7 +67,7 @@ class Gui:
         self.move_point_btn.grid(column=0, row=9)
         self.undo_btn.grid(column=0, row=10)
 
-        self.drawing_frame = tkinter.Frame(self.root, background='green')
+        self.drawing_frame = tkinter.Frame(self.root)
         self.drawing_frame_canvas = tkinter.Canvas(self.drawing_frame)
 
         self.drawing_frame.grid(column=1, row=0, sticky='nesw', rowspan=2)
@@ -75,7 +75,7 @@ class Gui:
         self.drawing_frame.rowconfigure(0, weight=1)
         self.drawing_frame_canvas.grid(column=0, row=0, sticky='nesw')
 
-        self.files_frame = tkinter.Frame(self.root, background='blue')
+        self.files_frame = tkinter.Frame(self.root)
         self.files_frame_treeview = ttk.Treeview(self.files_frame, columns=['filename'], selectmode='browse', show='headings')
         self.files_frame_treeview.heading('filename', text='Filename')
 
@@ -88,7 +88,7 @@ class Gui:
         self.files_frame_treeview.config(yscrollcommand=self.files_frame_treeview_scrollbar.set)
         self.files_frame_treeview_scrollbar.config(command=self.files_frame_treeview.yview)
 
-        self.figures_frame = tkinter.Frame(self.root, background='cyan')
+        self.figures_frame = tkinter.Frame(self.root)
         self.figures_frame_treeview = ttk.Treeview(self.figures_frame, columns=['figure', 'id'], selectmode='browse', show='headings', displaycolumns=('figure',))
         self.figures_frame_treeview.heading('figure', text='Figure')
 
@@ -121,7 +121,13 @@ class Gui:
         self.root.bind('<Control-i>', lambda _: helpers.add_file_event(self.bus.statechart))
 
         self.root.bind('<Control-r>', lambda _: helpers.draw_rect_event(self.bus.statechart))
+        self.root.bind('<KeyPress-1>', lambda _: helpers.draw_rect_event(self.bus.statechart))
         self.root.bind('<Control-p>', lambda _: helpers.draw_poly_event(self.bus.statechart))
+        self.root.bind('<KeyPress-2>', lambda _: helpers.draw_poly_event(self.bus.statechart))
+
+        self.root.bind('<KeyPress-a>', lambda _: helpers.add_point_event(self.bus.statechart))
+        self.root.bind('<KeyPress-x>', lambda _: helpers.remove_point_event(self.bus.statechart))
+        self.root.bind('<KeyPress-g>', lambda _: helpers.move_point_event(self.bus.statechart))
 
         self.root.bind('<Control-z>', lambda _: helpers.undo_event(self.bus.statechart))
 
@@ -248,15 +254,15 @@ class Gui:
         result = [1, 1]
 
         if i_w / i_h >= 1:
-            scale = c_w // i_w
+            scale = c_w / i_w
             result = [i_w * scale, i_h * scale]
         else:
-            scale = c_h // i_h
+            scale = c_h / i_h
             result = [i_w * scale, i_h * scale]
 
         result = [helpers.clamp(0, c_w, result[0]), helpers.clamp(0, c_h, result[1])]
 
-        return result
+        return [int(pos) for pos in result]
 
     def enable_save_project_btn(self):
         self.save_project_btn['state'] = 'normal'
