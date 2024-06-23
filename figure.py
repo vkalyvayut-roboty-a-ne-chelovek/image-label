@@ -59,16 +59,17 @@ class Figure:
                                      tags=tags, **self._make_figure_style())
 
     def _draw_rect_as_polylines(self):
+        tags = ('#draw_figures',)
         style = self._make_figure_style(as_line=True)
         point_1 = self._points[0][0], self._points[0][1]
         point_2 = self._points[1][0], self._points[0][1]
         point_3 = self._points[1][0], self._points[1][1]
         point_4 = self._points[0][0], self._points[1][1]
 
-        self.canvas.create_line(point_1, point_2, **style)
-        self.canvas.create_line(point_2, point_3, **style)
-        self.canvas.create_line(point_3, point_4, **style)
-        self.canvas.create_line(point_4, point_1, **style)
+        self.canvas.create_line(point_1, point_2, tags=tags, **style)
+        self.canvas.create_line(point_2, point_3, tags=tags, **style)
+        self.canvas.create_line(point_3, point_4, tags=tags, **style)
+        self.canvas.create_line(point_4, point_1, tags=tags, **style)
 
     def _draw_poly_figure(self):
         tags = ('#draw_figures',)

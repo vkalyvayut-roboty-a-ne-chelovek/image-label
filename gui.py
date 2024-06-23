@@ -29,6 +29,10 @@ class Gui:
         self.root = tkinter.Tk()
         self.root.geometry(f'{self.root.winfo_screenwidth()}x{self.root.winfo_screenheight()}')
 
+        self.main_menu = None
+        self.project_menu = None
+        self.figure_menu = None
+
         self.root.columnconfigure(1, weight=75)
         self.root.columnconfigure(2, weight=20)
         self.root.rowconfigure(0, weight=1)
@@ -116,9 +120,52 @@ class Gui:
 
         self.root.bind('<Control-i>', lambda _: helpers.add_file_event(self.bus.statechart))
 
+        self.root.bind('<Control-r>', lambda _: helpers.draw_rect_event(self.bus.statechart))
+        self.root.bind('<Control-p>', lambda _: helpers.draw_poly_event(self.bus.statechart))
+
         self.root.bind('<Control-z>', lambda _: helpers.undo_event(self.bus.statechart))
 
+        self.main_menu = tkinter.Menu(borderwidth=0)
+        self.project_menu = tkinter.Menu(tearoff=False)
+        self.figure_menu = tkinter.Menu(tearoff=False)
+
+        self.project_menu.add_command(label='New Project', accelerator='<Control-n>',
+                                      command=lambda: helpers.new_project_event(self.bus.statechart))
+        self.project_menu.add_command(label='Load Project', accelerator='<Control-o>',
+                                      command=lambda: helpers.load_project_event(self.bus.statechart))
+        self.project_menu.add_command(label='Save Project', accelerator='<Control-s>',
+                                      command=lambda: helpers.save_project_event(self.bus.statechart))
+        self.project_menu.add_separator()
+        self.project_menu.add_command(label='Quit',
+                                      command=lambda: helpers.quit_event(self.bus.statechart))
+
+        self.figure_menu.add_command(label='Draw Rectangle', accelerator='<Control-r>',
+                                     command=lambda: helpers.draw_rect_event(self.bus.statechart))
+        self.figure_menu.add_command(label='Draw Polygon', accelerator='<Control-p>',
+                                     command=lambda: helpers.draw_poly_event(self.bus.statechart))
+        self.figure_menu.add_command(label='Undo', accelerator='<Control-z>',
+                                     command=lambda: helpers.undo_event(self.bus.statechart))
+
+        self.main_menu.add_cascade(label='Project', menu=self.project_menu)
+        self.main_menu.add_cascade(label='Figure', menu=self.figure_menu)
+        self.root.config(menu=self.main_menu)
+
         self.root.mainloop()
+
+    def set_default_pointer(self):
+        self.root.config(cursor='')
+
+    def set_drawing_pointer(self):
+        self.root.config(cursor='pencil')
+
+    def set_grab_pointer(self):
+        self.root.config(cursor='fleur')
+
+    def set_remove_pointer(self):
+        self.root.config(cursor='X_cursor')
+
+    def set_add_pointer(self):
+        self.root.config(cursor='plus')
 
     def add_file(self, id_, filedata):
         self.files_frame_treeview.insert('', 'end', id=id_, values=(filedata['abs_path']), tags=('#files',))
@@ -133,6 +180,11 @@ class Gui:
             for item in self.files_frame_treeview.get_children():
                 if item == file_id:
                     self.files_frame_treeview.delete(item)
+
+    def clear_image(self):
+        if self.figures_frame_treeview.tag_has('#image'):
+            for item in self.figures_frame_treeview.get_children(''):
+                self.figures_frame_treeview.delete(item)
 
     def clear_figures(self):
         if self.figures_frame_treeview.tag_has('#figures'):
@@ -150,6 +202,8 @@ class Gui:
         self.files_frame_treeview.unbind('<Double-Button-1>')
 
     def load_image_into_canvas(self, abs_path):
+        self.clear_image()
+
         self.image_to_load_on_canvas = Image.open(abs_path)
         new_sizes = self._get_size_to_resize(
             i_w=self.image_to_load_on_canvas.width, i_h=self.image_to_load_on_canvas.height,
@@ -161,7 +215,7 @@ class Gui:
             self.drawing_frame_canvas.winfo_width() // 2,
             self.drawing_frame_canvas.winfo_height() // 2,
             image=self.image_on_canvas,
-            tags=('#draw_figures',)
+            tags=('#image',)
         )
 
     @staticmethod

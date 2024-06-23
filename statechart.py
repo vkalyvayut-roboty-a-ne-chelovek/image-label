@@ -23,13 +23,15 @@ class Statechart(ActiveObject):
         self.points = []
 
     def _redraw_canvas_and_figures(self, highlight_figure_id: int = None, draggable: bool = False,
-                                   update_figure_list: bool = True):
+                                   update_figure_list: bool = True, update_image: bool = False):
         selected_file_id, selected_file_data = self.project.get_selected_file()
         if update_figure_list:
             self.bus.gui.clear_figures()
         self.bus.gui.clear_canvas()
 
-        self.bus.gui.load_image_into_canvas(selected_file_data['abs_path'])
+        if update_image:
+            self.bus.gui.load_image_into_canvas(selected_file_data['abs_path'])
+
         for figure_id, figure_data in enumerate(selected_file_data['figures']):
             highlight = bool((highlight_figure_id is not None) and (highlight_figure_id == figure_id))
             self.bus.gui.draw_figure(selected_file_id, figure_id, figure_data, highlight=highlight, draggable=draggable)
@@ -136,7 +138,7 @@ class Statechart(ActiveObject):
         self.project.select_file(file_id)
         file_id, _ = self.project.get_selected_file()
 
-        self._redraw_canvas_and_figures()
+        self._redraw_canvas_and_figures(update_image=True)
 
         self.bus.gui.enable_draw_buttons()
 
@@ -146,6 +148,8 @@ class Statechart(ActiveObject):
 
         self.bus.gui.files_frame_treeview.selection_set([file_id])
         helpers.reset_drawing_event(self)
+
+        self.bus.gui.set_default_pointer()
 
     def on_in_project_figure_selected(self, selected_figure_id):
         self._redraw_canvas_and_figures(highlight_figure_id=selected_figure_id, update_figure_list=False)
@@ -199,11 +203,15 @@ class Statechart(ActiveObject):
         self.bus.gui.bind_canvas_click_event()
         self.bus.gui.bind_canvas_motion_rect_drawing_stage_1()
 
+        self.bus.gui.set_drawing_pointer()
+
         self.points = []
 
     def on_drawing_rect_exit(self):
         self.bus.gui.unbind_canvas_click_event()
         self.bus.gui.unbind_canvas_motion_rect_drawing_stage_1()
+
+        self.bus.gui.set_default_pointer()
 
     def on_drawing_rect_reset_drawing(self):
         self.points = []
@@ -217,9 +225,13 @@ class Statechart(ActiveObject):
         self.bus.gui.bind_canvas_click_event()
         self.bus.gui.bind_canvas_motion_rect_drawing_stage_2()
 
+        self.bus.gui.set_drawing_pointer()
+
     def on_drawing_rect_waiting_for_2_point_exit(self):
         self.bus.gui.unbind_canvas_motion_rect_drawing_stage_2()
         self.bus.gui.unbind_canvas_click_event()
+
+        self.bus.gui.set_default_pointer()
 
         self.bus.gui.drawing_rect_point_1 = None
 
@@ -248,9 +260,13 @@ class Statechart(ActiveObject):
         self.points = []
         self.bus.gui.drawing_poly_points = []
 
+        self.bus.gui.set_drawing_pointer()
+
     def on_drawing_poly_exit(self):
         self.bus.gui.unbind_canvas_click_event()
         self.bus.gui.unbind_canvas_motion_poly_drawing()
+
+        self.bus.gui.set_default_pointer()
 
     def on_drawing_poly_reset_drawing(self):
         self.points = []
@@ -277,33 +293,41 @@ class Statechart(ActiveObject):
                 helpers.select_image_event(self, selected_file_id)
 
     def on_moving_point_entry(self):
-        self._redraw_canvas_and_figures(draggable=True)
+        self._redraw_canvas_and_figures(draggable=True, update_figure_list=False)
 
         self.bus.gui.bind_point_move_click()
         self.bus.gui.bind_point_move_motion_event()
 
+        self.bus.gui.set_grab_pointer()
+
     def on_moving_point_exit(self):
-        self._redraw_canvas_and_figures()
+        self._redraw_canvas_and_figures(update_figure_list=False)
 
         self.bus.gui.unbind_point_move_click()
         self.bus.gui.unbind_point_move_motion_event()
+
+        self.bus.gui.set_default_pointer()
 
     def on_moving_point_update_figure_point_position(self, figure_id, point_id, new_coords):
         selected_file_id, _ = self.project.get_selected_file()
         new_coords = self.bus.gui.from_canvas_to_image_coords(*new_coords)
         self.project.update_figure_point_position(selected_file_id, figure_id, point_id, new_coords)
 
-        self._redraw_canvas_and_figures(draggable=True)
+        self._redraw_canvas_and_figures(draggable=True, update_figure_list=False)
 
     def on_removing_point_entry(self):
         self._redraw_canvas_and_figures(draggable=True)
 
         self.bus.gui.bind_point_remove_click()
 
+        self.bus.gui.set_remove_pointer()
+
     def on_removing_point_exit(self):
         self._redraw_canvas_and_figures()
 
         self.bus.gui.unbind_point_remove_click()
+
+        self.bus.gui.set_default_pointer()
 
     def on_removing_point_update_figure_remove_point(self, figure_id, point_id):
         selected_file_id, _ = self.project.get_selected_file()
@@ -317,10 +341,14 @@ class Statechart(ActiveObject):
 
         self.bus.gui.bind_point_add_click()
 
+        self.bus.gui.set_add_pointer()
+
     def on_adding_point_exit(self):
         self._redraw_canvas_and_figures()
 
         self.bus.gui.unbind_point_add_click()
+
+        self.bus.gui.set_default_pointer()
 
     def on_adding_point_update_figure_insert_point(self, figure_id, point_id, coords):
         selected_file_id, _ = self.project.get_selected_file()

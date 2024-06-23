@@ -1,5 +1,6 @@
 import json
 import random
+import sys
 import typing
 import tkinter
 from tkinter import filedialog
@@ -64,6 +65,15 @@ def load_project_event(s: ActiveObject) -> None:
         if file_path:
             s.post_fifo(Event(signal=signals.LOAD_PROJECT, payload=file_path))
 
+def quit_event(s: ActiveObject) -> None:
+    are_there_any_changes_made_in_project = s.check_if_there_are_any_changes_made_in_project()
+    quit_anyway = True
+
+    if are_there_any_changes_made_in_project:
+        quit_anyway = there_are_some_changes_in_project_ask_what_to_do()
+
+    if quit_anyway:
+        sys.exit(0)
 
 def save_project_event(s: ActiveObject) -> None:
     file_path = ask_for_save_project_path()
