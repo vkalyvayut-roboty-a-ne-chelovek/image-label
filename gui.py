@@ -198,6 +198,13 @@ class Gui:
         self.figures_frame_treeview.bind('<Button-1>', lambda _: self.figures_frame_treeview_menu.unpost())
         self.figures_frame_treeview.bind('<Button-3>', lambda _: self.show_figures_frame_treeview_menu())
 
+        self.root.bind('<Left>', lambda _: self.select_prev_image())
+        self.root.bind('<Up>', lambda _: self.select_prev_image())
+        self.root.bind('<Right>', lambda _: self.select_next_image())
+        self.root.bind('<Down>', lambda _: self.select_next_image())
+
+
+
         self.root.config(menu=self.main_menu)
 
         self.root.mainloop()
@@ -577,3 +584,37 @@ class Gui:
                     }
                     helpers.update_figure_add_point_event(self.bus.statechart, (x, y), insertable_line_data)
                     break
+
+    def select_prev_image(self):
+        file_id = self._get_file_in_direction(direction=-1)
+        if file_id:
+            helpers.select_image_event(self.bus.statechart, file_id)
+
+    def select_next_image(self):
+        file_id = self._get_file_in_direction(direction=1)
+        if file_id:
+            helpers.select_image_event(self.bus.statechart, file_id)
+
+    def _get_file_in_direction(self, direction: int) -> str:
+        next_file_index = None
+        next_file = None
+
+        all_files = self.files_frame_treeview.get_children('')
+        if all_files:
+            if len(self.files_frame_treeview.selection()) > 0:
+                current_file = self.files_frame_treeview.selection()[0]
+                current_file_index = all_files.index(current_file)
+                next_file_index = current_file_index + direction
+
+                if direction < 0:
+                    if current_file_index <= 0:
+                        next_file_index = len(all_files) - 1
+                elif direction > 0:
+                    if current_file_index == len(all_files) - 1:
+                        next_file_index = 0
+
+                next_file = all_files[next_file_index]
+
+        return next_file
+
+

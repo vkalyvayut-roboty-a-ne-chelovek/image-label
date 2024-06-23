@@ -174,7 +174,6 @@ def ask_for_category_name(c: ActiveObject, file_id: str, figure_id: int, default
     val = tkinter.StringVar(value=default_val)
 
     w = tkinter.Toplevel()
-    w.geometry(f'+{c.bus.gui.root.winfo_width()//2}+{c.bus.gui.root.winfo_height()//2}')
     w.title('Enter category name')
     w.columnconfigure(0, weight=1)
     w.rowconfigure(0, weight=1)
@@ -193,7 +192,7 @@ def ask_for_category_name(c: ActiveObject, file_id: str, figure_id: int, default
     btn_ok = tkinter.Button(w, text='OK', command=on_ok)
     btn_ok.grid(column=0, row=2, sticky='nesw')
 
-    w.geometry(f'250x100+{c.bus.gui.root.winfo_width()//2 - 125 }+{c.bus.gui.root.winfo_height()//2 - 50}')
+    w.geometry(f'250x100+{c.bus.gui.root.winfo_pointerx()}+{c.bus.gui.root.winfo_pointery()}')
     w.bind('<KP_Enter>', lambda _: on_ok())
     w.bind('<Return>', lambda _: on_ok())
 
