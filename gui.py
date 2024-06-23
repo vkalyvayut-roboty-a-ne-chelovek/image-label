@@ -32,6 +32,8 @@ class Gui:
         self.main_menu = None
         self.project_menu = None
         self.figure_menu = None
+        self.files_frame_menu = None
+        self.figures_frame_treeview_menu = None
 
         self.root.columnconfigure(1, weight=90)
         self.root.columnconfigure(2, weight=10)
@@ -179,6 +181,16 @@ class Gui:
 
         self.main_menu.add_cascade(label='Project', menu=self.project_menu)
         self.main_menu.add_cascade(label='Figure', menu=self.figure_menu)
+
+        self.figures_frame_treeview_menu = tkinter.Menu(tearoff=False)
+        self.figures_frame_treeview_menu.add_command(label='Change Category', command=lambda: self.show_popup_figure_category_rename())
+        self.figures_frame_treeview_menu.add_command(label='Change Color', state='disabled')
+        self.figures_frame_treeview_menu.add_separator()
+        self.figures_frame_treeview_menu.add_command(label='Delete', command=lambda: self.send_figure_delete_event())
+
+        self.figures_frame_treeview.bind('<Button-1>', lambda _: self.figures_frame_treeview_menu.unpost())
+        self.figures_frame_treeview.bind('<Button-3>', lambda _: self.show_figures_frame_treeview_menu())
+
         self.root.config(menu=self.main_menu)
 
         self.root.mainloop()
@@ -460,6 +472,13 @@ class Gui:
 
     def bind_figure_delete_event(self):
         self.figures_frame_treeview.bind('<KeyPress-Delete>', lambda _: self.send_figure_delete_event())
+
+    def show_figures_frame_treeview_menu(self):
+        if len(self.figures_frame_treeview.selection()) > 0:
+            self.figures_frame_treeview_menu.post(
+                self.root.winfo_pointerx(),
+                self.root.winfo_pointery()
+            )
 
     def show_popup_figure_category_rename(self):
         if len(self.figures_frame_treeview.selection()) > 0:
