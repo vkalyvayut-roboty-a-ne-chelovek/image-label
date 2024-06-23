@@ -42,6 +42,17 @@ class Statechart(ActiveObject):
         helpers.ask_for_category_name(self, copy.copy(file_id), figure_id,
                                       default_val=default_category, values=categories)
 
+    def check_if_there_are_any_undo_actions_available_and_then_change_state_of_the_undo_button(self):
+        check_result = False
+        if self.project:
+            selected_file_id, _ = self.project.get_selected_file()
+            check_result = True if selected_file_id and self.project.history.has_history(selected_file_id) else False
+
+        if check_result:
+            self.bus.gui.enable_undo_action_button()
+        else:
+            self.bus.gui.disable_undo_action_button()
+
     def run(self):
         self.start_at(no_project)
 
@@ -56,6 +67,8 @@ class Statechart(ActiveObject):
         self.bus.gui.disable_add_file_btn()
         self.bus.gui.disable_remove_file_btn()
         self.bus.gui.disable_draw_buttons()
+        self.bus.gui.disable_point_actions_buttons()
+        self.check_if_there_are_any_undo_actions_available_and_then_change_state_of_the_undo_button()
 
     def on_in_project_entry(self):
         self.bus.gui.enable_save_project_btn()
@@ -116,6 +129,10 @@ class Statechart(ActiveObject):
 
         self.bus.gui.enable_draw_buttons()
 
+        self.bus.gui.enable_point_actions_buttons()
+
+        self.check_if_there_are_any_undo_actions_available_and_then_change_state_of_the_undo_button()
+
         self.bus.gui.files_frame_treeview.selection_set([file_id])
         helpers.reset_drawing_event(self)
 
@@ -136,6 +153,8 @@ class Statechart(ActiveObject):
         if self.project.history.has_history(selected_file_id):
             self.project.undo_history()
             self._redraw_canvas_and_figures()
+
+        self.check_if_there_are_any_undo_actions_available_and_then_change_state_of_the_undo_button()
 
     def on_in_project_remove_file(self, file_id):
         selected_file_id, _ = self.project.get_selected_file()
@@ -242,7 +261,6 @@ class Statechart(ActiveObject):
                     points=[self.bus.gui.from_canvas_to_image_coords(*point) for point in self.points],
                     color=helpers.pick_random_color()
                 )
-
 
                 self.ask_category_name(selected_file_id, new_figure_id)
                 helpers.select_image_event(self, selected_file_id)

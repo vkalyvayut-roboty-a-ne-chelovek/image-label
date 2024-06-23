@@ -197,6 +197,22 @@ class Gui:
         self.draw_rectangle_btn['state'] = 'disabled'
         self.draw_polygon_btn['state'] = 'disabled'
 
+    def enable_point_actions_buttons(self):
+        self.add_point_btn['state'] = 'normal'
+        self.remove_point_btn['state'] = 'normal'
+        self.move_point_btn['state'] = 'normal'
+
+    def disable_point_actions_buttons(self):
+        self.add_point_btn['state'] = 'disabled'
+        self.remove_point_btn['state'] = 'disabled'
+        self.move_point_btn['state'] = 'disabled'
+
+    def enable_undo_action_button(self):
+        self.undo_btn['state'] = 'normal'
+
+    def disable_undo_action_button(self):
+        self.undo_btn['state'] = 'disabled'
+
     def bind_canvas_click_event(self):
         self.drawing_frame_canvas.bind('<Button-1>', lambda _e: helpers.click_canvas_event(self.bus.statechart, self.clamp_coords_in_image_area(_e.x, _e.y)))
         self.drawing_frame_canvas.bind('<Button-3>', lambda _e: helpers.reset_drawing_event(self.bus.statechart))
