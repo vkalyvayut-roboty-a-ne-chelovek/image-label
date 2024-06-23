@@ -134,17 +134,42 @@ class Gui:
         self.project_menu.add_command(label='Load Project', accelerator='<Control-o>',
                                       command=lambda: helpers.load_project_event(self.bus.statechart))
         self.project_menu.add_command(label='Save Project', accelerator='<Control-s>',
-                                      command=lambda: helpers.save_project_event(self.bus.statechart))
+                                      command=lambda: helpers.save_project_event(self.bus.statechart),
+                                      state='disabled')
+        self.project_menu.add_separator()
+        self.project_menu.add_command(label='Add File', accelerator='<Control-i>',
+                                      command=lambda: helpers.add_file_event(self.bus.statechart),
+                                      state='disabled')
+        self.project_menu.add_command(label='Remove File', accelerator='<Delete>',
+                                      command=lambda: helpers.remove_file_event(self.bus.statechart, self.files_frame_treeview.selection()[0]),
+                                      state='disabled')
+
         self.project_menu.add_separator()
         self.project_menu.add_command(label='Quit',
                                       command=lambda: helpers.quit_event(self.bus.statechart))
 
         self.figure_menu.add_command(label='Draw Rectangle', accelerator='<Control-r>',
-                                     command=lambda: helpers.draw_rect_event(self.bus.statechart))
+                                     command=lambda: helpers.draw_rect_event(self.bus.statechart),
+                                     state='disabled')
         self.figure_menu.add_command(label='Draw Polygon', accelerator='<Control-p>',
-                                     command=lambda: helpers.draw_poly_event(self.bus.statechart))
+                                     command=lambda: helpers.draw_poly_event(self.bus.statechart),
+                                     state='disabled')
+        self.figure_menu.add_separator()
+
+        self.figure_menu.add_command(label='Add Point',
+                                     command=lambda: helpers.add_point_event(self.bus.statechart),
+                                     state='disabled')
+        self.figure_menu.add_command(label='Remove Point',
+                                     command=lambda: helpers.remove_point_event(self.bus.statechart),
+                                     state='disabled')
+        self.figure_menu.add_command(label='Move Point',
+                                     command=lambda: helpers.move_point_event(self.bus.statechart),
+                                     state='disabled')
+        self.figure_menu.add_separator()
+
         self.figure_menu.add_command(label='Undo', accelerator='<Control-z>',
-                                     command=lambda: helpers.undo_event(self.bus.statechart))
+                                     command=lambda: helpers.undo_event(self.bus.statechart),
+                                     state='disabled')
 
         self.main_menu.add_cascade(label='Project', menu=self.project_menu)
         self.main_menu.add_cascade(label='Figure', menu=self.figure_menu)
@@ -236,48 +261,90 @@ class Gui:
     def enable_save_project_btn(self):
         self.save_project_btn['state'] = 'normal'
 
+        if self.project_menu:
+            self.project_menu.entryconfig('Save Project', state='normal')
+
     def disable_save_project_btn(self):
         self.save_project_btn['state'] = 'disabled'
+
+        if self.project_menu:
+            self.project_menu.entryconfig('Save Project', state='disabled')
 
     def enable_add_file_btn(self):
         self.add_file_btn['state'] = 'normal'
 
+        if self.project_menu:
+            self.project_menu.entryconfig('Add File', state='normal')
+
     def disable_add_file_btn(self):
         self.add_file_btn['state'] = 'disabled'
+
+        if self.project_menu:
+            self.project_menu.entryconfig('Add File', state='disabled')
 
     def enable_remove_file_btn(self):
         self.remove_file_btn['state'] = 'normal'
 
+        if self.project_menu:
+            self.project_menu.entryconfig('Remove File', state='normal')
+
     def disable_remove_file_btn(self):
         self.remove_file_btn['state'] = 'disabled'
+
+        if self.project_menu:
+            self.project_menu.entryconfig('Remove File', state='disabled')
 
     def enable_draw_buttons(self):
         self.draw_rectangle_btn['state'] = 'normal'
         self.draw_polygon_btn['state'] = 'normal'
 
+        if self.figure_menu:
+            self.figure_menu.entryconfig('Draw Rectangle', state='normal')
+            self.figure_menu.entryconfig('Draw Polygon', state='normal')
+
     def disable_draw_buttons(self):
         self.draw_rectangle_btn['state'] = 'disabled'
         self.draw_polygon_btn['state'] = 'disabled'
+
+        if self.figure_menu:
+            self.figure_menu.entryconfig('Draw Rectangle', state='disabled')
+            self.figure_menu.entryconfig('Draw Polygon', state='disabled')
 
     def enable_point_actions_buttons(self):
         self.add_point_btn['state'] = 'normal'
         self.remove_point_btn['state'] = 'normal'
         self.move_point_btn['state'] = 'normal'
 
+        if self.figure_menu:
+            self.figure_menu.entryconfig('Add Point', state='normal')
+            self.figure_menu.entryconfig('Remove Point', state='normal')
+            self.figure_menu.entryconfig('Move Point', state='normal')
+
     def disable_point_actions_buttons(self):
         self.add_point_btn['state'] = 'disabled'
         self.remove_point_btn['state'] = 'disabled'
         self.move_point_btn['state'] = 'disabled'
 
+        if self.figure_menu:
+            self.figure_menu.entryconfig('Add Point', state='disabled')
+            self.figure_menu.entryconfig('Remove Point', state='disabled')
+            self.figure_menu.entryconfig('Move Point', state='disabled')
+
     def enable_undo_action_button(self):
         self.undo_btn['state'] = 'normal'
+
+        if self.figure_menu:
+            self.figure_menu.entryconfig('Undo', state='normal')
 
     def disable_undo_action_button(self):
         self.undo_btn['state'] = 'disabled'
 
+        if self.figure_menu:
+            self.figure_menu.entryconfig('Undo', state='disabled')
+
     def bind_canvas_click_event(self):
         self.drawing_frame_canvas.bind('<Button-1>', lambda _e: helpers.click_canvas_event(self.bus.statechart, self.clamp_coords_in_image_area(_e.x, _e.y)))
-        self.drawing_frame_canvas.bind('<Button-3>', lambda _e: helpers.reset_drawing_event(self.bus.statechart))
+        self.drawing_frame_canvas.bind('<Button-3>', lambda _e: helpers.right_click_canvas_event(self.bus.statechart))
         self.root.bind('<KeyPress-Escape>', lambda _e: helpers.reset_drawing_event(self.bus.statechart))
 
     def unbind_canvas_click_event(self):

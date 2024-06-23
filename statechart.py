@@ -130,7 +130,7 @@ class Statechart(ActiveObject):
         if selected_file_id:
             helpers.select_image_event(self, selected_file_id)
         else:
-            for file_id, _ in self.project.get_files():
+            for file_id, _ in reversed(self.project.get_files()):
                 helpers.select_image_event(self, file_id)
                 break
 
@@ -183,7 +183,7 @@ class Statechart(ActiveObject):
             self.bus.gui.clear_figures()
             self.bus.gui.clear_canvas()
             if len(keys) > 0:
-                helpers.select_image_event(self, keys[0])
+                helpers.select_image_event(self, keys[-1])
 
         self.bus.gui.disable_draw_buttons()
         if len(keys) > 0:
@@ -215,6 +215,7 @@ class Statechart(ActiveObject):
 
     def on_drawing_rect_reset_drawing(self):
         self.points = []
+        self._redraw_canvas_and_figures()
 
     def on_drawing_rect_click(self, point):
         self.points.append(point)
@@ -247,12 +248,12 @@ class Statechart(ActiveObject):
 
         self.ask_category_name(selected_file_id, new_figure_id)
 
-        helpers.select_image_event(self, selected_file_id)
+        self._redraw_canvas_and_figures()
 
     def on_drawing_rect_waiting_for_2_point_reset_drawing(self):
         self.points = []
         selected_file_id, _ = self.project.get_selected_file()
-        helpers.select_image_event(self, selected_file_id)
+        self._redraw_canvas_and_figures()
 
     def on_drawing_poly_entry(self):
         self.bus.gui.bind_canvas_click_event()
@@ -272,6 +273,8 @@ class Statechart(ActiveObject):
         self.points = []
         self.bus.gui.drawing_poly_points = []
 
+        self._redraw_canvas_and_figures()
+
     def on_drawing_poly_click(self, point):
         self.points.append(point)
 
@@ -282,15 +285,18 @@ class Statechart(ActiveObject):
             point_finish = self.points[-1]
 
             if abs(point_finish[0] - point_start[0]) <= 5 and abs(point_finish[1] - point_start[1]) <= 5:
-                selected_file_id, _ = self.project.get_selected_file()
                 self.points.pop()
-                new_figure_id = self.project.add_polygon(
-                    points=[self.bus.gui.from_canvas_to_image_coords(*point) for point in self.points],
-                    color=helpers.pick_random_color()
-                )
+                self.save_current_polygon_as_is()
 
-                self.ask_category_name(selected_file_id, new_figure_id)
-                helpers.select_image_event(self, selected_file_id)
+    def save_current_polygon_as_is(self):
+        selected_file_id, _ = self.project.get_selected_file()
+        new_figure_id = self.project.add_polygon(
+            points=[self.bus.gui.from_canvas_to_image_coords(*point) for point in self.points],
+            color=helpers.pick_random_color()
+        )
+
+        self.ask_category_name(selected_file_id, new_figure_id)
+        self._redraw_canvas_and_figures()
 
     def on_moving_point_entry(self):
         self._redraw_canvas_and_figures(draggable=True, update_figure_list=False)
@@ -447,7 +453,7 @@ def drawing_rect(chart: Statechart, event: Event) -> return_status:
     elif event.signal == signals.EXIT_SIGNAL:
         status = return_status.HANDLED
         chart.on_drawing_rect_exit()
-    elif event.signal == signals.RESET_DRAWING:
+    elif event.signal == signals.RESET_DRAWING or event.signal == signals.RIGHT_CLICK:
         status = chart.trans(in_project)
         chart.on_drawing_rect_reset_drawing()
     elif event.signal == signals.CLICK:
@@ -473,7 +479,7 @@ def drawing_rect_waiting_for_2_point(chart: Statechart, event: Event) -> return_
     if event.signal == signals.CLICK:
         status = chart.trans(in_project)
         chart.on_drawing_rect_waiting_for_2_point_click(event.payload)
-    elif event.signal == signals.RESET_DRAWING:
+    elif event.signal == signals.RESET_DRAWING or event.signal == signals.RIGHT_CLICK:
         status = chart.trans(in_project)
         chart.on_drawing_rect_waiting_for_2_point_reset_drawing()
     else:
@@ -499,6 +505,9 @@ def drawing_poly(chart: Statechart, event: Event) -> return_status:
     elif event.signal == signals.CLICK:
         status = return_status.HANDLED
         chart.on_drawing_poly_click(event.payload)
+    elif event.signal == signals.RIGHT_CLICK:
+        status = chart.trans(in_project)
+        chart.save_current_polygon_as_is()
     else:
         status = return_status.SUPER
         chart.temp.fun = in_project

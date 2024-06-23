@@ -148,6 +148,10 @@ def click_canvas_event(s: ActiveObject, coords: typing.Tuple[int, int]) -> None:
     s.post_fifo(Event(signal=signals.CLICK, payload=coords))
 
 
+def right_click_canvas_event(s: ActiveObject) -> None:
+    s.post_fifo(Event(signal=signals.RIGHT_CLICK))
+
+
 def reset_drawing_event(s: ActiveObject) -> None:
     s.post_fifo(Event(signal=signals.RESET_DRAWING))
 
