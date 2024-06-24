@@ -358,8 +358,8 @@ class Statechart(ActiveObject):
 
     def on_adding_point_update_figure_insert_point(self, figure_id, point_id, coords):
         selected_file_id, _ = self.project.get_selected_file()
-        coords = self.bus.gui.from_canvas_to_image_coords(*coords)
-        self.project.update_figure_insert_point(selected_file_id, figure_id, point_id, coords)
+        new_coords = self.bus.gui.from_canvas_to_image_coords(*coords)
+        self.project.update_figure_insert_point(selected_file_id, figure_id, point_id, new_coords)
 
         self._redraw_canvas_and_figures(draggable=True)
 

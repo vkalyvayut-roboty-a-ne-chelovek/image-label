@@ -7,7 +7,7 @@ class CommonBus:
         self.items = {}
 
     def _check_if_array_and_return_groups(self, name: str):
-        regex = r'^([a-zA-Z0-9\-]*)\[(\w*)\]$'
+        regex = r'^([a-zA-Z0-9\-_]*)\[([a-zA-Z0-9\-_]*)\]$'
         matches = re.findall(regex, name, re.MULTILINE | re.IGNORECASE | re.UNICODE)
 
         for match in matches:

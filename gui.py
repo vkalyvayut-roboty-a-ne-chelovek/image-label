@@ -34,6 +34,7 @@ class Gui:
         self.figure_menu = None
         self.files_frame_treeview_menu = None
         self.figures_frame_treeview_menu = None
+        self.exporters_menu = None
 
         self.root.columnconfigure(1, weight=90)
         self.root.columnconfigure(2, weight=10)
@@ -136,6 +137,11 @@ class Gui:
         self.main_menu = tkinter.Menu(borderwidth=0)
         self.project_menu = tkinter.Menu(tearoff=False)
         self.figure_menu = tkinter.Menu(tearoff=False)
+        self.exporters_menu = tkinter.Menu(tearoff=False)
+
+        if self.bus.exporters:
+            for k, v in self.bus.exporters.items():
+                self.exporters_menu.add_command(label=k, command=lambda: v.show_options())
 
         self.project_menu.add_command(label='New Project', accelerator='<Control-n>',
                                       command=lambda: helpers.new_project_event(self.bus.statechart))
@@ -181,6 +187,7 @@ class Gui:
 
         self.main_menu.add_cascade(label='Project', menu=self.project_menu)
         self.main_menu.add_cascade(label='Figure', menu=self.figure_menu)
+        self.main_menu.add_cascade(label='Export', menu=self.exporters_menu)
 
         self.files_frame_treeview_menu = tkinter.Menu(tearoff=False)
         self.files_frame_treeview_menu.add_command(label='Add File', command=lambda: helpers.add_file_event(self.bus.statechart))
@@ -202,8 +209,6 @@ class Gui:
         self.root.bind('<Up>', lambda _: self.select_prev_image())
         self.root.bind('<Right>', lambda _: self.select_next_image())
         self.root.bind('<Down>', lambda _: self.select_next_image())
-
-
 
         self.root.config(menu=self.main_menu)
 
@@ -458,27 +463,22 @@ class Gui:
             figure = self.drawing_frame_canvas.create_polygon(temp_points, fill='green', outline='yellow', tags=('#draw_figures',))
             self.drawing_poly_figures.append(figure)
 
-    def _get_image_and_canvas_sizes(self):
+    def get_image_and_canvas_sizes(self):
         return (self.image_on_canvas.width(), self.image_on_canvas.height(),
                 self.drawing_frame_canvas.winfo_width(), self.drawing_frame_canvas.winfo_height())
 
     def clamp_coords_in_image_area(self, x, y) -> (int, int):
-        i_w, i_h, c_w, c_h = self._get_image_and_canvas_sizes()
+        i_w, i_h, c_w, c_h = self.get_image_and_canvas_sizes()
         clamped_x, clamped_y = helpers.clamp_coords_in_image_area(i_w=i_w, i_h=i_h, c_w=c_w, c_h=c_h, x=x, y=y)
 
         return clamped_x, clamped_y
 
     def from_canvas_to_image_coords(self, x, y):
-        i_w, i_h, c_w, c_h = self._get_image_and_canvas_sizes()
+        i_w, i_h, c_w, c_h = self.get_image_and_canvas_sizes()
         clamped_x, clamped_y = helpers.clamp_coords_in_image_area(i_w=i_w, i_h=i_h, c_w=c_w, c_h=c_h, x=x, y=y)
         rel_x, rel_y = helpers.from_canvas_to_image_coords(i_w=i_w, i_h=i_h, c_w=c_w, c_h=c_h, x=clamped_x, y=clamped_y)
 
         return rel_x, rel_y
-
-    def from_image_to_canvas_coords(self, x, y):
-        i_w, i_h, c_w, c_h = self._get_image_and_canvas_sizes()
-        abs_x, abs_y = helpers.from_image_to_canvas_coords(i_w=i_w, i_h=i_h, c_w=c_w, c_h=c_h, x=x, y=y)
-        return abs_x, abs_y
 
     def bind_figure_selection_event(self):
         self.figures_frame_treeview.bind('<<TreeviewSelect>>', lambda _: self.send_figure_selected_event())

@@ -4,11 +4,8 @@ class YoloExporter:
         self.bus = bus
         self.bus.register_item('exporters[yolo]', self)
 
-    def register_in_gui(self, gui):
-        pass
-
     def show_options(self):
-        pass
+        print('YOYOYO')
 
     def export(self, options, path):
         pass
