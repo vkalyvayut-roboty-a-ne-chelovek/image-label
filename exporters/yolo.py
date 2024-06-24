@@ -1,10 +1,11 @@
-from ..common_bus import CommonBus
-
 
 class YoloExporter:
-    def __init__(self, bus: CommonBus):
+    def __init__(self, bus):
         self.bus = bus
-        self.bus.register_item('yolo_exporter', self)
+        self.bus.register_item('exporters[yolo]', self)
+
+    def register_in_gui(self, gui):
+        pass
 
     def show_options(self):
         pass
