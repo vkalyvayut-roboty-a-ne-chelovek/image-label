@@ -1,6 +1,7 @@
 import tkinter
 
 from tkinter import filedialog
+from tkinter import ttk
 
 class YoloExporter:
     def __init__(self, bus):
@@ -22,15 +23,16 @@ class YoloExporter:
         frame.rowconfigure(0, weight=1)
         frame.rowconfigure(1, weight=1)
         frame.rowconfigure(2, weight=1)
+        frame.rowconfigure(3, weight=1)
 
         label1 = tkinter.LabelFrame(frame, text='% validation')
-        validation_percent = tkinter.StringVar(value='25')
+        validation_percent = tkinter.StringVar(value='10')
         entry1 = tkinter.Entry(label1, textvariable=validation_percent)
         label1.grid(column=0, row=0, sticky='nesw')
         entry1.grid(column=0, row=0, sticky='nesw')
 
         label2 = tkinter.LabelFrame(frame, text='% validation')
-        test_percent = tkinter.StringVar(value='25')
+        test_percent = tkinter.StringVar(value='10')
         entry2 = tkinter.Entry(label2, textvariable=test_percent)
         label2.grid(column=0, row=1, sticky='nesw')
         entry2.grid(column=0, row=0, sticky='nesw')
