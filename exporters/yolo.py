@@ -1,5 +1,7 @@
 import datetime
+import os.path
 import pathlib
+import shutil
 import tkinter
 
 from tkinter import filedialog
@@ -82,11 +84,14 @@ class YoloExporter:
 
         data = {}
         for filename, filedata in raw:
-            data[filename] = []
+            data[filename] = {
+                'abs_path': filedata['abs_path'],
+                'data': []
+            }
             for figure in filedata['figures']:
                 if options['export_rect_vals'] == 1:
                     if figure['type'] == 'rect':
-                        data[filename].append([
+                        data[filename]['data'].append([
                             categories.index(figure['category'].strip()),
                             *self._convert_rect_data_to_yolo_export_data(
                                 figure['points'][0][0],
@@ -96,7 +101,7 @@ class YoloExporter:
                             )])
                 elif options['export_rect_vals'] == 2:
                     if figure['type'] == 'rect':
-                        data[filename].append([
+                        data[filename]['data'].append([
                             categories.index(figure['category'].strip()),
                             *self._convert_rect_data_to_yolo_export_data(
                                 figure['points'][0][0],
@@ -105,7 +110,7 @@ class YoloExporter:
                                 figure['points'][1][1]
                             )])
                     elif figure['type'] == 'poly':
-                        data[filename].append([
+                        data[filename]['data'].append([
                             categories.index(figure['category'].strip()),
                             *self._convert_poly_data_to_yolo_export_data(figure['points'])])
 
@@ -118,7 +123,7 @@ class YoloExporter:
         path = pathlib.Path(path, str(datetime.datetime.utcnow()))
         path.mkdir()
 
-        for dataset_name, dataset_data in datasets:
+        for dataset_name, dataset_data in datasets.items():
             dataset_path = pathlib.Path(path, dataset_name)
             dataset_path.mkdir()
 
@@ -127,11 +132,17 @@ class YoloExporter:
 
             labels_dir = pathlib.Path(dataset_path, 'labels')
             labels_dir.mkdir()
-            
             images_dir = pathlib.Path(dataset_path, 'images')
             images_dir.mkdir()
 
-
+            for filename, filedata in dataset_data.items():
+                if filedata['data']:
+                    _, ext = os.path.splitext(filedata['abs_path'])
+                    with open(pathlib.Path(labels_dir, f'{filename}.txt').absolute(), 'w+') as label:
+                        for line in filedata['data']:
+                            _line = [str(i) for i in line]
+                            label.write('\n'.join([' '.join(_line) for line in filedata['data']]))
+                    shutil.copyfile(filedata['abs_path'], pathlib.Path(images_dir, f'{filename}{ext}'), follow_symlinks=True)
 
     @staticmethod
     def _convert_rect_data_to_yolo_export_data(x1, y1, x2, y2):
