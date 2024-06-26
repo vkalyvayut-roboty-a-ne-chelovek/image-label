@@ -1,7 +1,10 @@
+import datetime
+import pathlib
 import tkinter
 
 from tkinter import filedialog
 from tkinter import ttk
+
 
 class YoloExporter:
     def __init__(self, bus):
@@ -105,6 +108,29 @@ class YoloExporter:
                         data[filename].append([
                             categories.index(figure['category'].strip()),
                             *self._convert_poly_data_to_yolo_export_data(figure['points'])])
+
+        datasets = {
+            'train': data,
+            'test': {},
+            'val': {}
+        }
+
+        path = pathlib.Path(path, str(datetime.datetime.utcnow()))
+        path.mkdir()
+
+        for dataset_name, dataset_data in datasets:
+            dataset_path = pathlib.Path(path, dataset_name)
+            dataset_path.mkdir()
+
+            with open(pathlib.Path(dataset_path, 'classes.txt').absolute(), 'w+') as categories_file:
+                categories_file.write('\n'.join(categories))
+
+            labels_dir = pathlib.Path(dataset_path, 'labels')
+            labels_dir.mkdir()
+            
+            images_dir = pathlib.Path(dataset_path, 'images')
+            images_dir.mkdir()
+
 
 
     @staticmethod
