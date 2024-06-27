@@ -124,9 +124,37 @@ class YoloExporter:
 
         return datasets
 
+    def extract_categories(self):
+        unique_categories = sorted(set(self.bus.statechart.project.get_all_categories()))
+        zipped = zip(unique_categories, range(len(unique_categories)))
+        return dict(zipped)
+
     def mk_dataset_dir_and_save_dataset_data(self, dataset_name, dataset_data):
         dataset_dir = pathlib.Path(self.get_dest_dir_name(), dataset_name)
         dataset_dir.mkdir(parents=True)
+
+        categories = self.extract_categories()
+        categories_file_path = pathlib.Path(dataset_dir, 'categories.txt')
+        with open(categories_file_path.absolute(), 'w') as categories_handle:
+            categories_handle.write('\n'.join(categories.keys()))
+
+        labels_dir = pathlib.Path(dataset_dir, 'labels')
+        labels_dir.mkdir()
+
+        images_dir = pathlib.Path(dataset_dir, 'images')
+        images_dir.mkdir()
+
+        for filename, filedata in dataset_data.items():
+            label_txt_path = pathlib.Path(labels_dir, f'{filename}.txt').absolute()
+            label_txt_str = '\n'.join([' '.join(line) for line in filedata['data']])
+
+            with open(label_txt_path, 'w') as label_txt_handle:
+                label_txt_handle.write(label_txt_str)
+
+            _, ext = os.path.splitext(filedata['abs_path'])
+            image_path = pathlib.Path(images_dir, f'{filename}{ext}').absolute()
+            shutil.copyfile(filedata['abs_path'], image_path.absolute())
+
 
     def export(self):
         self.mk_dest_dir()

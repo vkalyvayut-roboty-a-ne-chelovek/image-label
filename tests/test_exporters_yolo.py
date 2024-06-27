@@ -80,10 +80,39 @@ class TestExportersYolo(unittest.TestCase):
         assert len(datasets['test']) == 1
         assert len(datasets['val']) == 1
 
+    def test_extract_categories(self):
+        expected_categories = {
+            'poly1': 0,
+            'rect1': 1,
+        }
+
+        assert expected_categories == self.y.extract_categories()
+
     def test_directory_created_mk_dataset_dir_and_save_dataset_data(self):
-        self.y.mk_dataset_dir_and_save_dataset_data('train', [])
+        dataset_data = {
+            'img1': {
+                'abs_path': pathlib.Path('./assets/domiki.png').absolute(),
+                'data': [
+                    ['0', '1', '2', '3', '4'],
+                    ['0', '5', '6', '7', '8'],
+                ]
+            }
+        }
+        self.y.mk_dataset_dir_and_save_dataset_data('train', dataset_data)
         expected_path = pathlib.Path(self.y.path, 'domik', 'train').absolute()
+        expected_categories_file_path = pathlib.Path(expected_path, 'categories.txt')
+        expected_labels_dir_path = pathlib.Path(expected_path, 'labels')
+        expected_labels_img1_path = pathlib.Path(expected_labels_dir_path, 'img1.txt')
+        expected_images_dir_path = pathlib.Path(expected_path, 'images')
+        expected_images_img1_path = pathlib.Path(expected_images_dir_path, 'img1.png')
+
         assert os.path.exists(expected_path)
+        assert os.path.exists(expected_categories_file_path)
+        assert os.path.exists(expected_labels_dir_path)
+        assert os.path.exists(expected_labels_img1_path)
+        assert os.path.exists(expected_images_dir_path)
+        assert os.path.exists(expected_images_img1_path)
+
 
     # def test_extract_categories(self):
     #     expected_categories = {
