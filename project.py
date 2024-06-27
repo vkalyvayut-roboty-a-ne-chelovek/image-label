@@ -9,7 +9,7 @@ from history import History
 
 class Project:
     def __init__(self, path: typing.Union[str, pathlib.Path] = None):
-        self._path = path
+        self.path = path
         self.files = {} if not path else self._load_from_path(path)
         self.history = History(self.files)
         self.selected_file_id = None

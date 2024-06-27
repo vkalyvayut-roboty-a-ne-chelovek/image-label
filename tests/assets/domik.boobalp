@@ -1,1 +1,415 @@
-{"version": 0, "files": {"58da0c08-2529-43bc-b784-389c1fe6997b": {"abs_path": "/home/user28/projects/python/booba-label/tests/assets/domiki.png", "figures": [{"type": "rect", "category": "65431", "points": [[0.0, 0.0], [0.121, 0.94]]}, {"type": "poly", "category": "1234", "points": [[0.237, 0.09999999999999998], [0.771, 0.12], [0.917, 0.8200000000000001], [0.15900000000000003, 0.83]]}]}, "3d93c653-cd1b-438d-91c3-ae370c678b17": {"abs_path": "/home/user28/projects/python/booba-label/tests/assets/domik.png", "figures": []}, "767b79a3-655d-406e-af69-39ee0b085bc2": {"abs_path": "/home/user28/projects/python/booba-label/tests/assets/domik.jpg", "figures": [{"type": "poly", "category": "<NOCATEGORY>", "points": [[0.09499999999999997, 0.13], [0.845, 0.19999999999999996], [0.935, 0.5800000000000001], [0.09499999999999997, 0.87]]}]}}}
+{
+  "version": 0,
+  "files": {
+    "img1": {
+      "abs_path": "/home/user28/projects/python/booba-label/tests/assets/domiki.png",
+      "figures": [
+        {
+          "type": "rect",
+          "category": "rect1",
+          "points": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.5,
+              0.5
+            ]
+          ]
+        },
+        {
+          "type": "poly",
+          "category": "poly1",
+          "points": [
+            [
+              0.5,
+              0.5
+            ],
+            [
+              0.5,
+              1.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              1.0,
+              0.5
+            ]
+          ]
+        }
+      ]
+    },
+    "img2": {
+      "abs_path": "/home/user28/projects/python/booba-label/tests/assets/domiki.png",
+      "figures": [
+        {
+          "type": "rect",
+          "category": "rect2",
+          "points": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.5,
+              0.5
+            ]
+          ]
+        },
+        {
+          "type": "poly",
+          "category": "poly2",
+          "points": [
+            [
+              0.5,
+              0.5
+            ],
+            [
+              0.5,
+              1.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              1.0,
+              0.5
+            ]
+          ]
+        }
+      ]
+    },
+    "img3": {
+      "abs_path": "/home/user28/projects/python/booba-label/tests/assets/domiki.png",
+      "figures": [
+        {
+          "type": "rect",
+          "category": "rect3",
+          "points": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.5,
+              0.5
+            ]
+          ]
+        },
+        {
+          "type": "poly",
+          "category": "poly3",
+          "points": [
+            [
+              0.5,
+              0.5
+            ],
+            [
+              0.5,
+              1.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              1.0,
+              0.5
+            ]
+          ]
+        }
+      ]
+    },
+    "img4": {
+      "abs_path": "/home/user28/projects/python/booba-label/tests/assets/domiki.png",
+      "figures": [
+        {
+          "type": "rect",
+          "category": "rect1",
+          "points": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.5,
+              0.5
+            ]
+          ]
+        },
+        {
+          "type": "poly",
+          "category": "poly1",
+          "points": [
+            [
+              0.5,
+              0.5
+            ],
+            [
+              0.5,
+              1.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              1.0,
+              0.5
+            ]
+          ]
+        }
+      ]
+    },
+    "img5": {
+      "abs_path": "/home/user28/projects/python/booba-label/tests/assets/domiki.png",
+      "figures": [
+        {
+          "type": "rect",
+          "category": "rect2",
+          "points": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.5,
+              0.5
+            ]
+          ]
+        },
+        {
+          "type": "poly",
+          "category": "poly2",
+          "points": [
+            [
+              0.5,
+              0.5
+            ],
+            [
+              0.5,
+              1.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              1.0,
+              0.5
+            ]
+          ]
+        }
+      ]
+    },
+    "img6": {
+      "abs_path": "/home/user28/projects/python/booba-label/tests/assets/domiki.png",
+      "figures": [
+        {
+          "type": "rect",
+          "category": "rect3",
+          "points": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.5,
+              0.5
+            ]
+          ]
+        },
+        {
+          "type": "poly",
+          "category": "poly3",
+          "points": [
+            [
+              0.5,
+              0.5
+            ],
+            [
+              0.5,
+              1.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              1.0,
+              0.5
+            ]
+          ]
+        }
+      ]
+    },
+    "img7": {
+      "abs_path": "/home/user28/projects/python/booba-label/tests/assets/domiki.png",
+      "figures": [
+        {
+          "type": "rect",
+          "category": "rect1",
+          "points": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.5,
+              0.5
+            ]
+          ]
+        },
+        {
+          "type": "poly",
+          "category": "poly1",
+          "points": [
+            [
+              0.5,
+              0.5
+            ],
+            [
+              0.5,
+              1.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              1.0,
+              0.5
+            ]
+          ]
+        }
+      ]
+    },
+    "img8": {
+      "abs_path": "/home/user28/projects/python/booba-label/tests/assets/domiki.png",
+      "figures": [
+        {
+          "type": "rect",
+          "category": "rect2",
+          "points": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.5,
+              0.5
+            ]
+          ]
+        },
+        {
+          "type": "poly",
+          "category": "poly2",
+          "points": [
+            [
+              0.5,
+              0.5
+            ],
+            [
+              0.5,
+              1.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              1.0,
+              0.5
+            ]
+          ]
+        }
+      ]
+    },
+    "img9": {
+      "abs_path": "/home/user28/projects/python/booba-label/tests/assets/domiki.png",
+      "figures": [
+        {
+          "type": "rect",
+          "category": "rect3",
+          "points": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.5,
+              0.5
+            ]
+          ]
+        },
+        {
+          "type": "poly",
+          "category": "poly3",
+          "points": [
+            [
+              0.5,
+              0.5
+            ],
+            [
+              0.5,
+              1.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              1.0,
+              0.5
+            ]
+          ]
+        }
+      ]
+    },
+    "img10": {
+      "abs_path": "/home/user28/projects/python/booba-label/tests/assets/domiki.png",
+      "figures": [
+        {
+          "type": "rect",
+          "category": "rect1",
+          "points": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.5,
+              0.5
+            ]
+          ]
+        },
+        {
+          "type": "poly",
+          "category": "poly1",
+          "points": [
+            [
+              0.5,
+              0.5
+            ],
+            [
+              0.5,
+              1.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              1.0,
+              0.5
+            ]
+          ]
+        }
+      ]
+    }
+  }
+}
