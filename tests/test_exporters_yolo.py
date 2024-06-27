@@ -1,4 +1,6 @@
 import datetime
+import glob
+import json
 import os.path
 import pathlib
 import tempfile
@@ -45,7 +47,6 @@ class TestExportersYolo(unittest.TestCase):
         }
         assert expected_lengths == self.y.get_datasets_lengths()
 
-
     def test_extract_project_filenames(self):
         expected_filenames = [
             'img1',
@@ -88,19 +89,38 @@ class TestExportersYolo(unittest.TestCase):
 
         assert expected_categories == self.y.extract_categories()
 
+    def test_convert_file_data_into_save_data(self):
+        self.y.options['export_rect_vals'] = 1
+
+        raw_data = [('img1', {"abs_path": str(pathlib.Path("./assets/domiki.png").absolute()), "figures": [{"type": "rect", "category": "rect1", "points": [[0, 0], [0.5, 0.5]]}, {"type": "poly", "category": "poly1", "points": [[0.5, 0.5], [0.5, 1], [1.0, 1.0], [1, 0.5]]}]})]
+        expected_data = {'img1': {
+            'abs_path': raw_data[0][1]['abs_path'],
+            'data': [
+                ['1', '0.25', '0.25', '0.5', '0.5']
+            ]
+        }}
+
+        converted_data = self.y.convert_file_data_into_save_data(raw_data)
+        assert expected_data == converted_data
+
+        self.y.options['export_rect_vals'] = 2
+        expected_data['img1']['data'].append(['0', '0.75', '0.75', '0.5', '0.5'])
+        converted_data = self.y.convert_file_data_into_save_data(raw_data)
+        assert expected_data == converted_data
+
     def test_directory_created_mk_dataset_dir_and_save_dataset_data(self):
         dataset_data = {
             'img1': {
                 'abs_path': pathlib.Path('./assets/domiki.png').absolute(),
                 'data': [
-                    ['0', '1', '2', '3', '4'],
-                    ['0', '5', '6', '7', '8'],
+                    ['1', '0.25', '0.25', '0.5', '0.5'],
+                    ['0', '0.75', '0.75', '0.5', '0.5']
                 ]
             }
         }
         self.y.mk_dataset_dir_and_save_dataset_data('train', dataset_data)
         expected_path = pathlib.Path(self.y.path, 'domik', 'train').absolute()
-        expected_categories_file_path = pathlib.Path(expected_path, 'categories.txt')
+        expected_categories_file_path = pathlib.Path(expected_path, 'classes.txt')
         expected_labels_dir_path = pathlib.Path(expected_path, 'labels')
         expected_labels_img1_path = pathlib.Path(expected_labels_dir_path, 'img1.txt')
         expected_images_dir_path = pathlib.Path(expected_path, 'images')
@@ -113,27 +133,24 @@ class TestExportersYolo(unittest.TestCase):
         assert os.path.exists(expected_images_dir_path)
         assert os.path.exists(expected_images_img1_path)
 
+    def test_export(self):
+        self.y.options['export_rect_vals'] = 2
+        self.y.export()
 
-    # def test_extract_categories(self):
-    #     expected_categories = {
-    #         '65431': 0,
-    #         '1234': 1,
-    #         '<NOCATEGORY>': 2
-    #     }
-    #
-    #     assert self.y.extract_categories() == expected_categories
-    #
-    # def test_extract_keys(self):
-    #     expected_keys = [
-    #         '58da0c08-2529-43bc-b784-389c1fe6997b',
-    #         '3d93c653-cd1b-438d-91c3-ae370c678b17',
-    #         '767b79a3-655d-406e-af69-39ee0b085bc2'
-    #     ]
-    #
-    #     assert self.y.extract_keys() == expected_keys
-    #
-    # def test_generate_train_test_val_keys(self):
-    #     print(self.y.generate_train_test_val_keys())
+        expected_path = pathlib.Path(self.y.path, 'domik', 'test').absolute()
+        expected_categories_file_path = pathlib.Path(expected_path, 'classes.txt')
+        expected_labels_dir_path = pathlib.Path(expected_path, 'labels')
+        expected_images_dir_path = pathlib.Path(expected_path, 'images')
+
+        assert os.path.exists(expected_path)
+        assert os.path.exists(expected_categories_file_path)
+        assert os.path.exists(expected_labels_dir_path)
+        assert os.path.exists(expected_images_dir_path)
+
+        expected_label_txt_content = '''1 0.25 0.25 0.5 0.5\n0 0.75 0.75 0.5 0.5'''
+        for label_txt in glob.glob(f'{expected_labels_dir_path}/*.txt'):
+            with open(label_txt, 'r') as label_txt_handle:
+                assert label_txt_handle.read() == expected_label_txt_content
 
 
 
