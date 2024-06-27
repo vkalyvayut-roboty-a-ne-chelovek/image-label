@@ -4,6 +4,7 @@ import os.path
 import pathlib
 import random
 import shutil
+import tempfile
 import tkinter
 import typing
 
@@ -79,13 +80,58 @@ class YoloExporter:
 
             self.export()
 
+    def get_dest_dir_name(self):
+        project_name, _ = os.path.splitext(os.path.basename(self.bus.statechart.project.path))
+        return pathlib.Path(self.path, project_name).absolute()
+
+    def mk_dest_dir(self):
+        dest_dir_path = self.get_dest_dir_name()
+        dest_dir_path.mkdir()
+
+    def get_datasets_lengths(self):
+        total_files = len(self.bus.statechart.project.get_files())
+        percent = total_files / 100
+        test_dataset_len = math.ceil(self.options['test_percent'] * percent)
+        val_dataset_len = math.ceil(self.options['validation_percent'] * percent)
+
+        return {
+            'train': total_files - test_dataset_len - val_dataset_len,
+            'test': test_dataset_len,
+            'val': val_dataset_len
+        }
+
+    def extract_project_filenames(self):
+        return [filename for filename, _ in self.bus.statechart.project.get_files()]
+
+    def get_filenames_for_dataset(self, amount_of_files_per_dataset: typing.Dict):
+        files = self.extract_project_filenames()
+        return {
+            'train': random.choices(files, k=amount_of_files_per_dataset['train']),
+            'test': random.choices(files, k=amount_of_files_per_dataset['test']),
+            'val': random.choices(files, k=amount_of_files_per_dataset['val']),
+        }
+
+    def get_datasets(self):
+
+        datasets_lengths = self.get_datasets_lengths()
+        datasets_filenames = self.get_filenames_for_dataset(datasets_lengths)
+
+        datasets = {
+            'train': self.bus.statechart.project.get_files(datasets_filenames['train']),
+            'test': self.bus.statechart.project.get_files(datasets_filenames['test']),
+            'val': self.bus.statechart.project.get_files(datasets_filenames['val']),
+        }
+
+        return datasets
+
+    def mk_dataset_dir_and_save_dataset_data(self, dataset_name, dataset_data):
+        dataset_dir = pathlib.Path(self.get_dest_dir_name(), dataset_name)
+        dataset_dir.mkdir(parents=True)
+
     def export(self):
         self.mk_dest_dir()
         for dataset_name, dataset_data in self.get_datasets():
             self.mk_dataset_dir_and_save_dataset_data(dataset_name, dataset_data)
-
-    # def get_dest_dir_name(self):
-    #     return pathlib.Path(self.path, os.path.basename(self.bus.statechart.project.path)).absolute()
 
     # def extract_categories(self) -> typing.Dict:
     #     all_categories = []

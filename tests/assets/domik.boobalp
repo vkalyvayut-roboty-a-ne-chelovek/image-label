@@ -47,7 +47,7 @@
       "figures": [
         {
           "type": "rect",
-          "category": "rect2",
+          "category": "rect1",
           "points": [
             [
               0.0,
@@ -61,7 +61,7 @@
         },
         {
           "type": "poly",
-          "category": "poly2",
+          "category": "poly1",
           "points": [
             [
               0.5,
@@ -88,7 +88,7 @@
       "figures": [
         {
           "type": "rect",
-          "category": "rect3",
+          "category": "rect",
           "points": [
             [
               0.0,
@@ -102,7 +102,7 @@
         },
         {
           "type": "poly",
-          "category": "poly3",
+          "category": "poly1",
           "points": [
             [
               0.5,
@@ -170,7 +170,7 @@
       "figures": [
         {
           "type": "rect",
-          "category": "rect2",
+          "category": "rect1",
           "points": [
             [
               0.0,
@@ -184,7 +184,7 @@
         },
         {
           "type": "poly",
-          "category": "poly2",
+          "category": "poly1",
           "points": [
             [
               0.5,
@@ -211,7 +211,7 @@
       "figures": [
         {
           "type": "rect",
-          "category": "rect3",
+          "category": "rect",
           "points": [
             [
               0.0,
@@ -225,7 +225,7 @@
         },
         {
           "type": "poly",
-          "category": "poly3",
+          "category": "poly1",
           "points": [
             [
               0.5,
@@ -293,7 +293,7 @@
       "figures": [
         {
           "type": "rect",
-          "category": "rect2",
+          "category": "rect1",
           "points": [
             [
               0.0,
@@ -307,7 +307,7 @@
         },
         {
           "type": "poly",
-          "category": "poly2",
+          "category": "poly1",
           "points": [
             [
               0.5,
@@ -334,7 +334,7 @@
       "figures": [
         {
           "type": "rect",
-          "category": "rect3",
+          "category": "rect",
           "points": [
             [
               0.0,
@@ -348,7 +348,7 @@
         },
         {
           "type": "poly",
-          "category": "poly3",
+          "category": "poly1",
           "points": [
             [
               0.5,
