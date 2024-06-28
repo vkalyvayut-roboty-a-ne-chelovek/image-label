@@ -1,4 +1,5 @@
 import copy
+import typing
 
 from miros import ActiveObject
 from miros import Event
@@ -287,13 +288,21 @@ class Statechart(ActiveObject):
         # TODO переписать в метод
         self.bus.gui.drawing_poly_points.append(point)
 
-        if len(self.points) >= 3:
+    def on_drawing_poly_click_check_if_have_to_finish_drawing(self) -> bool:
+        result = False
+
+        if len(self.points) > 3:
             point_start = self.points[0]
             point_finish = self.points[-1]
 
             if abs(point_finish[0] - point_start[0]) <= 5 and abs(point_finish[1] - point_start[1]) <= 5:
-                self.points.pop()
-                self.save_current_polygon_as_is()
+                result = True
+
+        return result
+
+    def on_drawing_poly_finish_drawing(self):
+        self.points.pop()
+        self.save_current_polygon_as_is()
 
     def save_current_polygon_as_is(self):
         selected_file_id, _ = self.project.get_selected_file()
@@ -518,6 +527,9 @@ def drawing_poly(chart: Statechart, event: Event) -> return_status:
     elif event.signal == signals.CLICK:
         status = return_status.HANDLED
         chart.on_drawing_poly_click(event.payload)
+        if chart.on_drawing_poly_click_check_if_have_to_finish_drawing():
+            chart.on_drawing_poly_finish_drawing()
+            status = chart.trans(in_project)
     elif event.signal == signals.RIGHT_CLICK:
         status = chart.trans(in_project)
         chart.save_current_polygon_as_is()

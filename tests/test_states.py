@@ -89,6 +89,91 @@ class TestStates(unittest.TestCase):
 
         self._assert_spy_check(actual_spy, expected_spy)
 
+    def test_project_no_project_to_in_project_to_drawing_rect_on_new_project_on_add_file_on_draw_rect(self):
+        helpers.new_project_event(self.s)
+        time.sleep(0.1)
+        helpers.add_file_event(self.s, [pathlib.Path('./assets/domiki.png').absolute()])
+        time.sleep(0.1)
+        helpers.draw_rect_event(self.s)
+        time.sleep(0.1)
+
+        expected_states = '''
+        [2024-06-28 15:55:31.905542] [statechart] e->start_at() top->no_project
+        [2024-06-28 15:55:34.006727] [statechart] e->NEW_PROJECT() no_project->in_project
+        [2024-06-28 15:55:38.815240] [statechart] e->DRAW_RECT() in_project->drawing_rect
+        '''
+        actual_states = self.s.trace()
+
+        self._assert_trace_check(actual_states, expected_states)
+
+    def test_project_no_project_to_in_project_to_drawing_rect_to_drawing_rect_waiting_for_2_point_to_in_project_on_new_project_on_add_file_on_draw_rect_on_click_on_click(self):
+        helpers.new_project_event(self.s)
+        time.sleep(0.1)
+        helpers.add_file_event(self.s, [pathlib.Path('./assets/domiki.png').absolute()])
+        time.sleep(0.1)
+        helpers.draw_rect_event(self.s)
+        time.sleep(0.1)
+        helpers.click_canvas_event(self.s, coords=(0, 0))
+        time.sleep(0.1)
+        helpers.click_canvas_event(self.s, coords=(0, 0))
+        time.sleep(0.1)
+
+        expected_states = '''
+        [2024-06-28 15:58:43.797013] [statechart] e->start_at() top->no_project
+        [2024-06-28 15:58:48.040171] [statechart] e->NEW_PROJECT() no_project->in_project
+        [2024-06-28 15:58:56.777206] [statechart] e->DRAW_RECT() in_project->drawing_rect
+        [2024-06-28 15:58:57.922233] [statechart] e->CLICK() drawing_rect->drawing_rect_waiting_for_2_point
+        [2024-06-28 15:59:00.724389] [statechart] e->CLICK() drawing_rect_waiting_for_2_point->in_project
+        '''
+        actual_states = self.s.trace()
+
+        self._assert_trace_check(actual_states, expected_states)
+
+    def test_project_no_project_to_in_project_to_drawing_poly_on_new_project_on_add_file_on_draw_poly(self):
+        helpers.new_project_event(self.s)
+        time.sleep(0.1)
+        helpers.add_file_event(self.s, [pathlib.Path('./assets/domiki.png').absolute()])
+        time.sleep(0.1)
+        helpers.draw_poly_event(self.s)
+        time.sleep(0.1)
+
+        expected_states = '''
+        [2024-06-28 15:55:31.905542] [statechart] e->start_at() top->no_project
+        [2024-06-28 15:55:34.006727] [statechart] e->NEW_PROJECT() no_project->in_project
+        [2024-06-28 15:55:38.815240] [statechart] e->DRAW_POLY() in_project->drawing_poly
+        '''
+        actual_states = self.s.trace()
+
+        self._assert_trace_check(actual_states, expected_states)
+
+    def test_project_no_project_to_in_project_to_drawing_poly_to_in_project_on_new_project_on_add_file_on_draw_poly_on_click_on_click_on_click(self):
+        helpers.new_project_event(self.s)
+        time.sleep(0.1)
+        helpers.add_file_event(self.s, [pathlib.Path('./assets/domiki.png').absolute()])
+        time.sleep(0.1)
+        helpers.draw_poly_event(self.s)
+        time.sleep(0.1)
+        helpers.click_canvas_event(self.s, coords=(0, 0))
+        time.sleep(0.1)
+        helpers.click_canvas_event(self.s, coords=(100, 0))
+        time.sleep(0.1)
+        helpers.click_canvas_event(self.s, coords=(100, 50))
+        time.sleep(0.1)
+        helpers.click_canvas_event(self.s, coords=(0, 0))
+        time.sleep(0.1)
+
+        expected_states = '''
+        [2024-06-28 16:22:39.068617] [statechart] e->start_at() top->no_project
+        [2024-06-28 16:22:40.689900] [statechart] e->NEW_PROJECT() no_project->in_project
+        [2024-06-28 16:22:45.130358] [statechart] e->DRAW_POLY() in_project->drawing_poly
+        [2024-06-28 16:22:48.828693] [statechart] e->CLICK() drawing_poly->in_project
+        '''
+        actual_states = self.s.trace()
+        print(expected_states)
+        print(actual_states)
+
+        self._assert_trace_check(actual_states, expected_states)
+
 
 
     # def test_new_project_signal_states(self):

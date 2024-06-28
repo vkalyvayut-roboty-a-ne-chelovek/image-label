@@ -79,6 +79,7 @@ def quit_event(s: ActiveObject) -> None:
     if quit_anyway:
         sys.exit(0)
 
+
 def save_project_event(s: ActiveObject) -> None:
     file_path = ask_for_save_project_path()
     if file_path:
@@ -97,7 +98,6 @@ def add_file_event(s: ActiveObject, force_add_files_from_path: typing.List[str] 
         file_path = ask_for_add_file_paths()
         if len(file_path) > 0:
             s.post_fifo(Event(signal=signals.ADD_FILE, payload=file_path))
-
 
 
 def remove_file_event(s: ActiveObject, file_id: typing.Any, force: bool = False) -> None:
@@ -145,6 +145,7 @@ def update_figure_remove_point_event(s: ActiveObject, figure_point_data: typing.
             'point_idx': figure_point_data['point_idx']
         }))
 
+
 def update_figure_add_point_event(s: ActiveObject, coords: typing.Tuple[int, int], figure_point_data: typing.Dict) -> None:
     if figure_point_data:
         s.post_fifo(Event(signal=signals.UPDATE_FIGURE_INSERT_POINT, payload={
@@ -181,6 +182,9 @@ def clamp(_min, _max, cur):
 # костыль, если в окне присутствует tkinter.Label
 # то происходит потеря фокуса и невозможность скрытия окна
 def ask_for_category_name(c: ActiveObject, file_id: str, figure_id: int, default_val: str = '', values: typing.List[str] = ()):
+    if not hasattr(c.bus.gui, 'root'):
+        return
+
     val = tkinter.StringVar(value=default_val)
 
     w = tkinter.Toplevel()

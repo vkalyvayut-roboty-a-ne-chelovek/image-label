@@ -753,6 +753,15 @@ class PlaceholderGui(Gui):
     def redraw_drawing_poly_temp_figure(self, x, y) -> None:
         pass
 
+    def get_image_and_canvas_sizes(self) -> typing.Tuple[int, int, int, int]:
+        return 0, 0, 1, 1
+
+    def clamp_coords_in_image_area(self, x, y) -> typing.Tuple[float, float]:
+        return 0.0, 0.0
+
+    def from_canvas_to_image_coords(self, x, y) -> typing.Tuple[float, float]:
+        return 0.0, 0.0
+
     def bind_figure_selection_event(self) -> None:
         pass
 
