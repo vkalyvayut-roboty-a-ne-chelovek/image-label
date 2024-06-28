@@ -53,17 +53,21 @@ def new_project_event(s: ActiveObject) -> None:
         s.post_fifo(Event(signal=signals.NEW_PROJECT))
 
 
-def load_project_event(s: ActiveObject) -> None:
-    are_there_any_changes_made_in_project = s.check_if_there_are_any_changes_made_in_project()
-    load_anyway = True
+def load_project_event(s: ActiveObject, force_load_from_path: str = None) -> None:
+    if force_load_from_path:
+        s.post_fifo(Event(signal=signals.LOAD_PROJECT, payload=force_load_from_path))
+    else:
+        are_there_any_changes_made_in_project = s.check_if_there_are_any_changes_made_in_project()
+        load_anyway = True
 
-    if are_there_any_changes_made_in_project:
-        load_anyway = there_are_some_changes_in_project_ask_what_to_do()
+        if are_there_any_changes_made_in_project:
+            load_anyway = there_are_some_changes_in_project_ask_what_to_do()
 
-    if load_anyway:
-        file_path = ask_for_load_project_path()
-        if file_path:
-            s.post_fifo(Event(signal=signals.LOAD_PROJECT, payload=file_path))
+        if load_anyway:
+            file_path = ask_for_load_project_path()
+            if file_path:
+                s.post_fifo(Event(signal=signals.LOAD_PROJECT, payload=file_path))
+
 
 def quit_event(s: ActiveObject) -> None:
     are_there_any_changes_made_in_project = s.check_if_there_are_any_changes_made_in_project()
@@ -86,17 +90,23 @@ def select_image_event(s: ActiveObject, file_id: typing.Any) -> None:
         s.post_fifo(Event(signal=signals.SELECT_IMAGE, payload=file_id))
 
 
-def add_file_event(s: ActiveObject) -> None:
-    file_path = ask_for_add_file_paths()
-    if len(file_path) > 0:
-        s.post_fifo(Event(signal=signals.ADD_FILE, payload=file_path))
+def add_file_event(s: ActiveObject, force_add_files_from_path: typing.List[str] = None) -> None:
+    if force_add_files_from_path:
+        s.post_fifo(Event(signal=signals.ADD_FILE, payload=force_add_files_from_path))
+    else:
+        file_path = ask_for_add_file_paths()
+        if len(file_path) > 0:
+            s.post_fifo(Event(signal=signals.ADD_FILE, payload=file_path))
 
 
 
-def remove_file_event(s: ActiveObject, file_ids: typing.Any) -> None:
-    msg = f'Are you sure to remove selected file?'
-    if messagebox.askyesno(title=msg, message=msg):
-        s.post_fifo(Event(signal=signals.REMOVE_FILE, payload=file_ids))
+def remove_file_event(s: ActiveObject, file_id: typing.Any, force: bool = False) -> None:
+    if force:
+        s.post_fifo(Event(signal=signals.REMOVE_FILE, payload=file_id))
+    else:
+        msg = f'Are you sure to remove selected file?'
+        if messagebox.askyesno(title=msg, message=msg):
+            s.post_fifo(Event(signal=signals.REMOVE_FILE, payload=file_id))
 
 
 def draw_rect_event(s: ActiveObject) -> None:

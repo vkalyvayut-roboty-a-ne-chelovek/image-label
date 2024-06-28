@@ -615,6 +615,9 @@ class Gui:
 
         return next_file
 
+    def set_files_selection(self, file_id: str) -> None:
+        self.files_frame_treeview.selection_set([file_id])
+
 
 class PlaceholderGui(Gui):
     def __init__(self, bus: CommonBus):
@@ -802,4 +805,7 @@ class PlaceholderGui(Gui):
         pass
 
     def select_next_image(self) -> None:
+        pass
+
+    def set_files_selection(self, file_id: str) -> None:
         pass

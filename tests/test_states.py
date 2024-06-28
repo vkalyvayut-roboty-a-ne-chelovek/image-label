@@ -13,6 +13,7 @@ from common_bus import CommonBus
 from statechart import Statechart
 from gui import PlaceholderGui
 
+
 class TestStates(unittest.TestCase):
     @staticmethod
     def _assert_trace_check(actual_trace, expected_trace):
@@ -21,6 +22,12 @@ class TestStates(unittest.TestCase):
                 _actual_trace), f'Not enough events: expected ({len(_expected_trace)}) != actual({len(_actual_trace)})'
             for expected, actual in zip(_expected_trace, _actual_trace):
                 assert expected == actual, f'{expected} != {actual}'
+
+    @staticmethod
+    def _assert_spy_check(actual_spy, expected_spy):
+        assert len(expected_spy) == len(actual_spy), f'Not enough events: expected ({len(expected_spy)}) != actual({len(actual_spy)})'
+        for expected, actual in zip(actual_spy, expected_spy):
+            assert expected == actual, f'{expected} != {actual}'
 
     def setUp(self):
         self.b = CommonBus()
@@ -34,13 +41,55 @@ class TestStates(unittest.TestCase):
         self.g.run()
 
     def test_from_no_project_to_in_project_on_new_project(self):
+        helpers.new_project_event(self.s)
+        time.sleep(0.1)
+
         expected_states = '''
         [2024-06-28 14:09:37.319643] [statechart] e->start_at() top->no_project
         [2024-06-28 14:09:37.319643] [statechart] e->NEW_PROJECT() no_project->in_project
         '''
-        helpers.new_project_event(self.s)
         actual_states = self.s.trace()
-        print(actual_states)
+
+        self._assert_trace_check(actual_states, expected_states)
+
+    def test_from_no_project_to_in_project_on_load_project(self):
+        helpers.load_project_event(self.s, pathlib.Path('./assets/domik.boobalp'))
+        time.sleep(0.1)
+
+        expected_states = '''
+        [2024-06-28 15:14:35.233332] [statechart] e->start_at() top->no_project
+        [2024-06-28 15:14:41.406999] [statechart] e->LOAD_PROJECT() no_project->in_project
+        '''
+        actual_states = self.s.trace()
+
+        self._assert_trace_check(actual_states, expected_states)
+
+    def test_from_no_project_to_in_project_on_new_project_on_add_file(self):
+        helpers.new_project_event(self.s)
+        time.sleep(0.1)
+        helpers.add_file_event(self.s, [pathlib.Path('./assets/domiki.png').absolute()])
+        time.sleep(0.1)
+
+        expected_spy = ['START', 'SEARCH_FOR_SUPER_SIGNAL:no_project', 'ENTRY_SIGNAL:no_project', 'INIT_SIGNAL:no_project', '<- Queued:(0) Deferred:(0)', 'NEW_PROJECT:no_project', 'SEARCH_FOR_SUPER_SIGNAL:in_project', 'ENTRY_SIGNAL:in_project', 'INIT_SIGNAL:in_project', '<- Queued:(0) Deferred:(0)', 'ADD_FILE:in_project', 'POST_FIFO:SELECT_IMAGE', 'ADD_FILE:in_project:HOOK', '<- Queued:(1) Deferred:(0)', 'SELECT_IMAGE:in_project', 'POST_FIFO:RESET_DRAWING', 'SELECT_IMAGE:in_project:HOOK', '<- Queued:(1) Deferred:(0)', 'RESET_DRAWING:in_project', 'RESET_DRAWING:no_project', '<- Queued:(0) Deferred:(0)']
+        actual_spy = self.s.spy()
+        self._assert_spy_check(actual_spy, expected_spy)
+
+    def test_project_no_project_to_in_project_on_new_project_on_add_file_on_remove_file(self):
+        helpers.new_project_event(self.s)
+        time.sleep(0.1)
+        helpers.add_file_event(self.s, [pathlib.Path('./assets/domiki.png').absolute()])
+        time.sleep(0.1)
+
+        selected_file_id, _ = self.s.project.get_selected_file()
+        helpers.remove_file_event(self.s, file_id=selected_file_id, force=True)
+        time.sleep(0.1)
+
+        expected_spy = ['START', 'SEARCH_FOR_SUPER_SIGNAL:no_project', 'ENTRY_SIGNAL:no_project', 'INIT_SIGNAL:no_project', '<- Queued:(0) Deferred:(0)', 'NEW_PROJECT:no_project', 'SEARCH_FOR_SUPER_SIGNAL:in_project', 'ENTRY_SIGNAL:in_project', 'INIT_SIGNAL:in_project', '<- Queued:(0) Deferred:(0)', 'ADD_FILE:in_project', 'POST_FIFO:SELECT_IMAGE', 'ADD_FILE:in_project:HOOK', '<- Queued:(1) Deferred:(0)', 'SELECT_IMAGE:in_project', 'POST_FIFO:RESET_DRAWING', 'SELECT_IMAGE:in_project:HOOK', '<- Queued:(1) Deferred:(0)', 'RESET_DRAWING:in_project', 'RESET_DRAWING:no_project', '<- Queued:(0) Deferred:(0)', 'REMOVE_FILE:in_project', 'REMOVE_FILE:in_project:HOOK', '<- Queued:(0) Deferred:(0)']
+        actual_spy = self.s.spy()
+
+        self._assert_spy_check(actual_spy, expected_spy)
+
+
 
     # def test_new_project_signal_states(self):
     #     gui = GuiForTest()

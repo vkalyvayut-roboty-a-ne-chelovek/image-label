@@ -146,7 +146,7 @@ class Statechart(ActiveObject):
 
         self.check_if_there_are_any_undo_actions_available_and_then_change_state_of_the_undo_button()
 
-        self.bus.gui.files_frame_treeview.selection_set([file_id])
+        self.bus.gui.set_files_selection(file_id)
         helpers.reset_drawing_event(self)
 
         self.bus.gui.set_default_pointer()
@@ -221,6 +221,7 @@ class Statechart(ActiveObject):
         self.points.append(point)
 
     def on_drawing_rect_waiting_for_2_point_entry(self):
+        # TODO переписать в метод
         self.bus.gui.drawing_rect_point_1 = self.points[0]
 
         self.bus.gui.bind_canvas_click_event()
@@ -234,12 +235,15 @@ class Statechart(ActiveObject):
 
         self.bus.gui.set_default_pointer()
 
+        # TODO переписать в метод
         self.bus.gui.drawing_rect_point_1 = None
 
         self.points = []
 
     def on_drawing_rect_waiting_for_2_point_click(self, point):
         self.points.append(point)
+
+        # TODO переписать в метод
         points = [self.bus.gui.from_canvas_to_image_coords(*point) for point in self.points]
         new_figure_id = self.project.add_rectangle(points=points, color=helpers.pick_random_color())
         self.points = []
@@ -271,6 +275,8 @@ class Statechart(ActiveObject):
 
     def on_drawing_poly_reset_drawing(self):
         self.points = []
+
+        # TODO переписать в метод
         self.bus.gui.drawing_poly_points = []
 
         self._redraw_canvas_and_figures()
@@ -278,6 +284,7 @@ class Statechart(ActiveObject):
     def on_drawing_poly_click(self, point):
         self.points.append(point)
 
+        # TODO переписать в метод
         self.bus.gui.drawing_poly_points.append(point)
 
         if len(self.points) >= 3:
@@ -290,6 +297,8 @@ class Statechart(ActiveObject):
 
     def save_current_polygon_as_is(self):
         selected_file_id, _ = self.project.get_selected_file()
+
+        # TODO переписать в метод
         new_figure_id = self.project.add_polygon(
             points=[self.bus.gui.from_canvas_to_image_coords(*point) for point in self.points],
             color=helpers.pick_random_color()
@@ -316,6 +325,8 @@ class Statechart(ActiveObject):
 
     def on_moving_point_update_figure_point_position(self, figure_id, point_id, new_coords):
         selected_file_id, _ = self.project.get_selected_file()
+
+        # TODO переписать в метод
         new_coords = self.bus.gui.from_canvas_to_image_coords(*new_coords)
         self.project.update_figure_point_position(selected_file_id, figure_id, point_id, new_coords)
 
@@ -358,6 +369,8 @@ class Statechart(ActiveObject):
 
     def on_adding_point_update_figure_insert_point(self, figure_id, point_id, coords):
         selected_file_id, _ = self.project.get_selected_file()
+
+        # TODO переписать в метод
         new_coords = self.bus.gui.from_canvas_to_image_coords(*coords)
         self.project.update_figure_insert_point(selected_file_id, figure_id, point_id, new_coords)
 
