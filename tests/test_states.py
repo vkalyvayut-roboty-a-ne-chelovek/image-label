@@ -2,13 +2,16 @@ import pathlib
 import tempfile
 import time
 import unittest
-from prev.main import GuiForTest
-from prev.main import Statechart
-import helpers
+
 from miros import stripped
 from miros import Event
 from miros import signals
 
+import helpers
+
+from common_bus import CommonBus
+from statechart import Statechart
+from gui import PlaceholderGui
 
 class TestStates(unittest.TestCase):
     @staticmethod
@@ -18,6 +21,26 @@ class TestStates(unittest.TestCase):
                 _actual_trace), f'Not enough events: expected ({len(_expected_trace)}) != actual({len(_actual_trace)})'
             for expected, actual in zip(_expected_trace, _actual_trace):
                 assert expected == actual, f'{expected} != {actual}'
+
+    def setUp(self):
+        self.b = CommonBus()
+        self.s = Statechart('statechart', bus=self.b)
+        self.g = PlaceholderGui(bus=self.b)
+
+        # self.s.live_spy = True
+        # self.s.live_trace = True
+
+        self.s.run()
+        self.g.run()
+
+    def test_from_no_project_to_in_project_on_new_project(self):
+        expected_states = '''
+        [2024-06-28 14:09:37.319643] [statechart] e->start_at() top->no_project
+        [2024-06-28 14:09:37.319643] [statechart] e->NEW_PROJECT() no_project->in_project
+        '''
+        helpers.new_project_event(self.s)
+        actual_states = self.s.trace()
+        print(actual_states)
 
     # def test_new_project_signal_states(self):
     #     gui = GuiForTest()

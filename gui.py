@@ -9,7 +9,6 @@ import helpers
 from common_bus import CommonBus
 from figure import Figure
 
-
 class Gui:
     def __init__(self, bus: CommonBus):
         self.bus = bus
@@ -104,7 +103,7 @@ class Gui:
         self.figures_frame_treeview.config(yscrollcommand=self.figures_frame_treeview_scrollbar.set)
         self.figures_frame_treeview_scrollbar.config(command=self.figures_frame_treeview.yview)
 
-    def run(self):
+    def run(self) -> None:
         self.new_project_btn.configure(command=lambda: helpers.new_project_event(self.bus.statechart))
         self.load_project_btn.configure(command=lambda: helpers.load_project_event(self.bus.statechart))
         self.save_project_btn.configure(command=lambda: helpers.save_project_event(self.bus.statechart))
@@ -214,56 +213,56 @@ class Gui:
 
         self.root.mainloop()
 
-    def set_default_pointer(self):
+    def set_default_pointer(self) -> None:
         self.root.config(cursor='')
 
-    def set_drawing_pointer(self):
+    def set_drawing_pointer(self) -> None:
         self.root.config(cursor='pencil')
 
-    def set_grab_pointer(self):
+    def set_grab_pointer(self) -> None:
         self.root.config(cursor='fleur')
 
-    def set_remove_pointer(self):
+    def set_remove_pointer(self) -> None:
         self.root.config(cursor='X_cursor')
 
-    def set_add_pointer(self):
+    def set_add_pointer(self) -> None:
         self.root.config(cursor='plus')
 
-    def add_file(self, id_, filedata):
+    def add_file(self, id_, filedata) -> None:
         self.files_frame_treeview.insert('', 'end', id=id_, values=(filedata['abs_path']), tags=('#files',))
 
-    def clear_files(self):
+    def clear_files(self) -> None:
         if self.files_frame_treeview.tag_has('#files'):
             for item in self.files_frame_treeview.get_children(''):
                 self.files_frame_treeview.delete(item)
 
-    def remove_file(self, file_id):
+    def remove_file(self, file_id) -> None:
         if self.files_frame_treeview.tag_has('#files'):
             for item in self.files_frame_treeview.get_children():
                 if item == file_id:
                     self.files_frame_treeview.delete(item)
 
-    def clear_image(self):
+    def clear_image(self) -> None:
         if self.figures_frame_treeview.tag_has('#image'):
             for item in self.figures_frame_treeview.get_children(''):
                 self.figures_frame_treeview.delete(item)
 
-    def clear_figures(self):
+    def clear_figures(self) -> None:
         if self.figures_frame_treeview.tag_has('#figures'):
             for item in self.figures_frame_treeview.get_children(''):
                 self.figures_frame_treeview.delete(item)
 
-    def clear_canvas(self):
+    def clear_canvas(self) -> None:
         if self.drawing_frame_canvas.gettags('#draw_figures'):
             self.drawing_frame_canvas.delete('#draw_figures')
 
-    def bind_select_image_listener(self):
+    def bind_select_image_listener(self) -> None:
         self.files_frame_treeview.bind('<Double-Button-1>', lambda _: helpers.select_image_event(self.bus.statechart, self.files_frame_treeview.selection()[0]))
 
-    def unbind_select_image_listener(self):
+    def unbind_select_image_listener(self) -> None:
         self.files_frame_treeview.unbind('<Double-Button-1>')
 
-    def load_image_into_canvas(self, abs_path):
+    def load_image_into_canvas(self, abs_path) -> None:
         self.clear_image()
 
         self.image_to_load_on_canvas = Image.open(abs_path)
@@ -295,43 +294,43 @@ class Gui:
 
         return [int(pos) for pos in result]
 
-    def enable_save_project_btn(self):
+    def enable_save_project_btn(self) -> None:
         self.save_project_btn['state'] = 'normal'
 
         if self.project_menu:
             self.project_menu.entryconfig('Save Project', state='normal')
 
-    def disable_save_project_btn(self):
+    def disable_save_project_btn(self) -> None:
         self.save_project_btn['state'] = 'disabled'
 
         if self.project_menu:
             self.project_menu.entryconfig('Save Project', state='disabled')
 
-    def enable_add_file_btn(self):
+    def enable_add_file_btn(self) -> None:
         self.add_file_btn['state'] = 'normal'
 
         if self.project_menu:
             self.project_menu.entryconfig('Add File', state='normal')
 
-    def disable_add_file_btn(self):
+    def disable_add_file_btn(self) -> None:
         self.add_file_btn['state'] = 'disabled'
 
         if self.project_menu:
             self.project_menu.entryconfig('Add File', state='disabled')
 
-    def enable_remove_file_btn(self):
+    def enable_remove_file_btn(self) -> None:
         self.remove_file_btn['state'] = 'normal'
 
         if self.project_menu:
             self.project_menu.entryconfig('Remove File', state='normal')
 
-    def disable_remove_file_btn(self):
+    def disable_remove_file_btn(self) -> None:
         self.remove_file_btn['state'] = 'disabled'
 
         if self.project_menu:
             self.project_menu.entryconfig('Remove File', state='disabled')
 
-    def enable_draw_buttons(self):
+    def enable_draw_buttons(self) -> None:
         self.draw_rectangle_btn['state'] = 'normal'
         self.draw_polygon_btn['state'] = 'normal'
 
@@ -339,7 +338,7 @@ class Gui:
             self.figure_menu.entryconfig('Draw Rectangle', state='normal')
             self.figure_menu.entryconfig('Draw Polygon', state='normal')
 
-    def disable_draw_buttons(self):
+    def disable_draw_buttons(self) -> None:
         self.draw_rectangle_btn['state'] = 'disabled'
         self.draw_polygon_btn['state'] = 'disabled'
 
@@ -347,7 +346,7 @@ class Gui:
             self.figure_menu.entryconfig('Draw Rectangle', state='disabled')
             self.figure_menu.entryconfig('Draw Polygon', state='disabled')
 
-    def enable_point_actions_buttons(self):
+    def enable_point_actions_buttons(self) -> None:
         self.add_point_btn['state'] = 'normal'
         self.remove_point_btn['state'] = 'normal'
         self.move_point_btn['state'] = 'normal'
@@ -357,7 +356,7 @@ class Gui:
             self.figure_menu.entryconfig('Remove Point', state='normal')
             self.figure_menu.entryconfig('Move Point', state='normal')
 
-    def disable_point_actions_buttons(self):
+    def disable_point_actions_buttons(self) -> None:
         self.add_point_btn['state'] = 'disabled'
         self.remove_point_btn['state'] = 'disabled'
         self.move_point_btn['state'] = 'disabled'
@@ -367,52 +366,52 @@ class Gui:
             self.figure_menu.entryconfig('Remove Point', state='disabled')
             self.figure_menu.entryconfig('Move Point', state='disabled')
 
-    def enable_undo_action_button(self):
+    def enable_undo_action_button(self) -> None:
         self.undo_btn['state'] = 'normal'
 
         if self.figure_menu:
             self.figure_menu.entryconfig('Undo', state='normal')
 
-    def disable_undo_action_button(self):
+    def disable_undo_action_button(self) -> None:
         self.undo_btn['state'] = 'disabled'
 
         if self.figure_menu:
             self.figure_menu.entryconfig('Undo', state='disabled')
 
-    def bind_canvas_click_event(self):
+    def bind_canvas_click_event(self) -> None:
         self.drawing_frame_canvas.bind('<Button-1>', lambda _e: helpers.click_canvas_event(self.bus.statechart, self.clamp_coords_in_image_area(_e.x, _e.y)))
         self.drawing_frame_canvas.bind('<Button-3>', lambda _e: helpers.right_click_canvas_event(self.bus.statechart))
         self.root.bind('<KeyPress-Escape>', lambda _e: helpers.reset_drawing_event(self.bus.statechart))
 
-    def unbind_canvas_click_event(self):
+    def unbind_canvas_click_event(self) -> None:
         self.drawing_frame_canvas.unbind('<Button-1>')
         self.drawing_frame_canvas.unbind('<Button-3>')
         self.root.unbind('<KeyPress-Escape>')
 
-    def bind_canvas_motion_rect_drawing_stage_1(self):
+    def bind_canvas_motion_rect_drawing_stage_1(self) -> None:
         self.drawing_frame_canvas.bind('<Motion>', lambda _e: self.redraw_drawing_position_marker(*self.clamp_coords_in_image_area(_e.x, _e.y)))
 
-    def unbind_canvas_motion_rect_drawing_stage_1(self):
+    def unbind_canvas_motion_rect_drawing_stage_1(self) -> None:
         self.drawing_frame_canvas.unbind('<Motion>')
 
-    def bind_canvas_motion_rect_drawing_stage_2(self):
+    def bind_canvas_motion_rect_drawing_stage_2(self) -> None:
         self.drawing_frame_canvas.bind('<Motion>', lambda _e: self.redraw_drawing_rect_temp_figure(*self.clamp_coords_in_image_area(_e.x, _e.y)))
 
-    def unbind_canvas_motion_rect_drawing_stage_2(self):
+    def unbind_canvas_motion_rect_drawing_stage_2(self) -> None:
         self.drawing_frame_canvas.unbind('<Motion>')
 
-    def redraw_drawing_position_marker(self, x, y):
+    def redraw_drawing_position_marker(self, x, y) -> None:
         self.clear_mouse_position_marker()
         self.mouse_position_marker = self.drawing_frame_canvas.create_oval(
             x - 5, y - 5,
             x + 5, y + 5,
             outline='yellow', tags=('#draw_figures',))
 
-    def clear_mouse_position_marker(self):
+    def clear_mouse_position_marker(self) -> None:
         if self.mouse_position_marker:
             self.drawing_frame_canvas.delete(self.mouse_position_marker)
 
-    def redraw_drawing_rect_temp_figure(self, x, y):
+    def redraw_drawing_rect_temp_figure(self, x, y) -> None:
         self.clear_drawing_rect_temp_figure()
 
         self.redraw_drawing_position_marker(x, y)
@@ -422,7 +421,7 @@ class Gui:
             outline='red', width=2,
             tags=('#draw_figures',))
 
-    def clear_drawing_rect_temp_figure(self):
+    def clear_drawing_rect_temp_figure(self) -> None:
         if self.drawing_rect_figure:
             self.drawing_frame_canvas.delete(self.drawing_rect_figure)
 
@@ -430,24 +429,24 @@ class Gui:
         figure = Figure(file_id, figure_id, figure_data, self.image_on_canvas, self.drawing_frame_canvas)
         figure.draw(highlight=highlight, draggable=draggable)
 
-    def insert_figure_into_figures_list(self, file_id, figure_id, figure_data):
+    def insert_figure_into_figures_list(self, file_id, figure_id, figure_data) -> None:
         values = (figure_data['category'], f'{file_id};{figure_id};{figure_data["category"]}')
         tags = ('#figures',)
         self.figures_frame_treeview.insert('', 'end', values=values, tags=tags)
 
-    def bind_canvas_motion_poly_drawing(self):
+    def bind_canvas_motion_poly_drawing(self) -> None:
         self.drawing_frame_canvas.bind('<Motion>', lambda _e: self.redraw_drawing_poly_temp_figure(_e.x, _e.y))
 
-    def unbind_canvas_motion_poly_drawing(self):
+    def unbind_canvas_motion_poly_drawing(self) -> None:
         self.drawing_frame_canvas.unbind('<Motion>')
 
-    def clear_drawing_poly_temp_figure(self):
+    def clear_drawing_poly_temp_figure(self) -> None:
         if self.drawing_poly_figures:
             for figure in self.drawing_poly_figures:
                 self.drawing_frame_canvas.delete(figure)
         self.drawing_poly_figures = []
 
-    def redraw_drawing_poly_temp_figure(self, x, y):
+    def redraw_drawing_poly_temp_figure(self, x, y) -> None:
         self.clear_drawing_poly_temp_figure()
 
         self.redraw_drawing_position_marker(x, y)
@@ -463,38 +462,38 @@ class Gui:
             figure = self.drawing_frame_canvas.create_polygon(temp_points, fill='green', outline='yellow', tags=('#draw_figures',))
             self.drawing_poly_figures.append(figure)
 
-    def get_image_and_canvas_sizes(self):
+    def get_image_and_canvas_sizes(self) -> typing.Tuple[int, int, int, int]:
         return (self.image_on_canvas.width(), self.image_on_canvas.height(),
                 self.drawing_frame_canvas.winfo_width(), self.drawing_frame_canvas.winfo_height())
 
-    def clamp_coords_in_image_area(self, x, y) -> (int, int):
+    def clamp_coords_in_image_area(self, x, y) -> typing.Tuple[float, float]:
         i_w, i_h, c_w, c_h = self.get_image_and_canvas_sizes()
         clamped_x, clamped_y = helpers.clamp_coords_in_image_area(i_w=i_w, i_h=i_h, c_w=c_w, c_h=c_h, x=x, y=y)
 
         return clamped_x, clamped_y
 
-    def from_canvas_to_image_coords(self, x, y):
+    def from_canvas_to_image_coords(self, x, y) -> typing.Tuple[float, float]:
         i_w, i_h, c_w, c_h = self.get_image_and_canvas_sizes()
         clamped_x, clamped_y = helpers.clamp_coords_in_image_area(i_w=i_w, i_h=i_h, c_w=c_w, c_h=c_h, x=x, y=y)
         rel_x, rel_y = helpers.from_canvas_to_image_coords(i_w=i_w, i_h=i_h, c_w=c_w, c_h=c_h, x=clamped_x, y=clamped_y)
 
         return rel_x, rel_y
 
-    def bind_figure_selection_event(self):
+    def bind_figure_selection_event(self) -> None:
         self.figures_frame_treeview.bind('<<TreeviewSelect>>', lambda _: self.send_figure_selected_event())
         self.figures_frame_treeview.bind('<Double-Button-1>', lambda _: self.show_popup_figure_category_rename())
 
-    def bind_figure_delete_event(self):
+    def bind_figure_delete_event(self) -> None:
         self.figures_frame_treeview.bind('<KeyPress-Delete>', lambda _: self.send_figure_delete_event())
 
-    def show_figures_frame_treeview_menu(self):
+    def show_figures_frame_treeview_menu(self) -> None:
         if len(self.figures_frame_treeview.selection()) > 0:
             self.figures_frame_treeview_menu.post(
                 self.root.winfo_pointerx(),
                 self.root.winfo_pointery()
             )
 
-    def show_files_frame_treeview_menu(self):
+    def show_files_frame_treeview_menu(self) -> None:
         self.files_frame_treeview_menu.entryconfig('Remove File', state='normal')
         if len(self.files_frame_treeview.selection()) > 0:
             self.files_frame_treeview_menu.post(
@@ -508,33 +507,32 @@ class Gui:
             )
             self.files_frame_treeview_menu.entryconfig('Remove File', state='disabled')
 
-    def show_popup_figure_category_rename(self):
+    def show_popup_figure_category_rename(self) -> None:
         if len(self.figures_frame_treeview.selection()) > 0:
             data = self.figures_frame_treeview.item(self.figures_frame_treeview.selection()[0])['values'][1].split(';')
             file_id, figure_id, category_name = data[0], int(data[1]), data[2]
             helpers.ask_for_category_name(self.bus.statechart, file_id, figure_id, default_val=category_name)
 
-    def send_figure_delete_event(self):
+    def send_figure_delete_event(self) -> None:
         if len(self.figures_frame_treeview.selection()) > 0:
             values = self.figures_frame_treeview.item(self.figures_frame_treeview.selection()[0])['values']
             _, figure_id, _ = values[1].split(';')
             helpers.delete_figure_event(self.bus.statechart, int(figure_id))
 
-    def send_figure_selected_event(self):
+    def send_figure_selected_event(self) -> None:
         if len(self.figures_frame_treeview.selection()) > 0:
             values = self.figures_frame_treeview.item(self.figures_frame_treeview.selection()[0])['values']
             _, figure_id, _ = values[1].split(';')
             helpers.figure_selected_event(self.bus.statechart, int(figure_id))
 
-    def bind_point_move_click(self):
+    def bind_point_move_click(self) -> None:
         self.drawing_frame_canvas.bind('<Button-1>', lambda e: self._find_closest_draggable_point(e.x, e.y))
 
-    def unbind_point_move_click(self):
+    def unbind_point_move_click(self) -> None:
         self.drawing_frame_canvas.unbind('<Button-1>')
 
-    def _find_closest_draggable_point(self, x, y):
+    def _find_closest_draggable_point(self, x, y) -> None:
         self.moving_figure_point = None
-        # figures = self.drawing_frame_canvas.find_enclosed(x - 15, y - 15, x + 15, y + 15)
         figures = self.drawing_frame_canvas.find_closest(x, y, halo=10)
         for figure in figures:
             tags = self.drawing_frame_canvas.gettags(figure)
@@ -547,27 +545,27 @@ class Gui:
                     }
                     break
 
-    def bind_point_move_motion_event(self):
+    def bind_point_move_motion_event(self) -> None:
         self.drawing_frame_canvas.bind('<B1-Motion>', lambda e: helpers.update_figures_point_position_event(self.bus.statechart, (e.x, e.y), self.moving_figure_point))
 
-    def unbind_point_move_motion_event(self):
+    def unbind_point_move_motion_event(self) -> None:
         self.drawing_frame_canvas.unbind('<B1-Motion>')
 
-    def bind_point_remove_click(self):
+    def bind_point_remove_click(self) -> None:
         self.drawing_frame_canvas.bind('<Button-1>', lambda e: self.send_update_figure_remove_point_event(e.x, e.y))
 
-    def unbind_point_remove_click(self):
+    def unbind_point_remove_click(self) -> None:
         self.drawing_frame_canvas.unbind('<Button-1>')
 
-    def send_update_figure_remove_point_event(self, x, y):
+    def send_update_figure_remove_point_event(self, x, y) -> None:
         self._find_closest_draggable_point(x, y)
         if self.moving_figure_point:
             helpers.update_figure_remove_point_event(self.bus.statechart, self.moving_figure_point)
 
-    def bind_point_add_click(self):
+    def bind_point_add_click(self) -> None:
         self.drawing_frame_canvas.bind('<Button-1>', lambda e: self._find_closest_insertable_line(e.x, e.y))
 
-    def unbind_point_add_click(self):
+    def unbind_point_add_click(self) -> None:
         self.drawing_frame_canvas.unbind('<Button-1>')
 
     def _find_closest_insertable_line(self, x, y):
@@ -585,12 +583,12 @@ class Gui:
                     helpers.update_figure_add_point_event(self.bus.statechart, (x, y), insertable_line_data)
                     break
 
-    def select_prev_image(self):
+    def select_prev_image(self) -> None:
         file_id = self._get_file_in_direction(direction=-1)
         if file_id:
             helpers.select_image_event(self.bus.statechart, file_id)
 
-    def select_next_image(self):
+    def select_next_image(self) -> None:
         file_id = self._get_file_in_direction(direction=1)
         if file_id:
             helpers.select_image_event(self.bus.statechart, file_id)
@@ -618,3 +616,190 @@ class Gui:
         return next_file
 
 
+class PlaceholderGui(Gui):
+    def __init__(self, bus: CommonBus):
+        self.bus = bus
+        self.bus.register_item('gui', self)
+
+    def run(self) -> None:
+        pass
+
+    def set_default_pointer(self) -> None:
+        pass
+
+    def set_drawing_pointer(self) -> None:
+        pass
+
+    def set_grab_pointer(self) -> None:
+        pass
+
+    def set_remove_pointer(self) -> None:
+        pass
+
+    def set_add_pointer(self) -> None:
+        pass
+
+    def add_file(self, id_, filedata) -> None:
+        pass
+
+    def clear_files(self) -> None:
+        pass
+
+    def remove_file(self, file_id) -> None:
+        pass
+
+    def clear_image(self) -> None:
+        pass
+
+    def clear_figures(self) -> None:
+        pass
+
+    def clear_canvas(self) -> None:
+        pass
+
+    def bind_select_image_listener(self) -> None:
+        pass
+
+    def unbind_select_image_listener(self) -> None:
+        pass
+
+    def load_image_into_canvas(self, abs_path) -> None:
+        pass
+
+    def enable_save_project_btn(self) -> None:
+        pass
+
+    def disable_save_project_btn(self) -> None:
+        pass
+
+    def enable_add_file_btn(self) -> None:
+        pass
+
+    def disable_add_file_btn(self) -> None:
+        pass
+
+    def enable_remove_file_btn(self) -> None:
+        pass
+
+    def disable_remove_file_btn(self) -> None:
+        pass
+
+    def enable_draw_buttons(self) -> None:
+        pass
+
+    def disable_draw_buttons(self) -> None:
+        pass
+
+    def enable_point_actions_buttons(self) -> None:
+        pass
+
+    def disable_point_actions_buttons(self) -> None:
+        pass
+
+    def enable_undo_action_button(self) -> None:
+        pass
+
+    def disable_undo_action_button(self) -> None:
+        pass
+
+    def bind_canvas_click_event(self) -> None:
+        pass
+
+    def unbind_canvas_click_event(self) -> None:
+        pass
+
+    def bind_canvas_motion_rect_drawing_stage_1(self) -> None:
+        pass
+
+    def unbind_canvas_motion_rect_drawing_stage_1(self) -> None:
+        pass
+
+    def bind_canvas_motion_rect_drawing_stage_2(self) -> None:
+        pass
+
+    def unbind_canvas_motion_rect_drawing_stage_2(self) -> None:
+        pass
+
+    def redraw_drawing_position_marker(self, x, y) -> None:
+        pass
+
+    def clear_mouse_position_marker(self) -> None:
+        pass
+
+    def redraw_drawing_rect_temp_figure(self, x, y) -> None:
+        pass
+
+    def clear_drawing_rect_temp_figure(self) -> None:
+        pass
+
+    def draw_figure(self, file_id, figure_id, figure_data, highlight: bool = False, draggable: bool = False) -> None:
+        pass
+
+    def insert_figure_into_figures_list(self, file_id, figure_id, figure_data) -> None:
+        pass
+
+    def bind_canvas_motion_poly_drawing(self) -> None:
+        pass
+
+    def unbind_canvas_motion_poly_drawing(self) -> None:
+        pass
+
+    def clear_drawing_poly_temp_figure(self) -> None:
+        pass
+
+    def redraw_drawing_poly_temp_figure(self, x, y) -> None:
+        pass
+
+    def bind_figure_selection_event(self) -> None:
+        pass
+
+    def bind_figure_delete_event(self) -> None:
+        pass
+
+    def show_figures_frame_treeview_menu(self) -> None:
+        pass
+
+    def show_files_frame_treeview_menu(self) -> None:
+        pass
+
+    def show_popup_figure_category_rename(self) -> None:
+        pass
+
+    def send_figure_delete_event(self) -> None:
+        pass
+
+    def send_figure_selected_event(self) -> None:
+        pass
+
+    def bind_point_move_click(self) -> None:
+        pass
+
+    def unbind_point_move_click(self) -> None:
+        pass
+
+    def bind_point_move_motion_event(self) -> None:
+        pass
+
+    def unbind_point_move_motion_event(self) -> None:
+        pass
+
+    def bind_point_remove_click(self) -> None:
+        pass
+
+    def unbind_point_remove_click(self) -> None:
+        pass
+
+    def send_update_figure_remove_point_event(self, x, y) -> None:
+        pass
+
+    def bind_point_add_click(self) -> None:
+        pass
+
+    def unbind_point_add_click(self) -> None:
+        pass
+
+    def select_prev_image(self) -> None:
+        pass
+
+    def select_next_image(self) -> None:
+        pass
