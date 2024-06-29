@@ -111,6 +111,8 @@ class Statechart(ActiveObject):
         self.bus.gui.bind_figure_delete_event()
         self.bus.gui.bind_figure_selection_event()
 
+        helpers.init_temp_save_event(self)
+
     def on_in_project_exit(self):
         self.bus.gui.unbind_select_image_listener()
         self.bus.gui.clear_files()
@@ -385,6 +387,10 @@ class Statechart(ActiveObject):
 
         self._redraw_canvas_and_figures(draggable=True)
 
+    def on_in_project_save_temp(self):
+        self.project.temp_save()
+        helpers.init_temp_save_event(self)
+
 
 @spy_on
 def no_project(chart: Statechart, event: Event) -> return_status:
@@ -458,6 +464,9 @@ def in_project(chart: Statechart, event: Event) -> return_status:
         category = event.payload['category']
 
         chart.on_in_project_set_figure_category(file_id, figure_id, category)
+    elif event.signal == signals.SAVE_TEMP:
+        status = return_status.HANDLED
+        chart.on_in_project_save_temp()
     else:
         status = return_status.SUPER
         chart.temp.fun = no_project

@@ -174,6 +174,9 @@ def figure_selected_event(s: ActiveObject, id_: int) -> None:
 def delete_figure_event(s: ActiveObject, id_: int) -> None:
     s.post_fifo(Event(signal=signals.DELETE_FIGURE, payload=id_))
 
+def init_temp_save_event(s: ActiveObject) -> None:
+    s.cancel_events(Event(signal=signals.SAVE_TEMP))
+    s.post_fifo(Event(signal=signals.SAVE_TEMP), deferred=True, times=1, period=300.0)
 
 def clamp(_min, _max, cur):
     return min(_max, max(_min, cur))

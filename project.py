@@ -55,7 +55,7 @@ class Project:
         self.history.add_snapshot(self.selected_file_id, self.files[self.selected_file_id])
         del self.files[self.selected_file_id]['figures'][figure_id]
 
-    def save_project(self, abs_path: typing.Union[str, pathlib.Path]):
+    def save_project(self, abs_path: typing.Union[str, pathlib.Path], temp: bool = False):
         with open(abs_path, 'w+') as handle:
             data = {
                 'version': 0,
@@ -64,6 +64,8 @@ class Project:
             handle.write(json.dumps(data))
 
         self.history.reset_history()
+        if not temp:
+            self.path = abs_path
 
     def undo_history(self):
         snapshot = self.history.pop_history(self.selected_file_id)
@@ -116,3 +118,8 @@ class Project:
         result = list(set(result))
 
         return result
+
+    def temp_save(self):
+        if self.path:
+            temp_save_path = pathlib.Path(f'{self.path}.tmp').absolute()
+            self.save_project(temp_save_path, temp=True)
