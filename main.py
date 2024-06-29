@@ -10,11 +10,5 @@ if __name__ == '__main__':
     g = Gui(bus=b)
     y = YoloExporter(bus=b)
 
-    # s.live_spy = True
-    # s.live_trace = True
-
     s.run()
     g.run()
-
-    print(s.trace())
-    print(s.spy())

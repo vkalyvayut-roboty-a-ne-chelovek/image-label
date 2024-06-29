@@ -75,6 +75,7 @@ class Statechart(ActiveObject):
 
     def load_project(self, abs_path):
         self.project = Project(abs_path)
+        self.bus.gui.update_title(self.project.get_project_name())
 
     def on_no_project_entry(self):
         self.bus.gui.disable_save_project_btn()
@@ -165,6 +166,7 @@ class Statechart(ActiveObject):
 
     def on_in_project_save_project(self, abs_path):
         self.project.save_project(abs_path)
+        self.bus.gui.update_title(self.project.get_project_name())
 
     def on_in_project_undo_history(self):
         selected_file_id, _ = self.project.get_selected_file()

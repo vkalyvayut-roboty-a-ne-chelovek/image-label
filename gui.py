@@ -26,6 +26,7 @@ class Gui:
         self.moving_figure_point = None
 
         self.root = tkinter.Tk()
+        self.root.title('BOOBA')
         self.root.geometry(f'{self.root.winfo_screenwidth()}x{self.root.winfo_screenheight()}')
 
         self.main_menu = None
@@ -212,6 +213,9 @@ class Gui:
         self.root.config(menu=self.main_menu)
 
         self.root.mainloop()
+
+    def update_title(self, new_name: str):
+        self.root.title(f'{new_name} | BOOBA' if new_name else 'BOOBA')
 
     def set_default_pointer(self) -> None:
         self.root.config(cursor='')

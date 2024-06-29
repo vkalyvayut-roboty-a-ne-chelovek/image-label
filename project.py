@@ -1,5 +1,6 @@
 import copy
 import json
+import os.path
 import pathlib
 import typing
 import uuid
@@ -123,3 +124,7 @@ class Project:
         if self.path:
             temp_save_path = pathlib.Path(f'{self.path}.tmp').absolute()
             self.save_project(temp_save_path, temp=True)
+
+    def get_project_name(self):
+        if self.path:
+            return os.path.basename(self.path)
