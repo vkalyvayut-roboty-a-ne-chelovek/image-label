@@ -214,7 +214,7 @@ class Gui:
 
         self.root.mainloop()
 
-    def update_title(self, new_name: str):
+    def update_title(self, new_name: str) -> None:
         self.root.title(f'{new_name} | BOOBA' if new_name else 'BOOBA')
 
     def set_default_pointer(self) -> None:
@@ -629,6 +629,9 @@ class PlaceholderGui(Gui):
         self.bus.register_item('gui', self)
 
     def run(self) -> None:
+        pass
+
+    def update_title(self, new_name: str) -> None:
         pass
 
     def set_default_pointer(self) -> None:

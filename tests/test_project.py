@@ -45,7 +45,7 @@ class TestProject(unittest.TestCase):
 
         p = Project(path)
 
-        assert p.history.has_history('58da0c08-2529-43bc-b784-389c1fe6997b')
+        assert p.history.has_history('img1')
 
     def test_after_adding_file_in_also_add_to_history(self):
         abs_path = tempfile.mktemp()
@@ -74,7 +74,7 @@ class TestProject(unittest.TestCase):
         path = pathlib.Path('.', 'assets', 'domik.boobalp')
 
         p = Project(path)
-        p.select_file('58da0c08-2529-43bc-b784-389c1fe6997b')
+        p.select_file('img1')
 
         _, selected_file_data = p.get_selected_file()
         prev_number_of_figures = len(selected_file_data['figures'])
@@ -99,7 +99,7 @@ class TestProject(unittest.TestCase):
         path = pathlib.Path('.', 'assets', 'domik.boobalp')
 
         p = Project(path)
-        p.select_file('58da0c08-2529-43bc-b784-389c1fe6997b')
+        p.select_file('img1')
 
         selected_file_id, selected_file_data = p.get_selected_file()
 
@@ -120,7 +120,7 @@ class TestProject(unittest.TestCase):
         p = Project(path)
         number_of_files_before = len(p.get_files())
         expected_number_of_files_after = number_of_files_before - 1
-        p.remove_file('58da0c08-2529-43bc-b784-389c1fe6997b')
+        p.remove_file('img1')
 
         assert len(p.get_files()) == expected_number_of_files_after
 
@@ -128,7 +128,7 @@ class TestProject(unittest.TestCase):
         path = pathlib.Path('.', 'assets', 'domik.boobalp')
 
         p = Project(path)
-        keys = ('767b79a3-655d-406e-af69-39ee0b085bc2',)
+        keys = ('img2',)
 
         assert len(p.get_files()) != len(p.get_files(keys))
         assert len(p.get_files(keys)) == 1
@@ -137,7 +137,7 @@ class TestProject(unittest.TestCase):
         path = pathlib.Path('.', 'assets', 'domik.boobalp')
 
         p = Project(path)
-        file_id = '767b79a3-655d-406e-af69-39ee0b085bc2'
+        file_id = 'img2'
         figure_id = 0
 
         file_data = p.get_files((file_id,))
