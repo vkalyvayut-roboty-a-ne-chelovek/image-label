@@ -29,4 +29,5 @@ class CommonBus:
         return self.items[key]
 
     def __getattr__(self, key):
-        return self.items[key]
+        if key in self.items:
+            return self.items[key]

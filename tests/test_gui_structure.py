@@ -2,13 +2,13 @@ import tkinter
 from tkinter import ttk
 import unittest
 
-from prev.main import Gui
-
+from gui import Gui
+from common_bus import CommonBus
 
 class TestGUIStructure(unittest.TestCase):
     def setUp(self):
-        self.gui = Gui()
-        self.gui.create_gui()
+        self.bus = CommonBus()
+        self.gui = Gui(bus=self.bus)
 
     def test_gui_has_main_window(self):
         self.assertIsNotNone(self.gui.root)
@@ -51,23 +51,29 @@ class TestGUIStructure(unittest.TestCase):
 
     def test_files_treeview_contains_items_after_refresh(self):
         files = {
-            '1': {'abs_path_to_file': '1', "filename": '1', "figures": []},
-            '2': {'abs_path_to_file': '2', "filename": '2', "figures": []},
-            '3': {'abs_path_to_file': '3', "filename": '3', "figures": []}
+            '1': {'abs_path': '1', "filename": '1', "figures": []},
+            '2': {'abs_path': '2', "filename": '2', "figures": []},
+            '3': {'abs_path': '3', "filename": '3', "figures": []}
         }
 
-        self.gui.refresh_files(files)
+        for file_id, file_data in files.items():
+            self.gui.add_file(file_id, file_data)
 
-        assert 3 == len(self.gui.files_treeview.get_children())
+        assert 3 == len(self.gui.files_frame_treeview.get_children())
+
+        self.gui.clear_files()
+
+        assert 0 == len(self.gui.files_frame_treeview.get_children())
 
         files = {
-            '1': {'abs_path_to_file': '1', "filename": '1', "figures": []},
-            '3': {'abs_path_to_file': '3', "filename": '3', "figures": []}
+            '1': {'abs_path': '1', "filename": '1', "figures": []},
+            '3': {'abs_path': '3', "filename": '3', "figures": []}
         }
 
-        self.gui.refresh_files(files)
+        for file_id, file_data in files.items():
+            self.gui.add_file(file_id, file_data)
 
-        assert 2 == len(self.gui.files_treeview.get_children())
+        assert 2 == len(self.gui.files_frame_treeview.get_children())
 
     def test_gui_has_figures_frame(self):
         self.assertIsNotNone(self.gui.figures_frame, 'GUI has not Figures frame')

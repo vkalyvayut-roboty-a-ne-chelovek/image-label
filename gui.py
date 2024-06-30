@@ -104,12 +104,15 @@ class Gui:
         self.figures_frame_treeview.config(yscrollcommand=self.figures_frame_treeview_scrollbar.set)
         self.figures_frame_treeview_scrollbar.config(command=self.figures_frame_treeview.yview)
 
-    def run(self) -> None:
+        self.init_bindings()
+
+    def init_bindings(self):
         self.new_project_btn.configure(command=lambda: helpers.new_project_event(self.bus.statechart))
         self.load_project_btn.configure(command=lambda: helpers.load_project_event(self.bus.statechart))
         self.save_project_btn.configure(command=lambda: helpers.save_project_event(self.bus.statechart))
         self.add_file_btn.configure(command=lambda: helpers.add_file_event(self.bus.statechart))
-        self.remove_file_btn.configure(command=lambda: helpers.remove_file_event(self.bus.statechart, self.files_frame_treeview.selection()[0]))
+        self.remove_file_btn.configure(
+            command=lambda: helpers.remove_file_event(self.bus.statechart, self.files_frame_treeview.selection()[0]))
         self.draw_rectangle_btn.configure(command=lambda: helpers.draw_rect_event(self.bus.statechart))
         self.draw_polygon_btn.configure(command=lambda: helpers.draw_poly_event(self.bus.statechart))
         self.add_point_btn.configure(command=lambda: helpers.add_point_event(self.bus.statechart))
@@ -139,7 +142,7 @@ class Gui:
         self.figure_menu = tkinter.Menu(tearoff=False)
         self.exporters_menu = tkinter.Menu(tearoff=False)
 
-        if self.bus.exporters:
+        if hasattr(self.bus, 'exporters') and self.bus.exporters:
             for k, v in self.bus.exporters.items():
                 self.exporters_menu.add_command(label=k, command=lambda: v.show_options())
 
@@ -155,7 +158,9 @@ class Gui:
                                       command=lambda: helpers.add_file_event(self.bus.statechart),
                                       state='disabled')
         self.project_menu.add_command(label='Remove File', accelerator='<Delete>',
-                                      command=lambda: helpers.remove_file_event(self.bus.statechart, self.files_frame_treeview.selection()[0]),
+                                      command=lambda: helpers.remove_file_event(self.bus.statechart,
+                                                                                self.files_frame_treeview.selection()[
+                                                                                    0]),
                                       state='disabled')
 
         self.project_menu.add_separator()
@@ -190,11 +195,16 @@ class Gui:
         self.main_menu.add_cascade(label='Export', menu=self.exporters_menu)
 
         self.files_frame_treeview_menu = tkinter.Menu(tearoff=False)
-        self.files_frame_treeview_menu.add_command(label='Add File', command=lambda: helpers.add_file_event(self.bus.statechart))
-        self.files_frame_treeview_menu.add_command(label='Remove File', command=lambda: helpers.remove_file_event(self.bus.statechart, self.files_frame_treeview.selection()[0]))
+        self.files_frame_treeview_menu.add_command(label='Add File',
+                                                   command=lambda: helpers.add_file_event(self.bus.statechart))
+        self.files_frame_treeview_menu.add_command(label='Remove File',
+                                                   command=lambda: helpers.remove_file_event(self.bus.statechart,
+                                                                                             self.files_frame_treeview.selection()[
+                                                                                                 0]))
 
         self.figures_frame_treeview_menu = tkinter.Menu(tearoff=False)
-        self.figures_frame_treeview_menu.add_command(label='Change Category', command=lambda: self.show_popup_figure_category_rename())
+        self.figures_frame_treeview_menu.add_command(label='Change Category',
+                                                     command=lambda: self.show_popup_figure_category_rename())
         self.figures_frame_treeview_menu.add_command(label='Change Color', state='disabled')
         self.figures_frame_treeview_menu.add_separator()
         self.figures_frame_treeview_menu.add_command(label='Delete', command=lambda: self.send_figure_delete_event())
@@ -211,6 +221,9 @@ class Gui:
         self.root.bind('<Down>', lambda _: self.select_next_image())
 
         self.root.config(menu=self.main_menu)
+
+    def run(self) -> None:
+
 
         self.root.mainloop()
 
