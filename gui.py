@@ -141,8 +141,7 @@ class Gui:
         self.project_menu = tkinter.Menu(tearoff=False)
         self.figure_menu = tkinter.Menu(tearoff=False)
         self.exporters_menu = tkinter.Menu(tearoff=False)
-
-        if hasattr(self.bus, 'exporters') and self.bus.exporters:
+        if self.bus.exporters:
             for k, v in self.bus.exporters.items():
                 self.exporters_menu.add_command(label=k, command=lambda: v.show_options())
 

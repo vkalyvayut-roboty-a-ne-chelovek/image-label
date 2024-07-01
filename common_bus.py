@@ -4,7 +4,7 @@ import typing
 
 class CommonBus:
     def __init__(self):
-        self.items = {}
+        self._items = {}
 
     @staticmethod
     def _check_if_array_and_return_groups(name: str):
@@ -19,15 +19,16 @@ class CommonBus:
 
         arr_data = self._check_if_array_and_return_groups(name)
         if arr_data:
-            if arr_data[0] not in self.items:
-                self.items[arr_data[0]] = {}
-            self.items[arr_data[0]][arr_data[1]] = item
+            if arr_data[0] not in self._items:
+                self._items[arr_data[0]] = {}
+            self._items[arr_data[0]][arr_data[1]] = item
         else:
-            self.items[name] = item
+            self._items[name] = item
 
     def __getitem__(self, key):
-        return self.items[key]
+        if key in self._items:
+            return self._items[key]
 
     def __getattr__(self, key):
-        if key in self.items:
-            return self.items[key]
+        if key in self._items:
+            return self._items[key]

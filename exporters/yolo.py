@@ -1,11 +1,9 @@
 import copy
-import datetime
 import math
 import os.path
 import pathlib
 import random
 import shutil
-import tempfile
 import tkinter
 import typing
 
@@ -64,8 +62,16 @@ class YoloExporter:
         rb1.grid(column=0, row=0, sticky='nesw')
         rb2.grid(column=0, row=1, sticky='nesw')
 
-        ok_bnt = tkinter.Button(frame, text='Export to YOLO format', command=lambda: self.ask_for_path(
-            validation_percent=validation_percent.get(), test_percent=test_percent.get(), export_rect_vals=export_rect_vals.get()))
+        def confirm_options():
+            self.ask_for_path(
+                validation_percent=validation_percent.get(),
+                test_percent=test_percent.get(),
+                export_rect_vals=export_rect_vals.get())
+
+        ok_bnt = tkinter.Button(frame, text='Export to YOLO format', command=confirm_options)
+
+        self.root.bind('<Return>', lambda _: confirm_options())
+
         ok_bnt.grid(column=0, row=3)
 
     def ask_for_path(self, validation_percent, test_percent, export_rect_vals):
@@ -92,8 +98,8 @@ class YoloExporter:
     def get_datasets_lengths(self):
         total_files = len(self.bus.statechart.project.get_files())
         percent = total_files / 100
-        test_dataset_len = math.ceil(self.options['test_percent'] * percent)
-        val_dataset_len = math.ceil(self.options['validation_percent'] * percent)
+        test_dataset_len = math.ceil(float(self.options['test_percent']) * percent)
+        val_dataset_len = math.ceil(float(self.options['validation_percent']) * percent)
 
         return {
             'train': total_files - test_dataset_len - val_dataset_len,
