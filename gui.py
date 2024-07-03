@@ -476,8 +476,8 @@ class Gui:
         temp_points = copy.copy(self.drawing_poly_points)
         if len(temp_points) >= 1:
             figure = self.drawing_frame_canvas.create_oval(temp_points[0][0] - 5, temp_points[0][1] - 5,
-                                                      temp_points[0][0] + 5, temp_points[0][1] + 5,
-                                                      outline='pink', width=5, tags=('#draw_figures',))
+                                                           temp_points[0][0] + 5, temp_points[0][1] + 5,
+                                                           outline='pink', width=5, tags=('#draw_figures',))
             self.drawing_poly_figures.append(figure)
         if len(temp_points) > 1:
             temp_points.append((x, y))
@@ -643,6 +643,34 @@ class Gui:
     def show_help(self):
         popup = tkinter.Toplevel(self.root)
         popup.title('Help')
+
+        help_info = '''
+            '<Control-n>' create new project
+            '<Control-o>' open project
+            '<Control-s>' save project
+            '<Control-i>' add file
+            '<Control-r>' or '<KeyPress-1>' draw rectangle
+            '<Control-p>' or '<KeyPress-2>' draw polygon
+            '<KeyPress-a>' add new point to existing figure (works only for polygons)
+            '<KeyPress-x>' remove point from existing figure (if point on rectangle then removes entire figure)
+            '<KeyPress-g>' move point to another location
+            '<Control-z>' undo last action only for current file
+            '<Double-Left-Click>' on file item on files list select file as active
+            '<Left-Click>' on figure item on figures list select figure on canvas
+            '<Right-Click>' on figure item on figures list show context menu
+            '<Left-Arrow>' or '<Up-Arrow>' select previous file
+            '<Right-Arrow>' or '<Down-Arrow>' select next file 
+        '''
+
+        lbl = tkinter.Label(popup, text=help_info)
+        lbl.grid(column=0, row=0, sticky='nesw')
+
+        ok_btn = tkinter.Button(popup, text='OK', command=lambda: popup.destroy())
+        ok_btn.grid(column=0, row=1, sticky='ns')
+
+        popup.columnconfigure(0, weight=1)
+        popup.rowconfigure(0, weight=1)
+
 
 
 class PlaceholderGui(Gui):
