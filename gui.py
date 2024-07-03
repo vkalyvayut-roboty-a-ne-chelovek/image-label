@@ -35,6 +35,7 @@ class Gui:
         self.files_frame_treeview_menu = None
         self.figures_frame_treeview_menu = None
         self.exporters_menu = None
+        self.help_menu = None
 
         self.root.columnconfigure(1, weight=90)
         self.root.columnconfigure(2, weight=10)
@@ -141,6 +142,8 @@ class Gui:
         self.project_menu = tkinter.Menu(tearoff=False)
         self.figure_menu = tkinter.Menu(tearoff=False)
         self.exporters_menu = tkinter.Menu(tearoff=False)
+        self.help_menu = tkinter.Menu(tearoff=False)
+
         if self.bus.exporters:
             for k, v in self.bus.exporters.items():
                 self.exporters_menu.add_command(label=k, command=lambda: v.show_options())
@@ -189,9 +192,12 @@ class Gui:
                                      command=lambda: helpers.undo_event(self.bus.statechart),
                                      state='disabled')
 
+        self.help_menu.add_command(label='Help', command=lambda: self.show_help())
+
         self.main_menu.add_cascade(label='Project', menu=self.project_menu)
         self.main_menu.add_cascade(label='Figure', menu=self.figure_menu)
         self.main_menu.add_cascade(label='Export', menu=self.exporters_menu)
+        self.main_menu.add_cascade(label='Help', menu=self.help_menu)
 
         self.files_frame_treeview_menu = tkinter.Menu(tearoff=False)
         self.files_frame_treeview_menu.add_command(label='Add File',
@@ -634,6 +640,10 @@ class Gui:
     def set_files_selection(self, file_id: str) -> None:
         self.files_frame_treeview.selection_set([file_id])
 
+    def show_help(self):
+        popup = tkinter.Toplevel(self.root)
+        popup.title('Help')
+
 
 class PlaceholderGui(Gui):
     def __init__(self, bus: CommonBus):
@@ -836,4 +846,7 @@ class PlaceholderGui(Gui):
         pass
 
     def set_files_selection(self, file_id: str) -> None:
+        pass
+
+    def show_help(self):
         pass

@@ -41,7 +41,7 @@ class YoloExporter:
         label1.grid(column=0, row=0, sticky='nesw')
         entry1.grid(column=0, row=0, sticky='nesw')
 
-        label2 = tkinter.LabelFrame(frame, text='% validation')
+        label2 = tkinter.LabelFrame(frame, text='% test')
         test_percent = tkinter.StringVar(value='10')
         entry2 = tkinter.Entry(label2, textvariable=test_percent)
         label2.grid(column=0, row=1, sticky='nesw')
@@ -71,6 +71,7 @@ class YoloExporter:
         ok_bnt = tkinter.Button(frame, text='Export to YOLO format', command=confirm_options)
 
         self.root.bind('<Return>', lambda _: confirm_options())
+        self.root.bind('<KP_Enter>', lambda _: confirm_options())
 
         ok_bnt.grid(column=0, row=3)
 
