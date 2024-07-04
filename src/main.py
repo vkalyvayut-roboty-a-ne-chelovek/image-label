@@ -1,7 +1,7 @@
-from common_bus import CommonBus
-from gui import Gui
-from statechart import Statechart
-from exporters.yolo import YoloExporter
+from src.common_bus import CommonBus
+from src.gui import Gui
+from src.statechart import Statechart
+from src.exporters.yolo import YoloExporter
 
 
 if __name__ == '__main__':

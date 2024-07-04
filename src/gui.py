@@ -5,9 +5,9 @@ from tkinter import ttk
 
 from PIL import ImageTk, Image
 
-import helpers
-from common_bus import CommonBus
-from figure import Figure
+from src import helpers
+from src.common_bus import CommonBus
+from src.figure import Figure
 
 class Gui:
     def __init__(self, bus: CommonBus):

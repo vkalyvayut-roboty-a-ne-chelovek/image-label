@@ -1,6 +1,6 @@
 from tkinter import Canvas
 from PIL import ImageTk
-from helpers import from_image_to_canvas_coords
+from src.helpers import from_image_to_canvas_coords
 
 
 class Figure:

@@ -2,8 +2,8 @@ import tkinter
 from tkinter import ttk
 import unittest
 
-from gui import Gui
-from common_bus import CommonBus
+from src.gui import Gui
+from src.common_bus import CommonBus
 
 class TestGUIStructure(unittest.TestCase):
     def setUp(self):

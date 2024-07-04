@@ -5,7 +5,7 @@ import pathlib
 import typing
 import uuid
 
-from history import History
+from src.history import History
 
 
 class Project:
@@ -111,12 +111,11 @@ class Project:
         self.files[file_id]['figures'][figure_id]['points'].insert(point_id, coords)
 
     def get_all_categories(self):
-        result = []
-
+        all_categories = []
         for _, file_data in self.get_files():
             for figure in file_data['figures']:
-                result.append(figure['category'])
-        result = list(set(result))
+                all_categories.append(figure['category'])
+        result = list(set(all_categories))
 
         return result
 

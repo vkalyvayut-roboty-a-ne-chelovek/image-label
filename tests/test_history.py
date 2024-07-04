@@ -1,6 +1,6 @@
 import tempfile
 import unittest
-from history import History
+from src.history import History
 
 
 class TestHistory(unittest.TestCase):

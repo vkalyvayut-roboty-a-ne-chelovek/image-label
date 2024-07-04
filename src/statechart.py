@@ -1,5 +1,4 @@
 import copy
-import typing
 
 from miros import ActiveObject
 from miros import Event
@@ -7,9 +6,9 @@ from miros import return_status
 from miros import signals
 from miros import spy_on
 
-from common_bus import CommonBus
-import helpers
-from project import Project
+from src.common_bus import CommonBus
+from src import helpers
+from src.project import Project
 
 
 class Statechart(ActiveObject):

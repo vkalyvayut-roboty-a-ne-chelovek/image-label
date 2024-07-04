@@ -3,7 +3,7 @@ import pathlib
 import tempfile
 import unittest
 
-from project import Project
+from src.project import Project
 
 
 class TestProject(unittest.TestCase):

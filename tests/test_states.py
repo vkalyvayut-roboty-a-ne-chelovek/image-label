@@ -1,17 +1,14 @@
 import pathlib
-import tempfile
 import time
 import unittest
 
 from miros import stripped
-from miros import Event
-from miros import signals
 
-import helpers
+from src import helpers
 
-from common_bus import CommonBus
-from statechart import Statechart
-from gui import PlaceholderGui
+from src.common_bus import CommonBus
+from src.statechart import Statechart
+from src.gui import PlaceholderGui
 
 
 class TestStates(unittest.TestCase):
