@@ -4,11 +4,13 @@ import os.path
 import pathlib
 import random
 import shutil
+import tempfile
 import tkinter
 import typing
 
 from tkinter import filedialog
 from tkinter import ttk
+from PIL import Image
 
 
 class YoloExporter:
@@ -36,13 +38,13 @@ class YoloExporter:
         frame.rowconfigure(3, weight=1)
 
         label1 = tkinter.LabelFrame(frame, text='% validation')
-        validation_percent = tkinter.StringVar(value='10')
+        validation_percent = tkinter.StringVar(value='0')
         entry1 = tkinter.Entry(label1, textvariable=validation_percent)
         label1.grid(column=0, row=0, sticky='nesw')
         entry1.grid(column=0, row=0, sticky='nesw')
 
         label2 = tkinter.LabelFrame(frame, text='% test')
-        test_percent = tkinter.StringVar(value='10')
+        test_percent = tkinter.StringVar(value='0')
         entry2 = tkinter.Entry(label2, textvariable=test_percent)
         label2.grid(column=0, row=1, sticky='nesw')
         entry2.grid(column=0, row=0, sticky='nesw')
@@ -114,12 +116,18 @@ class YoloExporter:
     def get_filenames_for_dataset(self, amount_of_files_per_dataset: typing.Dict):
         files = self.extract_project_filenames()
         result = {}
-        for dataset_name, dataset_files_amount in amount_of_files_per_dataset.items():
-            selected_files = random.choices(files, k=dataset_files_amount)
+        files_already_selected = []
 
-            if len(set(files)) >= dataset_files_amount:
-                while len(set(selected_files)) < dataset_files_amount:
-                    selected_files.append(random.choice(files))
+        assert sum(amount_of_files_per_dataset.values()) <= len(files)
+
+        for dataset_name, dataset_files_amount in amount_of_files_per_dataset.items():
+            selected_files = []
+
+            while len(selected_files) != dataset_files_amount:
+                random_file = random.choice(files)
+                if random_file not in files_already_selected:
+                    selected_files.append(random_file)
+                    files_already_selected.append(random_file)
 
             result[dataset_name] = copy.deepcopy(list(set(selected_files)))
 
@@ -154,7 +162,7 @@ class YoloExporter:
 
         for filename, filedata in data:
             result[filename] = {
-                'abs_path': filedata['abs_path'],
+                'abs_path': copy.copy(filedata['abs_path']),
                 'data': []
             }
 
@@ -179,7 +187,34 @@ class YoloExporter:
                             *map(str, _converted_figure_data)
                         ])
 
+                if 'transformations' in filedata and len(filedata['transformations']) > 0:
+                    image = Image.open(filedata['abs_path'])
+                    for transform in filedata['transformations']:
+                        image = self._apply_transformation_to_image(image, transform)
+                    result[filename]['abs_path'] = self._save_to_temp_file(image, result[filename]['abs_path'])
+
         return result
+
+    @staticmethod
+    def _apply_transformation_to_image(image: Image, transform: str) -> Image:
+        if transform == 'rotate_cw':
+            image = image.rotate(angle=-90, expand=True)
+        elif transform == 'rotate_ccw':
+            image = image.rotate(angle=90, expand=True)
+        return image
+
+    @staticmethod
+    def _save_to_temp_file(image: Image, src_abs_path: str) -> str:
+        _, ext = os.path.splitext(src_abs_path)
+
+        assert len(ext) > 1
+
+        temp_path = tempfile.mktemp(suffix=ext)
+        with open(temp_path, mode='wb') as temp_image_handle:
+            ext = ext.strip('.')
+            image.save(temp_image_handle, format=ext)
+
+        return temp_path
 
     @staticmethod
     def _convert_rect_data_to_yolo_export_data(x1, y1, x2, y2):

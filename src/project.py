@@ -42,7 +42,7 @@ class Project:
     def get_files(self, only_keys: typing.Tuple = None):
         if len(self.files) == 0:
             return []
-        if only_keys:
+        if only_keys is not None:
             return [(k, self.files.get(k)) for k in only_keys]
         return [(k, v) for k, v in self.files.items()]
 
@@ -61,7 +61,7 @@ class Project:
     def save_project(self, abs_path: typing.Union[str, pathlib.Path], temp: bool = False):
         with open(abs_path, 'w+') as handle:
             data = {
-                'version': 0,
+                'version': self.version,
                 'files': self.files
             }
             handle.write(json.dumps(data))

@@ -175,6 +175,15 @@ class TestProject(unittest.TestCase):
         assert len(p.files[file_id]['transformations']) == 1
         assert p.files[file_id]['transformations'] == ['rotate_ccw']
 
+    def test_if_get_files_only_files_is_not_none_only_then_return_some_files(self):
+        path = pathlib.Path('.', 'assets', 'domik.boobalp')
+        p = Project(path)
+
+        assert len(p.get_files()) == len(p.files)
+        assert len(p.get_files(only_keys=None)) == len(p.files)
+        assert len(p.get_files(only_keys=[])) == 0
+        assert len(p.get_files(only_keys=['img2'])) == 1
+
 
 if __name__ == '__main__':
     unittest.main()
