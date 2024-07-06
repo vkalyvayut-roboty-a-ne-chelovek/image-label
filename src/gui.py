@@ -296,7 +296,9 @@ class Gui:
         if transformations:
             for transform in transformations:
                 if transform == 'rotate_cw':
-                    self.image_to_load_on_canvas = self.image_to_load_on_canvas.rotate(angle=90,expand=True)
+                    self.image_to_load_on_canvas = self.image_to_load_on_canvas.rotate(angle=-90, expand=True)
+                elif transform == 'rotate_ccw':
+                    self.image_to_load_on_canvas = self.image_to_load_on_canvas.rotate(angle=90, expand=True)
 
         new_sizes = self._get_size_to_resize(
             i_w=self.image_to_load_on_canvas.width, i_h=self.image_to_load_on_canvas.height,

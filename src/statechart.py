@@ -400,6 +400,14 @@ class Statechart(ActiveObject):
             update_image=True,
             update_figure_list=False)
 
+    def on_in_project_rotate_ccw(self):
+        selected_file_id, _ = self.project.get_selected_file()
+        self.project.rotate_ccw(selected_file_id)
+
+        self._redraw_canvas_and_figures(
+            update_image=True,
+            update_figure_list=False)
+
 
 @spy_on
 def no_project(chart: Statechart, event: Event) -> return_status:
@@ -479,6 +487,9 @@ def in_project(chart: Statechart, event: Event) -> return_status:
     elif event.signal == signals.ROTATE_CW:
         status = return_status.HANDLED
         chart.on_in_project_rotate_cw()
+    elif event.signal == signals.ROTATE_CCW:
+        status = return_status.HANDLED
+        chart.on_in_project_rotate_ccw()
     else:
         status = return_status.SUPER
         chart.temp.fun = no_project

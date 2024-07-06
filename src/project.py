@@ -135,3 +135,9 @@ class Project:
         if 'transformations' not in self.files[file_id]:
             self.files[file_id]['transformations'] = []
         self.files[file_id]['transformations'].append('rotate_cw')
+
+    def rotate_ccw(self, file_id):
+        self.history.add_snapshot(file_id, self.files[file_id])
+        if 'transformations' not in self.files[file_id]:
+            self.files[file_id]['transformations'] = []
+        self.files[file_id]['transformations'].append('rotate_ccw')

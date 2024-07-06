@@ -160,6 +160,21 @@ class TestProject(unittest.TestCase):
         assert len(p.files[file_id]['transformations']) == 1
         assert p.files[file_id]['transformations'] == ['rotate_cw']
 
+    def test_rotate_ccw(self):
+        path = pathlib.Path('.', 'assets', 'domik.boobalp')
+        p = Project(path)
+        file_id = 'img2'
+
+        assert p.history.get_history_len(file_id) == 1
+
+        p.rotate_ccw(file_id)
+
+        assert p.history.get_history_len(file_id) == 2
+
+        assert p.files[file_id]['transformations']
+        assert len(p.files[file_id]['transformations']) == 1
+        assert p.files[file_id]['transformations'] == ['rotate_ccw']
+
 
 if __name__ == '__main__':
     unittest.main()

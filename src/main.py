@@ -12,5 +12,3 @@ if __name__ == '__main__':
 
     s.run()
     g.run()
-
-    print(s.spy())
