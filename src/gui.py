@@ -175,6 +175,13 @@ class Gui:
         self.project_menu.add_command(label='Quit',
                                       command=lambda: helpers.quit_event(self.bus.statechart))
 
+        self.figure_menu.add_command(label='Rotate CW (Right)',
+                                     command=lambda: helpers.rotate_cw_event(self.bus.statechart),
+                                     state='disabled')
+        self.figure_menu.add_command(label='Rotate CCW (Left)',
+                                     command=lambda: helpers.rotate_ccw_event(self.bus.statechart),
+                                     state='disabled')
+
         self.figure_menu.add_command(label='Draw Rectangle', accelerator='<Control-r>',
                                      command=lambda: helpers.draw_rect_event(self.bus.statechart),
                                      state='disabled')
@@ -363,6 +370,22 @@ class Gui:
 
         if self.project_menu:
             self.project_menu.entryconfig('Remove File', state='disabled')
+
+    def enable_rotate_buttons(self) -> None:
+        self.rotate_cw_btn['state'] = 'normal'
+        self.rotate_ccw_btn['state'] = 'normal'
+
+        if self.figure_menu:
+            self.figure_menu.entryconfig('Rotate CW (Right)', state='normal')
+            self.figure_menu.entryconfig('Rotate CCW (Left)', state='normal')
+
+    def disable_rotate_buttons(self) -> None:
+        self.rotate_cw_btn['state'] = 'disabled'
+        self.rotate_ccw_btn['state'] = 'disabled'
+
+        if self.figure_menu:
+            self.figure_menu.entryconfig('Rotate CW (Right)', state='disabled')
+            self.figure_menu.entryconfig('Rotate CCW (Left)', state='disabled')
 
     def enable_draw_buttons(self) -> None:
         self.draw_rectangle_btn['state'] = 'normal'
@@ -754,6 +777,12 @@ class PlaceholderGui(Gui):
         pass
 
     def disable_remove_file_btn(self) -> None:
+        pass
+
+    def enable_rotate_buttons(self) -> None:
+        pass
+
+    def disable_rotate_buttons(self) -> None:
         pass
 
     def enable_draw_buttons(self) -> None:

@@ -80,6 +80,7 @@ class Statechart(ActiveObject):
         self.bus.gui.disable_save_project_btn()
         self.bus.gui.disable_add_file_btn()
         self.bus.gui.disable_remove_file_btn()
+        self.bus.gui.disable_rotate_buttons()
         self.bus.gui.disable_draw_buttons()
         self.bus.gui.disable_point_actions_buttons()
         self.check_if_there_are_any_undo_actions_available_and_then_change_state_of_the_undo_button()
@@ -145,6 +146,8 @@ class Statechart(ActiveObject):
 
         self.bus.gui.enable_draw_buttons()
 
+        self.bus.gui.enable_rotate_buttons()
+
         self.bus.gui.enable_point_actions_buttons()
 
         self.check_if_there_are_any_undo_actions_available_and_then_change_state_of_the_undo_button()
@@ -189,6 +192,7 @@ class Statechart(ActiveObject):
             if len(files) > 0:
                 helpers.select_image_event(self, files[-1][0])
 
+        self.bus.gui.disable_rotate_buttons()
         self.bus.gui.disable_draw_buttons()
         if len(files) > 0:
             self.bus.gui.enable_remove_file_btn()
