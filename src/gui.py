@@ -177,10 +177,13 @@ class Gui:
 
         self.figure_menu.add_command(label='Rotate CW (Right)',
                                      command=lambda: helpers.rotate_cw_event(self.bus.statechart),
+                                     accelerator='<e>',
                                      state='disabled')
         self.figure_menu.add_command(label='Rotate CCW (Left)',
                                      command=lambda: helpers.rotate_ccw_event(self.bus.statechart),
+                                     accelerator='<q>',
                                      state='disabled')
+        self.figure_menu.add_separator()
 
         self.figure_menu.add_command(label='Draw Rectangle', accelerator='<Control-r>',
                                      command=lambda: helpers.draw_rect_event(self.bus.statechart),
@@ -235,8 +238,13 @@ class Gui:
 
         self.root.bind('<Left>', lambda _: self.select_prev_image())
         self.root.bind('<Up>', lambda _: self.select_prev_image())
+        self.root.bind('<a>', lambda _: self.select_prev_image())
+        self.root.bind('<d>', lambda _: self.select_next_image())
         self.root.bind('<Right>', lambda _: self.select_next_image())
         self.root.bind('<Down>', lambda _: self.select_next_image())
+
+        self.root.bind('<q>', lambda _: helpers.rotate_ccw_event(self.bus.statechart))
+        self.root.bind('<e>', lambda _: helpers.rotate_ccw_event(self.bus.statechart))
 
         self.root.config(menu=self.main_menu)
 
@@ -694,7 +702,9 @@ class Gui:
             '<Left-Click>' on figure item on figures list select figure on canvas
             '<Right-Click>' on figure item on figures list show context menu
             '<Left-Arrow>' or '<Up-Arrow>' select previous file
-            '<Right-Arrow>' or '<Down-Arrow>' select next file 
+            '<Right-Arrow>' or '<Down-Arrow>' select next file
+            '<KePress-q>' rotate CCW (Left)
+            '<KePress-e>' rotate CW (Right) 
         '''
 
         lbl = tkinter.Label(popup, text=help_info)
