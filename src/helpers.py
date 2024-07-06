@@ -128,6 +128,12 @@ def remove_point_event(s: ActiveObject) -> None:
 def move_point_event(s: ActiveObject) -> None:
     s.post_fifo(Event(signal=signals.MOVE_POINT))
 
+def rotate_cw_event(s: ActiveObject) -> None:
+    s.post_fifo(Event(signal=signals.ROTATE_CW))
+
+def rotate_ccw_event(s: ActiveObject) -> None:
+    s.post_fifo(Event(signal=signals.ROTATE_CCW))
+
 
 def update_figures_point_position_event(s: ActiveObject, coords: typing.Tuple[int, int], figure_point_data: typing.Dict) -> None:
     if figure_point_data:

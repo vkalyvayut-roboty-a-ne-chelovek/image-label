@@ -10,13 +10,11 @@ from src.history import History
 
 class Project:
     def __init__(self, path: typing.Union[str, pathlib.Path] = None):
+        self.version = 1
         self.path = path
         self.files = {} if not path else self._load_from_path(path)
         self.history = History(self.files)
         self.selected_file_id = None
-
-    def auto_save(self):
-        pass
 
     @staticmethod
     def _load_from_path(path: str) -> typing.Dict:
@@ -24,13 +22,17 @@ class Project:
         with open(path, 'r') as handle:
             data = json.loads(handle.read())
             if isinstance(data, dict) and 'files' in data:
+                assert data['version'] == 1, 'incompatible version'
                 result = data['files']
 
         return result
 
     def add_file(self, abs_path):
         file_id = str(uuid.uuid4())
-        self.files[file_id] = {'abs_path': abs_path, 'figures': []}
+        self.files[file_id] = {
+            'abs_path': abs_path,
+            'figures': [],
+            "transformations": []}
         self.history.set_defaults(file_id, self.files[file_id])
         return file_id
 
@@ -127,3 +129,9 @@ class Project:
     def get_project_name(self):
         if self.path:
             return os.path.basename(self.path)
+
+    def rotate_cw(self, file_id):
+        self.history.add_snapshot(file_id, self.files[file_id])
+        if 'transformations' not in self.files[file_id]:
+            self.files[file_id]['transformations'] = []
+        self.files[file_id]['transformations'].append('rotate_cw')

@@ -141,11 +141,24 @@ class TestProject(unittest.TestCase):
         figure_id = 0
 
         file_data = p.get_files((file_id,))
-        prev_category = file_data[0][1]['figures'][figure_id]['category']
         p.update_figure_category(file_id, figure_id, 'test')
 
         assert file_data[0][1]['figures'][figure_id]['category'] == 'test'
 
+    def test_rotate_cw(self):
+        path = pathlib.Path('.', 'assets', 'domik.boobalp')
+        p = Project(path)
+        file_id = 'img2'
+
+        assert p.history.get_history_len(file_id) == 1
+
+        p.rotate_cw(file_id)
+
+        assert p.history.get_history_len(file_id) == 2
+
+        assert p.files[file_id]['transformations']
+        assert len(p.files[file_id]['transformations']) == 1
+        assert p.files[file_id]['transformations'] == ['rotate_cw']
 
 
 if __name__ == '__main__':

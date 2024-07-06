@@ -55,6 +55,8 @@ class Gui:
         self.remove_point_btn = tkinter.Button(self.command_palette, text='Remove Point')
         self.move_point_btn = tkinter.Button(self.command_palette, text='Move Point')
         self.undo_btn = tkinter.Button(self.command_palette, text='UNDO')
+        self.rotate_cw_btn = tkinter.Button(self.command_palette, text='Rotate Right')
+        self.rotate_ccw_btn = tkinter.Button(self.command_palette, text='Rotate Left')
 
         self.command_palette.grid(column=0, row=0, sticky='nsw', rowspan=2)
         self.new_project_btn.grid(column=0, row=0)
@@ -70,6 +72,8 @@ class Gui:
         self.remove_point_btn.grid(column=0, row=8)
         self.move_point_btn.grid(column=0, row=9)
         self.undo_btn.grid(column=0, row=10)
+        self.rotate_cw_btn.grid(column=0, row=11)
+        self.rotate_ccw_btn.grid(column=0, row=12)
 
         self.drawing_frame = tkinter.Frame(self.root)
         self.drawing_frame_canvas = tkinter.Canvas(self.drawing_frame)
@@ -120,6 +124,8 @@ class Gui:
         self.remove_point_btn.configure(command=lambda: helpers.remove_point_event(self.bus.statechart))
         self.move_point_btn.configure(command=lambda: helpers.move_point_event(self.bus.statechart))
         self.undo_btn.configure(command=lambda: helpers.undo_event(self.bus.statechart))
+        self.rotate_cw_btn.configure(command=lambda: helpers.rotate_cw_event(self.bus.statechart))
+        self.rotate_ccw_btn.configure(command=lambda: helpers.rotate_ccw_event(self.bus.statechart))
 
         self.root.bind('<Control-n>', lambda _: helpers.new_project_event(self.bus.statechart))
         self.root.bind('<Control-o>', lambda _: helpers.load_project_event(self.bus.statechart))
@@ -228,8 +234,6 @@ class Gui:
         self.root.config(menu=self.main_menu)
 
     def run(self) -> None:
-
-
         self.root.mainloop()
 
     def update_title(self, new_name: str) -> None:
@@ -284,10 +288,16 @@ class Gui:
     def unbind_select_image_listener(self) -> None:
         self.files_frame_treeview.unbind('<Double-Button-1>')
 
-    def load_image_into_canvas(self, abs_path) -> None:
+    def load_image_into_canvas(self, abs_path, transformations: typing.Optional[typing.List[str]] = None) -> None:
         self.clear_image()
 
         self.image_to_load_on_canvas = Image.open(abs_path)
+
+        if transformations:
+            for transform in transformations:
+                if transform == 'rotate_cw':
+                    self.image_to_load_on_canvas = self.image_to_load_on_canvas.rotate(angle=90,expand=True)
+
         new_sizes = self._get_size_to_resize(
             i_w=self.image_to_load_on_canvas.width, i_h=self.image_to_load_on_canvas.height,
             c_w=self.drawing_frame_canvas.winfo_width(), c_h=self.drawing_frame_canvas.winfo_height()
@@ -723,7 +733,7 @@ class PlaceholderGui(Gui):
     def unbind_select_image_listener(self) -> None:
         pass
 
-    def load_image_into_canvas(self, abs_path) -> None:
+    def load_image_into_canvas(self, abs_path, transformations: typing.Optional[typing.List[str]] = None) -> None:
         pass
 
     def enable_save_project_btn(self) -> None:

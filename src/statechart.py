@@ -30,7 +30,7 @@ class Statechart(ActiveObject):
         self.bus.gui.clear_canvas()
 
         if update_image:
-            self.bus.gui.load_image_into_canvas(selected_file_data['abs_path'])
+            self.bus.gui.load_image_into_canvas(selected_file_data['abs_path'], selected_file_data['transformations'])
 
         for figure_id, figure_data in enumerate(selected_file_data['figures']):
             highlight = bool((highlight_figure_id is not None) and (highlight_figure_id == figure_id))
@@ -392,6 +392,14 @@ class Statechart(ActiveObject):
         self.project.temp_save()
         helpers.init_temp_save_event(self)
 
+    def on_in_project_rotate_cw(self):
+        selected_file_id, _ = self.project.get_selected_file()
+        self.project.rotate_cw(selected_file_id)
+
+        self._redraw_canvas_and_figures(
+            update_image=True,
+            update_figure_list=False)
+
 
 @spy_on
 def no_project(chart: Statechart, event: Event) -> return_status:
@@ -468,6 +476,9 @@ def in_project(chart: Statechart, event: Event) -> return_status:
     elif event.signal == signals.SAVE_TEMP:
         status = return_status.HANDLED
         chart.on_in_project_save_temp()
+    elif event.signal == signals.ROTATE_CW:
+        status = return_status.HANDLED
+        chart.on_in_project_rotate_cw()
     else:
         status = return_status.SUPER
         chart.temp.fun = no_project

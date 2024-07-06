@@ -1,5 +1,5 @@
 {
-  "version": 0,
+  "version": 1,
   "files": {
     "img1": {
       "abs_path": "/home/user28/projects/python/booba-label/tests/assets/domiki.png",
@@ -40,7 +40,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "transformations": []
     },
     "img2": {
       "abs_path": "/home/user28/projects/python/booba-label/tests/assets/domiki.png",
@@ -81,7 +82,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "transformations": []
     },
     "img3": {
       "abs_path": "/home/user28/projects/python/booba-label/tests/assets/domiki.png",
@@ -122,7 +124,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "transformations": []
     },
     "img4": {
       "abs_path": "/home/user28/projects/python/booba-label/tests/assets/domiki.png",
@@ -163,7 +166,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "transformations": []
     },
     "img5": {
       "abs_path": "/home/user28/projects/python/booba-label/tests/assets/domiki.png",
@@ -204,7 +208,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "transformations": []
     },
     "img6": {
       "abs_path": "/home/user28/projects/python/booba-label/tests/assets/domiki.png",
@@ -245,7 +250,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "transformations": []
     },
     "img7": {
       "abs_path": "/home/user28/projects/python/booba-label/tests/assets/domiki.png",
@@ -286,7 +292,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "transformations": []
     },
     "img8": {
       "abs_path": "/home/user28/projects/python/booba-label/tests/assets/domiki.png",
@@ -327,7 +334,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "transformations": []
     },
     "img9": {
       "abs_path": "/home/user28/projects/python/booba-label/tests/assets/domiki.png",
@@ -368,7 +376,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "transformations": []
     },
     "img10": {
       "abs_path": "/home/user28/projects/python/booba-label/tests/assets/domiki.png",
@@ -409,7 +418,8 @@
             ]
           ]
         }
-      ]
+      ],
+      "transformations": []
     }
   }
 }
