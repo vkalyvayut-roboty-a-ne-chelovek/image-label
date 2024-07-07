@@ -12,18 +12,27 @@ class Project:
     def __init__(self, path: typing.Union[str, pathlib.Path] = None):
         self.version = 1
         self.path = path
-        self.files = {} if not path else self._load_from_path(path)
-        self.history = History(self.files)
+        self.files = {}
         self.selected_file_id = None
+        self.quick_categories = None
 
-    @staticmethod
-    def _load_from_path(path: str) -> typing.Dict:
+        if path is not None:
+            self._load_from_path(path)
+
+        self.history = History(self.files)
+
+    def _load_from_path(self, path: str) -> typing.Dict:
         result = {}
         with open(path, 'r') as handle:
             data = json.loads(handle.read())
-            if isinstance(data, dict) and 'files' in data:
+            if isinstance(data, dict):
                 assert data['version'] == 1, 'incompatible version'
-                result = data['files']
+                if 'files' in data:
+                    self.files = data['files']
+                if 'quick_categories' in data:
+                    self.quick_categories = data['quick_categories']
+                else:
+                    self.quick_categories = ['1', '2', '3']
 
         return result
 
@@ -141,3 +150,9 @@ class Project:
         if 'transformations' not in self.files[file_id]:
             self.files[file_id]['transformations'] = []
         self.files[file_id]['transformations'].append('rotate_ccw')
+
+    def set_quick_categories(self, categories: typing.List[str]) -> None:
+        self.quick_categories = categories
+
+    def get_quick_categories(self):
+        return self.quick_categories

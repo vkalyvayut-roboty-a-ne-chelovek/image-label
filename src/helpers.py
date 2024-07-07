@@ -1,3 +1,4 @@
+import copy
 import json
 import random
 import sys
@@ -128,8 +129,10 @@ def remove_point_event(s: ActiveObject) -> None:
 def move_point_event(s: ActiveObject) -> None:
     s.post_fifo(Event(signal=signals.MOVE_POINT))
 
+
 def rotate_cw_event(s: ActiveObject) -> None:
     s.post_fifo(Event(signal=signals.ROTATE_CW))
+
 
 def rotate_ccw_event(s: ActiveObject) -> None:
     s.post_fifo(Event(signal=signals.ROTATE_CCW))
@@ -180,9 +183,11 @@ def figure_selected_event(s: ActiveObject, id_: int) -> None:
 def delete_figure_event(s: ActiveObject, id_: int) -> None:
     s.post_fifo(Event(signal=signals.DELETE_FIGURE, payload=id_))
 
+
 def init_temp_save_event(s: ActiveObject) -> None:
     s.cancel_events(Event(signal=signals.SAVE_TEMP))
     s.post_fifo(Event(signal=signals.SAVE_TEMP), deferred=True, times=1, period=300.0)
+
 
 def clamp(_min, _max, cur):
     return min(_max, max(_min, cur))
@@ -197,6 +202,7 @@ def ask_for_category_name(c: ActiveObject, file_id: str, figure_id: int, default
     val = tkinter.StringVar(value=default_val)
 
     w = tkinter.Toplevel()
+    w.resizable(False, False)
     w.title('Enter category name')
     w.columnconfigure(0, weight=1)
     w.rowconfigure(0, weight=1)
@@ -218,6 +224,43 @@ def ask_for_category_name(c: ActiveObject, file_id: str, figure_id: int, default
     w.geometry(f'250x100+{c.bus.gui.root.winfo_pointerx()}+{c.bus.gui.root.winfo_pointery()}')
     w.bind('<KP_Enter>', lambda _: on_ok())
     w.bind('<Return>', lambda _: on_ok())
+
+
+def ask_for_quick_category_name(c: ActiveObject, file_id: str, figure_id: int, quick_categories: typing.List[str]):
+    if not hasattr(c.bus.gui, 'root'):
+        return
+
+    w = tkinter.Toplevel()
+    w.resizable(False, False)
+    w.title('Select category name')
+    w.columnconfigure(0, weight=1)
+    w.rowconfigure(0, weight=1)
+    w.rowconfigure(1, weight=1)
+
+    label = tkinter.Label(w, text='Select category name')
+    label.grid(column=0, row=0)
+    categories_container = tkinter.Frame(w)
+    categories_container.columnconfigure(0, weight=1)
+    categories_container.grid(column=0, row=1, sticky='nesw')
+
+    def on_ok(category_name: str):
+        if len(category_name) > 0:
+            set_figure_category_event(c, file_id, figure_id, category_name)
+            w.destroy()
+    # костыли для сохранения переменной категории из цикла
+    make_closure = lambda category_name: lambda e: on_ok(category_name)
+    make_closure_no_arg = lambda category_name: lambda: on_ok(category_name)
+
+    for cat_idx, category in enumerate(quick_categories):
+        cat_btn = tkinter.Button(categories_container,
+                                 text=f'[{cat_idx}] {category}',
+                                 command=make_closure_no_arg(category))
+        cat_btn.grid(column=0, row=cat_idx, sticky='ew')
+        if cat_idx < 10:
+            w.bind(f'<KeyPress-{cat_idx}>', make_closure(category))
+            w.bind(f'<KeyPress-KP_{cat_idx}>', make_closure(category))
+
+    w.bind('<KeyPress-Escape>', lambda _: w.destroy())
 
 
 def undo_event(s: ActiveObject):

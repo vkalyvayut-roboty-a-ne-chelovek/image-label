@@ -41,8 +41,16 @@ class Statechart(ActiveObject):
     def ask_category_name(self, file_id, figure_id):
         categories = self.project.get_all_categories()
         default_category = categories[0] if len(categories) > 0 else ''
-        helpers.ask_for_category_name(self, copy.copy(file_id), figure_id,
-                                      default_val=default_category, values=categories)
+
+        if self.project.get_quick_categories() is not None:
+            helpers.ask_for_quick_category_name(self, copy.copy(file_id), figure_id,
+                                                quick_categories=self.project.get_quick_categories())
+        else:
+            helpers.ask_for_category_name(self,
+                                          copy.copy(file_id),
+                                          figure_id,
+                                          default_val=default_category,
+                                          values=categories)
 
     def check_if_there_are_any_undo_actions_available_and_then_change_state_of_the_undo_button(self):
         check_result = False

@@ -184,6 +184,14 @@ class TestProject(unittest.TestCase):
         assert len(p.get_files(only_keys=[])) == 0
         assert len(p.get_files(only_keys=['img2'])) == 1
 
+    def test_project_set_project_quick_categories(self):
+        p = Project()
+
+        categories = ['a', 'b', 'c']
+        p.set_quick_categories(categories)
+
+        assert p.get_quick_categories() == categories
+
 
 if __name__ == '__main__':
     unittest.main()
