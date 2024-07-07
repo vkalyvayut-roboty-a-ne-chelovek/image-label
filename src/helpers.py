@@ -271,6 +271,9 @@ def set_figure_category_event(s: ActiveObject, file_id, figure_id, category_name
     s.post_fifo(Event(signal=signals.SET_FIGURE_CATEGORY, payload={'file_id': file_id, 'figure_id': figure_id, 'category': category_name}))
 
 
+def update_quick_categories(s: ActiveObject, new_categories: typing.List[str]) -> None:
+    s.post_fifo(Event(signal=signals.UPDATE_QUICK_CATEGORIES, payload=new_categories))
+
 
 def clamp_coords_in_image_area(i_w, i_h, c_w, c_h, x, y) -> (int, int):
     center_x, center_y = c_w / 2.0, c_h / 2.0

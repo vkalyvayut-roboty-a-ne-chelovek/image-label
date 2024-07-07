@@ -170,6 +170,11 @@ class Gui:
                                                                                 self.files_frame_treeview.selection()[
                                                                                     0]),
                                       state='disabled')
+        self.project_menu.add_separator()
+
+        self.project_menu.add_command(label='Quick Categories',
+                                      command=lambda: self.show_quick_categories_settings(),
+                                      state='normal')
 
         self.project_menu.add_separator()
         self.project_menu.add_command(label='Quit',
@@ -443,6 +448,14 @@ class Gui:
         if self.figure_menu:
             self.figure_menu.entryconfig('Undo', state='disabled')
 
+    def enable_quick_categories_settings_button(self) -> None:
+        if self.project_menu:
+            self.project_menu.entryconfig('Quick Categories', state='normal')
+
+    def disable_quick_categories_settings_button(self) -> None:
+        if self.project_menu:
+            self.project_menu.entryconfig('Quick Categories', state='disabled')
+
     def bind_canvas_click_event(self) -> None:
         self.drawing_frame_canvas.bind('<Button-1>', lambda _e: helpers.click_canvas_event(self.bus.statechart, self.clamp_coords_in_image_area(_e.x, _e.y)))
         self.drawing_frame_canvas.bind('<Button-3>', lambda _e: helpers.right_click_canvas_event(self.bus.statechart))
@@ -686,6 +699,7 @@ class Gui:
     def show_help(self):
         popup = tkinter.Toplevel(self.root)
         popup.title('Help')
+        popup.resizable(False, False)
 
         help_info = '''
             '<Control-n>' create new project
@@ -716,6 +730,62 @@ class Gui:
         popup.columnconfigure(0, weight=1)
         popup.rowconfigure(0, weight=1)
 
+    def show_quick_categories_settings(self):
+        w = tkinter.Toplevel(self.root)
+        w.title('Quick Categories')
+        w.resizable(False, False)
+
+        w.rowconfigure(0, weight=1)
+        w.rowconfigure(1, weight=1)
+        w.columnconfigure(0, weight=1)
+
+        container = tkinter.Frame(w)
+        container.grid(column=0, row=1, sticky='nesw')
+        container.rowconfigure(0, weight=1)
+        container.columnconfigure(0, weight=1)
+
+        categories = {}
+
+        def add_new_category_action(category_name: typing.Optional[str] = None):
+            cat_idxs = list(categories.keys())
+            cat_idx = (cat_idxs[-1] + 1) if len(cat_idxs) > 0 else 0
+            cat = tkinter.Frame(container)
+            cat.grid(column=0, row=cat_idx, sticky='ew')
+            cat.rowconfigure(0, weight=1)
+            cat.columnconfigure(0, weight=1)
+
+            input_var = tkinter.StringVar(value=category_name)
+            input_ = tkinter.Entry(cat, textvariable=input_var)
+
+            input_.grid(column=0, row=0, sticky='nesw')
+
+            def delete_category():
+                cat_data = categories.pop(cat_idx)
+                cat_data['container'].destroy()
+
+            del_btn = tkinter.Button(cat, text='-', command=delete_category)
+            del_btn.grid(column=1, row=0)
+
+            categories[cat_idx] = {
+                'container': cat,
+                'var': input_var
+            }
+
+        def update_quick_categories_action():
+            new_categories = [copy.copy(cat['var'].get()) for cat in categories.values()]
+            helpers.update_quick_categories(self.bus.statechart, new_categories)
+            w.destroy()
+
+        add_new_category_btn = tkinter.Button(w, text='+', command=add_new_category_action)
+        add_new_category_btn.grid(column=0, row=0, sticky='nesw')
+
+        save_btn = tkinter.Button(w, text='Update Quick Categories', command=update_quick_categories_action)
+        save_btn.grid(column=0, row=2, sticky='ew')
+
+        existing_categories = self.bus.statechart.project.get_quick_categories()
+        if existing_categories:
+            for cat in existing_categories:
+                add_new_category_action(cat)
 
 
 class PlaceholderGui(Gui):
@@ -811,6 +881,12 @@ class PlaceholderGui(Gui):
         pass
 
     def disable_undo_action_button(self) -> None:
+        pass
+
+    def enable_quick_categories_settings_button(self) -> None:
+        pass
+
+    def disable_quick_categories_settings_button(self) -> None:
         pass
 
     def bind_canvas_click_event(self) -> None:
@@ -928,4 +1004,7 @@ class PlaceholderGui(Gui):
         pass
 
     def show_help(self):
+        pass
+
+    def show_quick_categories_settings(self):
         pass

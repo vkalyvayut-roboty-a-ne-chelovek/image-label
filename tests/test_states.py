@@ -206,6 +206,24 @@ class TestStates(unittest.TestCase):
 
         self._assert_spy_check(actual_spy, expected_spy)
 
+    def test_no_project_to_in_project_on_load_project_on_update_quick_categories(self):
+        helpers.load_project_event(self.s, pathlib.Path('./assets/domik.boobalp'))
+        time.sleep(0.1)
+
+        assert self.s.project.get_quick_categories() is None
+
+        new_categories = ['1', '2', '3']
+        helpers.update_quick_categories(self.s, new_categories)
+        time.sleep(0.1)
+
+        assert self.s.project.get_quick_categories() == new_categories
+
+        expected_spy = ['START', 'SEARCH_FOR_SUPER_SIGNAL:no_project', 'ENTRY_SIGNAL:no_project', 'INIT_SIGNAL:no_project', '<- Queued:(0) Deferred:(0)', 'LOAD_PROJECT:no_project', 'SEARCH_FOR_SUPER_SIGNAL:in_project', 'ENTRY_SIGNAL:in_project', 'POST_FIFO:SELECT_IMAGE', 'INIT_SIGNAL:in_project', '<- Queued:(1) Deferred:(0)', 'SELECT_IMAGE:in_project', 'POST_FIFO:RESET_DRAWING', 'SELECT_IMAGE:in_project:HOOK', '<- Queued:(1) Deferred:(0)', 'RESET_DRAWING:in_project', 'RESET_DRAWING:no_project', '<- Queued:(0) Deferred:(0)', 'UPDATE_QUICK_CATEGORIES:in_project', 'UPDATE_QUICK_CATEGORIES:in_project:HOOK', '<- Queued:(0) Deferred:(0)']
+
+        actual_spy = self.s.spy()
+
+        self._assert_spy_check(actual_spy, expected_spy)
+
 
 
 if __name__ == '__main__':

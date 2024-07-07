@@ -31,8 +31,6 @@ class Project:
                     self.files = data['files']
                 if 'quick_categories' in data:
                     self.quick_categories = data['quick_categories']
-                else:
-                    self.quick_categories = ['1', '2', '3']
 
         return result
 
@@ -71,7 +69,8 @@ class Project:
         with open(abs_path, 'w+') as handle:
             data = {
                 'version': self.version,
-                'files': self.files
+                'files': self.files,
+                'quick_categories': self.quick_categories
             }
             handle.write(json.dumps(data))
 

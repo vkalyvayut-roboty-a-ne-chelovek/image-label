@@ -1,4 +1,5 @@
 import copy
+import typing
 
 from miros import ActiveObject
 from miros import Event
@@ -92,10 +93,13 @@ class Statechart(ActiveObject):
         self.bus.gui.disable_draw_buttons()
         self.bus.gui.disable_point_actions_buttons()
         self.check_if_there_are_any_undo_actions_available_and_then_change_state_of_the_undo_button()
+        self.bus.gui.disable_quick_categories_settings_button()
 
     def on_in_project_entry(self):
         self.bus.gui.enable_save_project_btn()
         self.bus.gui.enable_add_file_btn()
+        self.bus.gui.enable_quick_categories_settings_button()
+
         if self.project.get_files():
             self.bus.gui.enable_remove_file_btn()
 
@@ -214,6 +218,9 @@ class Statechart(ActiveObject):
 
         if file_id == selected_file_id:
             self._redraw_canvas_and_figures()
+
+    def on_in_project_update_quick_categories(self, new_categories: typing.Optional[typing.List[str]]) -> None:
+        self.project.set_quick_categories(new_categories)
 
     def on_drawing_rect_entry(self):
         self.bus.gui.bind_canvas_click_event()
@@ -502,6 +509,9 @@ def in_project(chart: Statechart, event: Event) -> return_status:
     elif event.signal == signals.ROTATE_CCW:
         status = return_status.HANDLED
         chart.on_in_project_rotate_ccw()
+    elif event.signal == signals.UPDATE_QUICK_CATEGORIES:
+        status = return_status.HANDLED
+        chart.on_in_project_update_quick_categories(event.payload)
     else:
         status = return_status.SUPER
         chart.temp.fun = no_project
