@@ -1,6 +1,6 @@
 [project]
-name = "booba-label"
-version = "0.1"
+name = "simple-image-label"
+version = "0.0.1"
 authors = [
     { name="vkalyvayut-roboty-a-ne-chelovek" }
 ]
@@ -8,6 +8,9 @@ description = "Simple Python Tkinter image labelling app for ML purposes"
 readme = "README.md"
 requires-python = ">=3.10"
 
+[project.scripts]
+simple-image-label="image_label.main:run"
+
 [project.urls]
-Homepage = "https://github.com/vkalyvayut-roboty-a-ne-chelovek/booba-label"
-Issues = "https://github.com/vkalyvayut-roboty-a-ne-chelovek/booba-label/issues"
+Homepage = "https://github.com/vkalyvayut-roboty-a-ne-chelovek/image-label"
+Issues = "https://github.com/vkalyvayut-roboty-a-ne-chelovek/image-label/issues"

@@ -1,6 +1,6 @@
 import tempfile
 import unittest
-from src.history import History
+from image_label.history import History
 
 
 class TestHistory(unittest.TestCase):

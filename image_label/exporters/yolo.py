@@ -75,6 +75,8 @@ class YoloExporter:
         self.root.bind('<Return>', lambda _: confirm_options())
         self.root.bind('<KP_Enter>', lambda _: confirm_options())
 
+        self.root.grab_set()
+
         ok_bnt.grid(column=0, row=3)
 
     def ask_for_path(self, validation_percent, test_percent, export_rect_vals):

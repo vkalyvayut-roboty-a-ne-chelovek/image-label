@@ -5,7 +5,7 @@ import pathlib
 import typing
 import uuid
 
-from src.history import History
+from image_label.history import History
 
 
 class Project:

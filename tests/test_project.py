@@ -3,7 +3,7 @@ import pathlib
 import tempfile
 import unittest
 
-from src.project import Project
+from image_label.project import Project
 
 
 class TestProject(unittest.TestCase):

@@ -4,9 +4,9 @@ import pathlib
 import tempfile
 import unittest
 
-from src.exporters.yolo import YoloExporter
-from src.project import Project
-from src.common_bus import CommonBus
+from image_label.exporters.yolo import YoloExporter
+from image_label.project import Project
+from image_label.common_bus import CommonBus
 
 
 class TestableStatechart:

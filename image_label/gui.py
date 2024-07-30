@@ -5,9 +5,9 @@ from tkinter import ttk
 
 from PIL import ImageTk, Image
 
-from src import helpers
-from src.common_bus import CommonBus
-from src.figure import Figure
+from image_label import helpers
+from image_label.common_bus import CommonBus
+from image_label.figure import Figure
 
 class Gui:
     def __init__(self, bus: CommonBus):
@@ -730,6 +730,8 @@ class Gui:
         popup.columnconfigure(0, weight=1)
         popup.rowconfigure(0, weight=1)
 
+        popup.grab_set()
+
     def show_quick_categories_settings(self):
         w = tkinter.Toplevel(self.root)
         w.title('Quick Categories')
@@ -786,6 +788,20 @@ class Gui:
         if existing_categories:
             for cat in existing_categories:
                 add_new_category_action(cat)
+
+        w.grab_set()
+
+    def reset_temp_drawing(self):
+        self.drawing_poly_points = []
+
+    def append_temp_poly_drawing_point(self, point):
+        self.drawing_poly_points.append(point)
+
+    def reset_temp_rect_drawing(self):
+        self.drawing_rect_point_1 = None
+
+    def set_temp_rect_drawing_point(self, point):
+        self.drawing_rect_point_1 = point
 
 
 class PlaceholderGui(Gui):

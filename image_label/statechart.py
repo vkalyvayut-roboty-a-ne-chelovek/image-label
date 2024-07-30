@@ -7,9 +7,9 @@ from miros import return_status
 from miros import signals
 from miros import spy_on
 
-from src.common_bus import CommonBus
-from src import helpers
-from src.project import Project
+from image_label.common_bus import CommonBus
+from image_label import helpers
+from image_label.project import Project
 
 
 class Statechart(ActiveObject):
@@ -244,8 +244,7 @@ class Statechart(ActiveObject):
         self.points.append(point)
 
     def on_drawing_rect_waiting_for_2_point_entry(self):
-        # TODO переписать в метод
-        self.bus.gui.drawing_rect_point_1 = self.points[0]
+        self.bus.gui.set_temp_rect_drawing_point(self.points[0])
 
         self.bus.gui.bind_canvas_click_event()
         self.bus.gui.bind_canvas_motion_rect_drawing_stage_2()
@@ -258,8 +257,7 @@ class Statechart(ActiveObject):
 
         self.bus.gui.set_default_pointer()
 
-        # TODO переписать в метод
-        self.bus.gui.drawing_rect_point_1 = None
+        self.bus.gui.reset_temp_rect_drawing()
 
         self.points = []
 
@@ -299,16 +297,12 @@ class Statechart(ActiveObject):
     def on_drawing_poly_reset_drawing(self):
         self.points = []
 
-        # TODO переписать в метод
-        self.bus.gui.drawing_poly_points = []
-
+        self.bus.gui.reset_temp_drawing()
         self._redraw_canvas_and_figures()
 
     def on_drawing_poly_click(self, point):
         self.points.append(point)
-
-        # TODO переписать в метод
-        self.bus.gui.drawing_poly_points.append(point)
+        self.bus.gui.append_temp_poly_drawing_point(point)
 
     def on_drawing_poly_click_check_if_have_to_finish_drawing(self) -> bool:
         result = False

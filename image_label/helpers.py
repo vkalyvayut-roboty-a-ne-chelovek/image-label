@@ -225,6 +225,8 @@ def ask_for_category_name(c: ActiveObject, file_id: str, figure_id: int, default
     w.bind('<KP_Enter>', lambda _: on_ok())
     w.bind('<Return>', lambda _: on_ok())
 
+    w.grab_set()
+
 
 def ask_for_quick_category_name(c: ActiveObject, file_id: str, figure_id: int, quick_categories: typing.List[str]):
     if not hasattr(c.bus.gui, 'root'):
@@ -261,6 +263,8 @@ def ask_for_quick_category_name(c: ActiveObject, file_id: str, figure_id: int, q
             w.bind(f'<KeyPress-KP_{cat_idx}>', make_closure(category))
 
     w.bind('<KeyPress-Escape>', lambda _: w.destroy())
+
+    w.grab_set()
 
 
 def undo_event(s: ActiveObject):

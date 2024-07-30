@@ -4,11 +4,11 @@ import unittest
 
 from miros import stripped
 
-from src import helpers
+from image_label import helpers
 
-from src.common_bus import CommonBus
-from src.statechart import Statechart
-from src.gui import PlaceholderGui
+from image_label.common_bus import CommonBus
+from image_label.statechart import Statechart
+from image_label.gui import PlaceholderGui
 
 
 class TestStates(unittest.TestCase):
