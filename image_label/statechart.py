@@ -30,6 +30,9 @@ class Statechart(ActiveObject):
             self.bus.gui.clear_figures()
         self.bus.gui.clear_canvas()
 
+        if not selected_file_data:
+            return
+
         if update_image:
             self.bus.gui.load_image_into_canvas(selected_file_data['abs_path'], selected_file_data['transformations'])
 
@@ -406,7 +409,11 @@ class Statechart(ActiveObject):
         helpers.init_temp_save_event(self)
 
     def on_in_project_rotate_cw(self):
-        selected_file_id, _ = self.project.get_selected_file()
+        selected_file_id, selected_file_data = self.project.get_selected_file()
+
+        if not selected_file_data:
+            return
+
         self.project.rotate_cw(selected_file_id)
 
         self._redraw_canvas_and_figures(
@@ -414,7 +421,11 @@ class Statechart(ActiveObject):
             update_figure_list=False)
 
     def on_in_project_rotate_ccw(self):
-        selected_file_id, _ = self.project.get_selected_file()
+        selected_file_id, selected_file_data = self.project.get_selected_file()
+
+        if not selected_file_data:
+            return
+
         self.project.rotate_ccw(selected_file_id)
 
         self._redraw_canvas_and_figures(

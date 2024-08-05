@@ -5,6 +5,7 @@ import unittest
 from image_label.gui import Gui
 from image_label.common_bus import CommonBus
 
+
 class TestGUIStructure(unittest.TestCase):
     def setUp(self):
         self.bus = CommonBus()
@@ -12,19 +13,6 @@ class TestGUIStructure(unittest.TestCase):
 
     def test_gui_has_main_window(self):
         self.assertIsNotNone(self.gui.root)
-
-    def test_gui_has_command_palette(self):
-        self.assertIsNotNone(self.gui.command_palette, 'GUI has no command palette')
-
-    def test_command_palette_has_children(self):
-        children = self.gui.command_palette.winfo_children()
-        assert len(children) > 0, 'Command palette has no children'
-
-    def test_command_palette_has_new_load_save_rect_poly_buttons(self):
-        buttons = ['New Project', 'Load Project', 'Save Project', 'Add File', 'Remove File', 'Draw Rectangle', 'Draw Polygon']
-        children_names = [child['text'] for child in self.gui.command_palette.winfo_children()]
-        for button_name in buttons:
-            assert button_name in children_names, f'Command palette has no "{button_name}" button'
 
     def test_gui_has_drawing_frame(self):
         self.assertIsNotNone(self.gui.drawing_frame)

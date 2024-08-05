@@ -26,7 +26,7 @@ class Gui:
         self.moving_figure_point = None
 
         self.root = tkinter.Tk()
-        self.root.title('BOOBA')
+        self.root.title('Simple Image Label')
         self.root.geometry(f'{self.root.winfo_screenwidth()}x{self.root.winfo_screenheight()}')
 
         self.main_menu = None
@@ -37,70 +37,75 @@ class Gui:
         self.exporters_menu = None
         self.help_menu = None
 
-        self.root.columnconfigure(1, weight=90)
-        self.root.columnconfigure(2, weight=10)
+        self.root.columnconfigure(0, weight=90)
+        self.root.columnconfigure(1, weight=10)
         self.root.rowconfigure(0, weight=80)
         self.root.rowconfigure(1, weight=20)
 
-        self.command_palette = tkinter.Frame(self.root)
-
-        self.new_project_btn = tkinter.Button(self.command_palette, text='New Project')
-        self.load_project_btn = tkinter.Button(self.command_palette, text='Load Project')
-        self.save_project_btn = tkinter.Button(self.command_palette, text='Save Project')
-        self.add_file_btn = tkinter.Button(self.command_palette, text='Add File')
-        self.remove_file_btn = tkinter.Button(self.command_palette, text='Remove File')
-        self.draw_rectangle_btn = tkinter.Button(self.command_palette, text='Draw Rectangle')
-        self.draw_polygon_btn = tkinter.Button(self.command_palette, text='Draw Polygon')
-        self.add_point_btn = tkinter.Button(self.command_palette, text='Add Point')
-        self.remove_point_btn = tkinter.Button(self.command_palette, text='Remove Point')
-        self.move_point_btn = tkinter.Button(self.command_palette, text='Move Point')
-        self.undo_btn = tkinter.Button(self.command_palette, text='UNDO')
-        self.rotate_cw_btn = tkinter.Button(self.command_palette, text='Rotate Right')
-        self.rotate_ccw_btn = tkinter.Button(self.command_palette, text='Rotate Left')
-
-        self.command_palette.grid(column=0, row=0, sticky='nsw', rowspan=2)
-        self.new_project_btn.grid(column=0, row=0)
-        self.load_project_btn.grid(column=0, row=1)
-        self.save_project_btn.grid(column=0, row=2)
-
-        self.add_file_btn.grid(column=0, row=3)
-        self.remove_file_btn.grid(column=0, row=4)
-
-        self.draw_rectangle_btn.grid(column=0, row=5)
-        self.draw_polygon_btn.grid(column=0, row=6)
-        self.add_point_btn.grid(column=0, row=7)
-        self.remove_point_btn.grid(column=0, row=8)
-        self.move_point_btn.grid(column=0, row=9)
-        self.undo_btn.grid(column=0, row=10)
-        self.rotate_cw_btn.grid(column=0, row=11)
-        self.rotate_ccw_btn.grid(column=0, row=12)
-
         self.drawing_frame = tkinter.Frame(self.root)
-        self.drawing_frame_canvas = tkinter.Canvas(self.drawing_frame)
-
-        self.drawing_frame.grid(column=1, row=0, sticky='nesw', rowspan=2)
-        self.drawing_frame.columnconfigure(0, weight=1)
-        self.drawing_frame.rowconfigure(0, weight=1)
-        self.drawing_frame_canvas.grid(column=0, row=0, sticky='nesw')
-
         self.files_frame = tkinter.Frame(self.root)
-        self.files_frame_treeview = ttk.Treeview(self.files_frame, columns=['filename'], selectmode='browse', show='headings')
+        self.figures_frame = tkinter.Frame(self.root)
+
+        self.drawing_frame.grid(column=0, row=0, sticky='nesw', rowspan=2)
+        self.files_frame.grid(column=1, row=0, sticky='nesw')
+        self.figures_frame.grid(column=1, row=1, sticky='nesw')
+
+        # DRAWING
+        self.drawing_frame.columnconfigure(0, weight=1)
+        self.drawing_frame.rowconfigure(1, weight=1)
+
+        self.drawing_frame_commands = tkinter.Frame(self.drawing_frame)
+        self.draw_rectangle_btn = tkinter.Button(self.drawing_frame_commands, text='Draw Rectangle')
+        self.draw_polygon_btn = tkinter.Button(self.drawing_frame_commands, text='Draw Polygon')
+        self.add_point_btn = tkinter.Button(self.drawing_frame_commands, text='Add Point')
+        self.remove_point_btn = tkinter.Button(self.drawing_frame_commands, text='Remove Point')
+        self.move_point_btn = tkinter.Button(self.drawing_frame_commands, text='Move Point')
+        self.rotate_ccw_btn = tkinter.Button(self.drawing_frame_commands, text='Image Rotate Left')
+        self.rotate_cw_btn = tkinter.Button(self.drawing_frame_commands, text='Image Rotate Right')
+
+        self.drawing_frame_canvas = tkinter.Canvas(self.drawing_frame, background='green')
+
+        self.drawing_frame_commands.grid(column=0, row=0, sticky='nesw')
+        self.draw_rectangle_btn.grid(column=0, row=0, sticky='w')
+        self.draw_polygon_btn.grid(column=1, row=0, sticky='w')
+        self.add_point_btn.grid(column=2, row=0, sticky='w')
+        self.remove_point_btn.grid(column=3, row=0, sticky='w')
+        self.move_point_btn.grid(column=4, row=0, sticky='w')
+        self.rotate_ccw_btn.grid(column=5, row=0, sticky='w')
+        self.rotate_cw_btn.grid(column=6, row=0, sticky='w')
+
+        self.drawing_frame_canvas.grid(column=0, row=1, sticky='nesw')
+        # END DRAWING
+
+        # FILES
+        self.files_frame.columnconfigure(0, weight=1)
+        self.files_frame.columnconfigure(1, weight=1)
+        self.files_frame.rowconfigure(1, weight=1)
+
+        self.add_file_btn = tkinter.Button(self.files_frame, text='Add File')
+        self.remove_file_btn = tkinter.Button(self.files_frame, text='Remove File')
+        self.files_frame_treeview = ttk.Treeview(self.files_frame,
+                                                 columns=['filename'],
+                                                 selectmode='browse',
+                                                 show='headings')
         self.files_frame_treeview.heading('filename', text='Filename')
 
-        self.files_frame.grid(column=2, row=0, sticky='nesw')
-        self.files_frame.columnconfigure(0, weight=1)
-        self.files_frame.rowconfigure(0, weight=1)
-        self.files_frame_treeview.grid(column=0, row=0, sticky='nesw')
+        self.add_file_btn.grid(column=0, row=0)
+        self.remove_file_btn.grid(column=1, row=0)
+        self.files_frame_treeview.grid(column=0, row=1, sticky='nesw', columnspan=2)
         self.files_frame_treeview_scrollbar = ttk.Scrollbar(self.files_frame, orient='vertical')
-        self.files_frame_treeview_scrollbar.grid(column=1, row=0, sticky='nesw')
+        self.files_frame_treeview_scrollbar.grid(column=2, row=1, sticky='nesw')
         self.files_frame_treeview.config(yscrollcommand=self.files_frame_treeview_scrollbar.set)
         self.files_frame_treeview_scrollbar.config(command=self.files_frame_treeview.yview)
+        # END FILES
 
-        self.figures_frame = tkinter.Frame(self.root)
-        self.figures_frame_treeview = ttk.Treeview(self.figures_frame, columns=['figure', 'id'], selectmode='browse', show='headings', displaycolumns=('figure',))
+        self.figures_frame_treeview = ttk.Treeview(self.figures_frame,
+                                                   columns=['figure', 'id'],
+                                                   selectmode='browse',
+                                                   show='headings',
+                                                   displaycolumns=('figure',))
         self.figures_frame_treeview.heading('figure', text='Figure')
 
-        self.figures_frame.grid(column=2, row=1, sticky='nesw')
         self.figures_frame.columnconfigure(0, weight=1)
         self.figures_frame.rowconfigure(0, weight=1)
         self.figures_frame_treeview.grid(column=0, row=0, sticky='nesw')
@@ -112,20 +117,17 @@ class Gui:
         self.init_bindings()
 
     def init_bindings(self):
-        self.new_project_btn.configure(command=lambda: helpers.new_project_event(self.bus.statechart))
-        self.load_project_btn.configure(command=lambda: helpers.load_project_event(self.bus.statechart))
-        self.save_project_btn.configure(command=lambda: helpers.save_project_event(self.bus.statechart))
         self.add_file_btn.configure(command=lambda: helpers.add_file_event(self.bus.statechart))
         self.remove_file_btn.configure(
             command=lambda: helpers.remove_file_event(self.bus.statechart, self.files_frame_treeview.selection()[0]))
+
         self.draw_rectangle_btn.configure(command=lambda: helpers.draw_rect_event(self.bus.statechart))
         self.draw_polygon_btn.configure(command=lambda: helpers.draw_poly_event(self.bus.statechart))
         self.add_point_btn.configure(command=lambda: helpers.add_point_event(self.bus.statechart))
         self.remove_point_btn.configure(command=lambda: helpers.remove_point_event(self.bus.statechart))
         self.move_point_btn.configure(command=lambda: helpers.move_point_event(self.bus.statechart))
-        self.undo_btn.configure(command=lambda: helpers.undo_event(self.bus.statechart))
-        self.rotate_cw_btn.configure(command=lambda: helpers.rotate_cw_event(self.bus.statechart))
         self.rotate_ccw_btn.configure(command=lambda: helpers.rotate_ccw_event(self.bus.statechart))
+        self.rotate_cw_btn.configure(command=lambda: helpers.rotate_cw_event(self.bus.statechart))
 
         self.root.bind('<Control-n>', lambda _: helpers.new_project_event(self.bus.statechart))
         self.root.bind('<Control-o>', lambda _: helpers.load_project_event(self.bus.statechart))
@@ -349,14 +351,10 @@ class Gui:
         return [int(pos) for pos in result]
 
     def enable_save_project_btn(self) -> None:
-        self.save_project_btn['state'] = 'normal'
-
         if self.project_menu:
             self.project_menu.entryconfig('Save Project', state='normal')
 
     def disable_save_project_btn(self) -> None:
-        self.save_project_btn['state'] = 'disabled'
-
         if self.project_menu:
             self.project_menu.entryconfig('Save Project', state='disabled')
 
@@ -437,14 +435,10 @@ class Gui:
             self.figure_menu.entryconfig('Move Point', state='disabled')
 
     def enable_undo_action_button(self) -> None:
-        self.undo_btn['state'] = 'normal'
-
         if self.figure_menu:
             self.figure_menu.entryconfig('Undo', state='normal')
 
     def disable_undo_action_button(self) -> None:
-        self.undo_btn['state'] = 'disabled'
-
         if self.figure_menu:
             self.figure_menu.entryconfig('Undo', state='disabled')
 
