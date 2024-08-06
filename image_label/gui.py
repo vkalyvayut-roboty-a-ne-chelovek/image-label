@@ -26,7 +26,8 @@ class Gui:
         self.moving_figure_point = None
 
         self.root = tkinter.Tk()
-        self.root.title('Simple Image Label')
+        self.root.title('Simple Image Label 👀')
+        self.root.attributes('-zoomed', True)
         self.root.geometry(f'{self.root.winfo_screenwidth()}x{self.root.winfo_screenheight()}')
 
         self.main_menu = None
@@ -55,24 +56,34 @@ class Gui:
         self.drawing_frame.rowconfigure(1, weight=1)
 
         self.drawing_frame_commands = tkinter.Frame(self.drawing_frame)
-        self.draw_rectangle_btn = tkinter.Button(self.drawing_frame_commands, text='Draw Rectangle')
-        self.draw_polygon_btn = tkinter.Button(self.drawing_frame_commands, text='Draw Polygon')
-        self.add_point_btn = tkinter.Button(self.drawing_frame_commands, text='Add Point')
-        self.remove_point_btn = tkinter.Button(self.drawing_frame_commands, text='Remove Point')
-        self.move_point_btn = tkinter.Button(self.drawing_frame_commands, text='Move Point')
-        self.rotate_ccw_btn = tkinter.Button(self.drawing_frame_commands, text='Image Rotate Left')
-        self.rotate_cw_btn = tkinter.Button(self.drawing_frame_commands, text='Image Rotate Right')
+        self.drawing_frame_commands_draw_figure_commands = tkinter.Frame(self.drawing_frame_commands)
+        self.draw_rectangle_btn = tkinter.Button(self.drawing_frame_commands_draw_figure_commands, text='Draw Rectangle')
+        self.draw_polygon_btn = tkinter.Button(self.drawing_frame_commands_draw_figure_commands, text='Draw Polygon')
 
-        self.drawing_frame_canvas = tkinter.Canvas(self.drawing_frame, background='green')
+        self.drawing_frame_commands_point_manipulation_commands = tkinter.Frame(self.drawing_frame_commands, padx=10)
+        self.add_point_btn = tkinter.Button(self.drawing_frame_commands_point_manipulation_commands, text='Add Point')
+        self.remove_point_btn = tkinter.Button(self.drawing_frame_commands_point_manipulation_commands, text='Remove Point')
+        self.move_point_btn = tkinter.Button(self.drawing_frame_commands_point_manipulation_commands, text='Move Point')
+
+        self.drawing_frame_commands_image_rotation_commands = tkinter.Frame(self.drawing_frame_commands)
+        self.rotate_ccw_btn = tkinter.Button(self.drawing_frame_commands_image_rotation_commands, text='Image Rotate Left')
+        self.rotate_cw_btn = tkinter.Button(self.drawing_frame_commands_image_rotation_commands, text='Image Rotate Right')
+
+        self.drawing_frame_canvas = tkinter.Canvas(self.drawing_frame)
 
         self.drawing_frame_commands.grid(column=0, row=0, sticky='nesw')
+        self.drawing_frame_commands_draw_figure_commands.grid(column=0, row=0, sticky='nesw')
+        self.drawing_frame_commands_point_manipulation_commands.grid(column=1, row=0, sticky='nesw')
+        self.drawing_frame_commands_image_rotation_commands.grid(column=2, row=0, sticky='nesw')
+
         self.draw_rectangle_btn.grid(column=0, row=0, sticky='w')
         self.draw_polygon_btn.grid(column=1, row=0, sticky='w')
-        self.add_point_btn.grid(column=2, row=0, sticky='w')
-        self.remove_point_btn.grid(column=3, row=0, sticky='w')
-        self.move_point_btn.grid(column=4, row=0, sticky='w')
-        self.rotate_ccw_btn.grid(column=5, row=0, sticky='w')
-        self.rotate_cw_btn.grid(column=6, row=0, sticky='w')
+
+        self.add_point_btn.grid(column=0, row=0, sticky='w')
+        self.remove_point_btn.grid(column=1, row=0, sticky='w')
+        self.move_point_btn.grid(column=2, row=0, sticky='w')
+        self.rotate_ccw_btn.grid(column=0, row=0, sticky='w')
+        self.rotate_cw_btn.grid(column=1, row=0, sticky='w')
 
         self.drawing_frame_canvas.grid(column=0, row=1, sticky='nesw')
         # END DRAWING
@@ -145,6 +156,8 @@ class Gui:
         self.root.bind('<KeyPress-g>', lambda _: helpers.move_point_event(self.bus.statechart))
 
         self.root.bind('<Control-z>', lambda _: helpers.undo_event(self.bus.statechart))
+
+        self.root.bind('<F1>', lambda _: self.show_help())
 
         self.main_menu = tkinter.Menu(borderwidth=0)
         self.project_menu = tkinter.Menu(tearoff=False)
@@ -259,7 +272,7 @@ class Gui:
         self.root.mainloop()
 
     def update_title(self, new_name: str) -> None:
-        self.root.title(f'{new_name} | BOOBA' if new_name else 'BOOBA')
+        self.root.title(f'{new_name} | Simple Image Label 👀' if new_name else 'Simple Image Label 👀')
 
     def set_default_pointer(self) -> None:
         self.root.config(cursor='')
@@ -696,35 +709,38 @@ class Gui:
         popup.resizable(False, False)
 
         help_info = '''
-            '<Control-n>' create new project
-            '<Control-o>' open project
-            '<Control-s>' save project
-            '<Control-i>' add file
-            '<Control-r>' or '<KeyPress-1>' draw rectangle
-            '<Control-p>' or '<KeyPress-2>' draw polygon
-            '<KeyPress-a>' add new point to existing figure (works only for polygons)
-            '<KeyPress-x>' remove point from existing figure (if point on rectangle then removes entire figure)
-            '<KeyPress-g>' move point to another location
-            '<Control-z>' undo last action only for current file
-            '<Double-Left-Click>' on file item on files list select file as active
-            '<Left-Click>' on figure item on figures list select figure on canvas
-            '<Right-Click>' on figure item on figures list show context menu
-            '<Left-Arrow>' or '<Up-Arrow>' select previous file
-            '<Right-Arrow>' or '<Down-Arrow>' select next file
-            '<KePress-q>' rotate CCW (Left)
-            '<KePress-e>' rotate CW (Right) 
+'<Control-n>' create new project
+'<Control-o>' open project
+'<Control-s>' save project
+'<Control-i>' add file
+'<Control-r>' or '<KeyPress-1>' draw rectangle
+'<Control-p>' or '<KeyPress-2>' draw polygon
+'<KeyPress-a>' add new point to existing figure (works only for polygons)
+'<KeyPress-x>' remove point from existing figure (if point on rectangle then removes entire figure)
+'<KeyPress-g>' move point to another location
+'<Control-z>' undo last action only for current file
+'<Double-Left-Click>' on file item on files list select file as active
+'<Left-Click>' on figure item on figures list select figure on canvas
+'<Right-Click>' on figure item on figures list show context menu
+'<Left-Arrow>' or '<Up-Arrow>' select previous file
+'<Right-Arrow>' or '<Down-Arrow>' select next file
+'<KePress-q>' rotate CCW (Left)
+'<KePress-e>' rotate CW (Right) 
         '''
 
-        lbl = tkinter.Label(popup, text=help_info)
-        lbl.grid(column=0, row=0, sticky='nesw')
+        title_text = 'Simple Image Label (https://github.com/vkalyvayut-roboty-a-ne-chelovek/image-label)'
+        title = tkinter.Label(popup, text=title_text, justify='center', pady=10)
+        title.grid(column=0, row=0, sticky='nesw')
+
+        lbl = tkinter.Label(popup, text=help_info, justify='left', padx=20)
+        lbl.grid(column=0, row=1, sticky='nesw')
 
         ok_btn = tkinter.Button(popup, text='OK', command=lambda: popup.destroy())
-        ok_btn.grid(column=0, row=1, sticky='ns')
-
-        popup.columnconfigure(0, weight=1)
-        popup.rowconfigure(0, weight=1)
+        ok_btn.grid(column=0, row=2, sticky='ns')
 
         popup.grab_set()
+
+        popup.bind('<Escape>', lambda _: popup.destroy())
 
     def show_quick_categories_settings(self):
         w = tkinter.Toplevel(self.root)
