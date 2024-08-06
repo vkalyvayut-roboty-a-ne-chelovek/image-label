@@ -1,12 +1,16 @@
 [project]
 name = "simple-image-label"
-version = "0.0.1"
+version = "0.0.1.1"
 authors = [
     { name="vkalyvayut-roboty-a-ne-chelovek" }
 ]
 description = "Simple Python Tkinter image labelling app for ML purposes"
 readme = "README.md"
 requires-python = ">=3.10"
+dependencies=[
+    "miros",
+    "pillow"
+]
 
 [project.scripts]
 simple-image-label="image_label.main:run"
