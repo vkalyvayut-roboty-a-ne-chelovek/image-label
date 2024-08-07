@@ -724,8 +724,8 @@ class Gui:
 '<Right-Click>' on figure item on figures list show context menu
 '<Left-Arrow>' or '<Up-Arrow>' select previous file
 '<Right-Arrow>' or '<Down-Arrow>' select next file
-'<KePress-q>' rotate CCW (Left)
-'<KePress-e>' rotate CW (Right) 
+'<KeyPress-q>' rotate CCW (Left)
+'<KeyPress-e>' rotate CW (Right) 
         '''
 
         title_text = 'Simple Image Label (https://github.com/vkalyvayut-roboty-a-ne-chelovek/image-label)'
