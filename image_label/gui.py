@@ -167,7 +167,7 @@ class Gui:
 
         if self.bus.exporters:
             for k, v in self.bus.exporters.items():
-                self.exporters_menu.add_command(label=k, command=lambda: v.show_options())
+                self.exporters_menu.add_command(label=k, command=lambda: v.show_options(), state='disabled')
 
         self.project_menu.add_command(label='New Project', accelerator='<Control-n>',
                                       command=lambda: helpers.new_project_event(self.bus.statechart))
@@ -462,6 +462,16 @@ class Gui:
     def disable_quick_categories_settings_button(self) -> None:
         if self.project_menu:
             self.project_menu.entryconfig('Quick Categories', state='disabled')
+
+    def enable_exporters(self) -> None:
+        if self.exporters_menu:
+            for entry_idx in range(self.exporters_menu.index('end') + 1):
+                self.exporters_menu.entryconfig(entry_idx, state='normal')
+
+    def disable_exporters(self) -> None:
+        if self.project_menu:
+            for entry_idx in range(self.exporters_menu.index('end') + 1):
+                self.exporters_menu.entryconfig(entry_idx, state='disabled')
 
     def bind_canvas_click_event(self) -> None:
         self.drawing_frame_canvas.bind('<Button-1>', lambda _e: helpers.click_canvas_event(self.bus.statechart, self.clamp_coords_in_image_area(_e.x, _e.y)))

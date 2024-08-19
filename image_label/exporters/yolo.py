@@ -14,9 +14,11 @@ from PIL import Image
 
 
 class YoloExporter:
+    exported_id = 'exporters[yolo]'
+
     def __init__(self, bus):
         self.bus = bus
-        self.bus.register_item('exporters[yolo]', self)
+        self.bus.register_item(self.exported_id, self)
         self.options = {}
         self.path = None
         self.raw = None

@@ -97,11 +97,13 @@ class Statechart(ActiveObject):
         self.bus.gui.disable_point_actions_buttons()
         self.check_if_there_are_any_undo_actions_available_and_then_change_state_of_the_undo_button()
         self.bus.gui.disable_quick_categories_settings_button()
+        self.bus.gui.disable_exporters()
 
     def on_in_project_entry(self):
         self.bus.gui.enable_save_project_btn()
         self.bus.gui.enable_add_file_btn()
         self.bus.gui.enable_quick_categories_settings_button()
+        self.bus.gui.enable_exporters()
 
         if self.project.get_files():
             self.bus.gui.enable_remove_file_btn()
