@@ -1,3 +1,4 @@
+from collections import namedtuple
 import copy
 import math
 import os.path
@@ -11,6 +12,11 @@ import typing
 from tkinter import filedialog
 from tkinter import ttk
 from PIL import Image
+
+
+ExportOptions = namedtuple('ExportOptions',
+                           ['validation_percent', 'test_percent', 'export_rect_vals'],
+                           defaults=[0])
 
 
 class YoloExporter:
@@ -67,10 +73,11 @@ class YoloExporter:
         rb2.grid(column=0, row=1, sticky='nesw')
 
         def confirm_options():
-            self.ask_for_path(
-                validation_percent=validation_percent.get(),
-                test_percent=test_percent.get(),
-                export_rect_vals=export_rect_vals.get())
+            options = ExportOptions(validation_percent=validation_percent.get(),
+                                    test_percent=test_percent.get(),
+                                    export_rect_vals=export_rect_vals.get())
+
+            self.ask_for_path(options)
 
         ok_bnt = tkinter.Button(frame, text='Export to YOLO format', command=confirm_options)
 
@@ -81,16 +88,16 @@ class YoloExporter:
 
         ok_bnt.grid(column=0, row=3)
 
-    def ask_for_path(self, validation_percent, test_percent, export_rect_vals):
-        if export_rect_vals == 0:
+    def ask_for_path(self, options: ExportOptions):
+        if options.export_rect_vals == 0:
             return
         self.path = filedialog.askdirectory()
         self.root.destroy()
 
         if self.path:
-            self.options = {'validation_percent': validation_percent,
-                            'test_percent': test_percent,
-                            'export_rect_vals': export_rect_vals}
+            self.options = {'validation_percent': options.validation_percent,
+                            'test_percent': options.test_percent,
+                            'export_rect_vals': options.export_rect_vals}
 
             self.export()
 
